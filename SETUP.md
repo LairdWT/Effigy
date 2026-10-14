@@ -27,15 +27,13 @@ Steps 1–6 get you generating. Steps 7–8 (Blender live link, an AI agent) are
 
 ## Step 2: Download and unpack the app
 
-1. On GitHub open **SifuInTheShell/Effigy → Actions → "package"** (left list), click the newest
-   run with a green ✓, scroll to **Artifacts** and download **Effigy-win64**.
-2. GitHub wraps it in a second zip: unpack that, and you get `Effigy-<version>-win64.zip`.
-3. **Before unpacking it**: right-click the zip → **Properties** → tick **Unblock** → OK. (Otherwise
+1. On GitHub open **[SifuInTheShell/Effigy → Releases](https://github.com/SifuInTheShell/Effigy/releases/latest)**
+   and download **`Effigy-<version>-win64.zip`** under **Assets**.
+2. **Before unpacking it**: right-click the zip → **Properties** → tick **Unblock** → OK. (Otherwise
    Windows marks every file as "from the internet" and asks about each script.)
-4. Unpack it to a **short path**, e.g. `C:\` → you get `C:\Effigy\`.
+3. Unpack it to a **short path**, e.g. `C:\` → you get `C:\Effigy\`.
 
-(GitHub keeps these downloads for 90 days. Builds run only on request: if there's none, or you want the
-newest code, click **Run workflow** on that page, or build the zip yourself from a checkout: `python tools/package.py`.)
+(Want the newest code between releases? Build the zip yourself from a checkout: `python tools/package.py`.)
 
 ## Step 3: Allow long file paths (recommended, once)
 

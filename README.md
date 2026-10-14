@@ -272,7 +272,8 @@ you can't ship) is in [docs/PLAN.md §6](docs/PLAN.md#6-licence-policy).
 | **Disk** | 70–160 GB, mostly models; they can live on another drive. |
 | **RAM** | 32 GB recommended: the 3D engines peak at ~20 GB of host memory. |
 
-Install = unzip and double-click `run.bat`. It downloads Python, PyTorch, Blender and the models you pick into
+Install = download the zip from [Releases](https://github.com/SifuInTheShell/Effigy/releases/latest), unzip and
+double-click `run.bat`. It downloads Python, PyTorch, Blender and the models you pick into
 its own folder; nothing is installed system-wide, and uninstalling is deleting the folder. The step-by-step
 guide, including the Hugging Face login for the gated models, is **[SETUP.md](SETUP.md)**. From a git
 checkout, `run.bat` (or `run.sh`) does the same.
