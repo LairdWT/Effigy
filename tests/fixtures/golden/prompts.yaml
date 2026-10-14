@@ -1,0 +1,14 @@
+# Golden set (IMPLEMENTATION.md M11): our own prompts, made into images once on the reference laptop with
+#   uv run python -m tools.bench --make-golden --set tests/fixtures/golden
+# (brief → concepts with the fixed seed → the best-ranked candidate saved as <name>.png). No third-party
+# images. Mix: boxy, round, thin parts, organic, hard-surface, fine texture.
+- {name: crate, seed: 1001, prompt: "wooden storage crate with iron corner brackets"}
+- {name: barrel, seed: 1002, prompt: "oak barrel with two iron hoops"}
+- {name: lantern, seed: 1003, prompt: "brass oil lantern with glass panes and a top handle"}
+- {name: potion, seed: 1004, prompt: "round glass potion bottle with a cork stopper and purple liquid"}
+- {name: chest, seed: 1005, prompt: "treasure chest with gold trim, lid closed"}
+- {name: anvil, seed: 1006, prompt: "blacksmith anvil on a tree-stump base"}
+- {name: chair, seed: 1007, prompt: "rustic wooden chair with a woven seat"}
+- {name: mushrooms, seed: 1008, prompt: "cluster of three red spotted mushrooms on a mossy base"}
+- {name: drone, seed: 1009, prompt: "small sci-fi hover drone with two rotors and a camera eye"}
+- {name: teapot, seed: 1010, prompt: "ceramic teapot with a blue floral pattern"}

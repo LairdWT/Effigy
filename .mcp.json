@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "effigy": {
+      "command": "uv",
+      "args": ["run", "--frozen", "--project", ".", "python", "mcp/effigy_server.py"],
+      "env": { "EFFIGY_API": "${EFFIGY_API:-}" }
+    },
+    "blender-mcp-pro": {
+      "command": "uv",
+      "args": [
+        "run", "--no-project", "--with", "mcp[cli]<2",
+        "--with-requirements", "${EFFIGY_BLENDER_MCP_PRO_DIR}/requirements.txt",
+        "python", "${EFFIGY_BLENDER_MCP_PRO_DIR}/server.py"
+      ],
+      "env": { "BLENDER_MCP_PRO_LICENSE": "${BLENDER_MCP_PRO_LICENSE:-}" }
+    },
+    "blender": {
+      "command": "uv",
+      "args": ["tool", "run", "--from", "blender-mcp==2.0.0", "blender-mcp"]
+    }
+  }
+}

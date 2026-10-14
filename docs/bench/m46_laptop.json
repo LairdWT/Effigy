@@ -1,0 +1,169 @@
+{
+  "app": "bdf04e9-dirty",
+  "date": "2026-10-13 08:51",
+  "gpu": "NVIDIA GeForce RTX 5080 Laptop GPU",
+  "vram_gb": 15.92,
+  "driver": "617.42",
+  "compute_cap": "12.0",
+  "budget_gb": 14.6,
+  "ram_gb": 31.4,
+  "os": "Windows-11-10.0.26200-SP0",
+  "torch": "2.8.0+cu128",
+  "probes": [
+    {
+      "name": "prep",
+      "step": "prep",
+      "params": {},
+      "status": "done",
+      "seconds": 14.0,
+      "gpu_peak_gb": 2.45,
+      "gpu_before_gb": 0.15,
+      "torch_peak_gb": null,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "fast",
+      "step": "trellis2",
+      "params": {
+        "op": "generate",
+        "weights": "fast",
+        "pipeline_type": "1024_cascade",
+        "steps": 12,
+        "texture_size": 2048,
+        "seed": 7
+      },
+      "status": "done",
+      "seconds": 169.5,
+      "gpu_peak_gb": 9.72,
+      "gpu_before_gb": 0.15,
+      "torch_peak_gb": 6.39,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "clean",
+      "step": "clean",
+      "params": {},
+      "status": "done",
+      "seconds": 11.8,
+      "gpu_peak_gb": 2.9,
+      "gpu_before_gb": 0.61,
+      "torch_peak_gb": null,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "remesh",
+      "step": "remesh",
+      "params": {
+        "faces": 10000
+      },
+      "status": "done",
+      "seconds": 4.5,
+      "gpu_peak_gb": 0.87,
+      "gpu_before_gb": 0.61,
+      "torch_peak_gb": null,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "uv",
+      "step": "uv",
+      "params": {},
+      "status": "done",
+      "seconds": 2.8,
+      "gpu_peak_gb": 0.86,
+      "gpu_before_gb": 0.61,
+      "torch_peak_gb": null,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "bake",
+      "step": "bake",
+      "params": {
+        "texture_size": 2048
+      },
+      "status": "done",
+      "seconds": 23.4,
+      "gpu_peak_gb": 4.73,
+      "gpu_before_gb": 0.61,
+      "torch_peak_gb": null,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "refine",
+      "step": "refine",
+      "params": {
+        "seed": 7
+      },
+      "status": "done",
+      "seconds": 182.4,
+      "gpu_peak_gb": 13.2,
+      "gpu_before_gb": 0.15,
+      "torch_peak_gb": 9.81,
+      "torch_reserved_gb": 12.81
+    },
+    {
+      "name": "faithful",
+      "step": "trellis2",
+      "params": {
+        "op": "generate",
+        "weights": "faithful",
+        "pipeline_type": "1024_cascade",
+        "fov": 0.2,
+        "steps": 12,
+        "texture_size": 2048,
+        "seed": 7
+      },
+      "status": "done",
+      "seconds": 133.2,
+      "gpu_peak_gb": 11.73,
+      "gpu_before_gb": 0.15,
+      "torch_peak_gb": 9.2,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "faithful-20-4k",
+      "step": "trellis2",
+      "params": {
+        "op": "generate",
+        "weights": "faithful",
+        "pipeline_type": "1024_cascade",
+        "fov": 0.2,
+        "steps": 20,
+        "texture_size": 4096,
+        "seed": 7
+      },
+      "status": "done",
+      "seconds": 148.7,
+      "gpu_peak_gb": 11.86,
+      "gpu_before_gb": 0.73,
+      "torch_peak_gb": 9.2,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "canon",
+      "step": "canon",
+      "params": {
+        "seed": 7
+      },
+      "status": "done",
+      "seconds": 55.0,
+      "gpu_peak_gb": 9.82,
+      "gpu_before_gb": 0.73,
+      "torch_peak_gb": 9.17,
+      "torch_reserved_gb": null
+    },
+    {
+      "name": "motion",
+      "step": "motion",
+      "params": {
+        "prompt": "A person walks forward.",
+        "seed": 7
+      },
+      "status": "done",
+      "seconds": 65.8,
+      "gpu_peak_gb": 1.54,
+      "gpu_before_gb": 0.15,
+      "torch_peak_gb": null,
+      "torch_reserved_gb": null
+    }
+  ]
+}

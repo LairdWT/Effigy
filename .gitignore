@@ -1,0 +1,32 @@
+# runtime data and downloads (IMPLEMENTATION.md §0 rule 4)
+/library/
+/models/
+/blender/
+/gltfpack/
+/scratch/
+.venv*/
+.env
+settings.json
+
+# build output and caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+ui/node_modules/
+ui/dist/
+test-results/
+playwright-report/
+
+# portable zip (tools/package.py) and what its run.bat downloads into the app folder
+/dist/
+/python/
+/cache/
+
+# coding agents' temporary git worktrees
+.claude/worktrees/
+
+# a zip install unpacked over a checkout (tools/package.py adds these)
+/uv.exe
+/uv-LICENSE-MIT.txt
+/VERSION

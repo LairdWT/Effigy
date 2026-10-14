@@ -1,0 +1,21 @@
+# M16 bake-off inputs: our own character prompts in poses that break rigging (holding things, arms up,
+# mid-stride, crouching), made into images once on the laptop with
+#   uv run python -m tools.bench --make-golden --set tests/fixtures/characters
+# The A-pose reference the re-pose models copy is prompts/apose_ref.png (see tools/apose_ref.py).
+- {name: knight, seed: 2001, category: posed, prompt: "armoured knight raising a sword above his head with both hands"}
+- {name: archer, seed: 2002, category: posed, prompt: "elf archer drawing a longbow, side-on stance"}
+- {name: mage, seed: 2003, category: posed, prompt: "old wizard holding a glowing staff in one hand, other arm stretched forward casting a spell"}
+- {name: runner, seed: 2004, category: posed, prompt: "cartoon girl running mid-stride with arms swinging"}
+- {name: robot, seed: 2005, category: posed, prompt: "chunky sci-fi robot with arms crossed over its chest"}
+- {name: pirate, seed: 2006, category: posed, prompt: "pirate captain with hands on hips and one foot on a barrel"}
+- {name: chef, seed: 2007, category: posed, prompt: "stylized chef holding a frying pan in front of his belly"}
+- {name: goblin, seed: 2008, category: posed, prompt: "crouching goblin thief holding a dagger, knees bent"}
+- {name: dancer, seed: 2009, category: posed, prompt: "ballet dancer standing on one leg with both arms raised above her head"}
+- {name: farmer, seed: 2010, category: posed, prompt: "farmer leaning on a pitchfork with one hand, other hand in his pocket"}
+# M22 bench additions (2026-10-05): photo-real, anime, low-poly and child proportions; with the ten above
+# and the M17 dwarf turnaround (library m17_dwarf_turnaround) these are the 15 Phase-2 exit inputs.
+- {name: nurse, seed: 2011, category: character, prompt: "photo of a nurse in blue scrubs with a stethoscope"}
+- {name: hiker, seed: 2012, category: posed, prompt: "photo of a bearded hiker with a backpack holding two trekking poles"}
+- {name: anime, seed: 2013, category: posed, prompt: "anime schoolgirl in a sailor uniform waving with one hand"}
+- {name: viking, seed: 2014, category: posed, prompt: "low-poly stylized viking warrior holding a round shield and an axe"}
+- {name: kid, seed: 2015, category: posed, prompt: "photo of a small boy in a yellow raincoat holding an umbrella"}

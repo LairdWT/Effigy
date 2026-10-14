@@ -1,0 +1,30 @@
+name: ci
+# manual only: build minutes are limited; run from the Actions tab, or ask Claude to (CLAUDE.md)
+on: workflow_dispatch
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "0.8.17" } # pinned: resolving "latest" calls the GitHub API, which can be down
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+        working-directory: ui
+      - run: npm run build
+        working-directory: ui
+      - if: runner.os == 'Linux' # one smoke spec; SwiftShader WebGL
+        run: npx playwright install --with-deps chromium && npx playwright test
+        working-directory: ui

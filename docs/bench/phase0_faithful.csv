@@ -1,0 +1,18 @@
+# commit: 92dd745481471620546b26574964ce927bb4762b
+# gpu, driver: NVIDIA GeForce RTX 5080 Laptop GPU, 617.14
+# torch: 2.8.0+cu128
+# blender: Blender 5.2.2 LTS
+# host: Windows-11-10.0.26200-SP0
+# preset: game-prop, weights: faithful
+# date: 2026-10-04 18:40:31
+image,asset,ok,failed_step,error,s_prep,vram_prep,torch_prep,s_trellis2,vram_trellis2,torch_trellis2,s_clean,vram_clean,torch_clean,s_remesh,vram_remesh,torch_remesh,s_uv,vram_uv,torch_uv,s_bake,vram_bake,torch_bake,s_validate,vram_validate,torch_validate,s_export,vram_export,torch_export,faces,non_manifold_edges,components,texel_p10,texel_p90,checklist_fails
+anvil.png,bench_faithful_anvil_3,True,,,22.3,3.3,,133.4,15.54,13.31,7.2,1.37,,5.6,1.36,,2.8,1.35,,16.2,2.42,,1.1,0.48,,2.2,0.48,,9382,0,4,0.939,1.059,0
+barrel.png,bench_faithful_barrel_3,True,,,21.2,2.78,,135.8,15.53,13.31,5.6,1.24,,2.8,1.22,,2.8,1.22,,27.3,2.42,,1.2,0.41,,2.3,0.41,,8736,0,1,0.989,1.069,0
+chair.png,bench_faithful_chair_3,True,,,22.8,2.71,,95.0,15.59,13.31,8.4,1.12,,5.0,1.11,,3.9,1.11,,12.3,2.06,,1.2,0.27,,2.3,0.27,,8542,0,7,0.978,1.076,0
+chest.png,bench_faithful_chest_2,True,,,22.3,2.58,,130.1,15.55,13.31,6.7,1.15,,2.8,1.13,,2.8,0.92,,25.1,2.17,,1.2,0.28,,2.3,0.28,,9540,0,1,0.949,1.059,0
+crate.png,bench_faithful_crate_2,True,,,22.9,2.59,,165.3,15.56,13.31,9.5,1.16,,3.9,1.14,,2.8,1.15,,20.6,2.43,,1.2,0.29,,2.3,0.29,,8333,0,1,0.991,1.069,0
+drone.png,bench_faithful_drone_2,True,,,22.8,2.59,,86.2,15.54,13.31,5.0,1.16,,4.5,1.14,,2.9,1.14,,21.8,2.08,,1.2,0.29,,2.3,0.29,,7993,0,3,0.972,1.094,0
+lantern.png,bench_faithful_lantern_2,True,,,22.3,2.59,,98.3,15.54,13.31,9.0,1.13,,2.8,1.11,,2.8,1.11,,12.3,2.12,,1.2,0.29,,2.3,0.29,,7840,0,8,0.973,1.085,0
+mushrooms.png,bench_faithful_mushrooms_2,True,,,22.9,2.59,,154.7,15.57,13.31,7.2,1.15,,3.4,1.14,,2.8,1.14,,25.7,2.33,,1.1,0.29,,2.3,0.29,,9699,0,2,0.944,1.045,0
+potion.png,bench_faithful_potion_2,True,,,22.4,2.59,,138.6,15.57,13.31,10.6,1.2,,2.8,1.17,,2.8,1.17,,22.3,2.4,,1.1,0.29,,2.3,0.29,,9033,0,2,0.956,1.046,0
+teapot.png,bench_faithful_teapot_2,True,,,22.4,2.59,,120.3,15.54,13.31,6.1,1.12,,2.8,1.11,,2.8,0.86,,25.6,2.18,,1.2,0.29,,2.3,0.29,,8962,0,1,0.966,1.04,0

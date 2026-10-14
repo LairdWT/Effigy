@@ -1,0 +1,73 @@
+# sm_120 CUDA wheels for .venv-ml (IMPLEMENTATION.md M1). The repo is private, so uv can't fetch
+# Release assets: the wheels are committed to wheels/ on the triggering branch instead.
+name: wheels
+# manual only: build minutes are limited; run from the Actions tab, or ask Claude to (CLAUDE.md)
+on: workflow_dispatch
+
+concurrency: { group: "wheels-${{ github.ref }}", cancel-in-progress: true } # newest pins win
+
+env:
+  TORCH_CUDA_ARCH_LIST: "8.9;12.0"
+  BUILD_TARGET: cuda
+  DISTUTILS_USE_SDK: "1" # torch refuses to build inside an activated VS env without it
+  MAX_JOBS: "2" # nvcc with two archs runs out of RAM on a 2-core runner otherwise
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { pkg: cumesh, repo: JeffreyXiang/CuMesh, ref: 12289e1062f0603f2f0d0771b02e1395d247f26f, dir: ., patch: "" }
+          - { pkg: flex_gemm, repo: JeffreyXiang/FlexGEMM, ref: 6dd94a859c26ee8246888502eada3dd8ad85532e, dir: ., patch: flex-gemm-windows.patch }
+          - { pkg: o_voxel, repo: microsoft/TRELLIS.2, ref: 75fbf0183001ed9876c8dbb35de6b68552ee08bd, dir: o-voxel, patch: o-voxel-windows.patch }
+    runs-on: windows-2022 # VS 2022: CUDA 12.8 doesn't know newer MSVC
+    defaults: { run: { shell: bash } } # -e: a failing line fails the step (pwsh would carry on)
+    steps:
+      - run: git config --global core.autocrlf false # the patch and upstream sources stay LF
+      - uses: actions/checkout@v4
+      - uses: Jimver/cuda-toolkit@v0.2.36
+        with: { cuda: 12.8.1 }
+      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "0.8.17" } # pinned: resolving "latest" calls the GitHub API, which can be down
+      - name: build venv (torch 2.8.0+cu128, Python 3.12)
+        run: |
+          uv venv -p 3.12 --seed bv
+          uv pip install -p bv torch==2.8.0 --index-url https://download.pytorch.org/whl/cu128
+          uv pip install -p bv setuptools wheel ninja numpy
+      - name: source at the pinned ref
+        run: |
+          git clone --filter=blob:none https://github.com/${{ matrix.repo }} src
+          git -C src checkout ${{ matrix.ref }}
+          git -C src submodule update --init --recursive
+      - if: matrix.patch != ''
+        run: git -C src apply ../engine/trellis2/${{ matrix.patch }}
+      - name: build
+        shell: pwsh # Git Bash's /usr/bin/link would shadow MSVC's link.exe
+        run: | # bv/Scripts on PATH so torch finds ninja (else a serial distutils build)
+          $env:PATH = "$PWD\bv\Scripts;$env:PATH"
+          python -m pip wheel --no-build-isolation --no-deps -w dist src/${{ matrix.dir }}
+      - name: load every compiled module (no GPU here; catches missing DLLs and ABI mismatches)
+        run: |
+          uv pip install -p bv dist/*.whl --no-deps
+          ./bv/Scripts/python -c "import torch, glob, os, importlib.util as u; fs = glob.glob('bv/Lib/site-packages/${{ matrix.pkg }}/**/*.pyd', recursive=True); assert fs; [u.module_from_spec(u.spec_from_file_location(os.path.basename(f).split('.')[0], f)) for f in fs]; print(fs)"
+      - uses: actions/upload-artifact@v4
+        with: { name: "${{ matrix.pkg }}", path: dist/*.whl }
+
+  commit:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.ref_name }}" }
+      - uses: actions/download-artifact@v4
+        with: { path: wheels, merge-multiple: true }
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wheels/*.whl
+          git commit -m "wheels: sm_120 cumesh, flex_gemm, o_voxel (run ${{ github.run_id }})" || exit 0
+          git pull --rebase origin "${{ github.ref_name }}"
+          git push origin "HEAD:${{ github.ref_name }}"

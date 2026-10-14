@@ -1,0 +1,104 @@
+# Windows portable zip (IMPLEMENTATION.md M15): build it, unzip it into a fresh folder and run its run.bat
+# the way a clean machine would (no uv, Python, Node or Git on PATH) until the UI answers; then a second
+# (warm) start. Timings per phase go to the job summary (docs/bench/install.md); zip and logs are uploaded.
+name: package
+# manual only: build minutes are limited; run from the Actions tab, or ask Claude to (CLAUDE.md)
+on: workflow_dispatch
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 130
+    defaults: { run: { shell: pwsh } }
+    steps:
+      - uses: actions/checkout@v4
+      # no setup-uv: the zip brings its own pinned uv (0.8.17), and the runner's uv dirs stay untouched
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: build the zip
+        timeout-minutes: 15
+        run: python tools/package.py
+      - uses: actions/upload-artifact@v4
+        with: { name: Effigy-win64, path: dist/*.zip, if-no-files-found: error }
+      - name: first run from the unzipped folder, then a warm start
+        timeout-minutes: 110
+        run: |
+          $root = "$env:RUNNER_TEMP\effigy"
+          $zip = Get-Item dist\*.zip
+          $t = [Diagnostics.Stopwatch]::StartNew()
+          Expand-Archive $zip.FullName $root
+          $unzip = [int]$t.Elapsed.TotalSeconds
+          $app = "$root\Effigy"
+          Get-ChildItem env:UV_* | Remove-Item
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot;$env:SystemRoot\System32\Wbem;$env:SystemRoot\System32\WindowsPowerShell\v1.0"
+          $env:EFFIGY_NO_BROWSER = "1"
+          $userDirs = "$env:APPDATA\uv", "$env:LOCALAPPDATA\uv", "$env:USERPROFILE\.local\bin"
+          function CountUserFiles { ($userDirs | ForEach-Object { Get-ChildItem $_ -Recurse -File -Force -ErrorAction SilentlyContinue }).Count }
+          function TestUrl($url) { try { (Invoke-WebRequest $url -UseBasicParsing -TimeoutSec 5).StatusCode -eq 200 } catch { $false } }
+          function RunApp($log, $minutes) {
+            # run.bat in the background; first-seen times of the folders it creates and of the two URLs
+            $p = Start-Process cmd.exe "/c run.bat > $root\$log 2>&1" -WorkingDirectory $app -WindowStyle Hidden -PassThru
+            $t = [Diagnostics.Stopwatch]::StartNew()
+            $seen = [ordered]@{}
+            try {
+              while (-not $seen.Contains('/')) {
+                if ($t.Elapsed.TotalMinutes -gt $minutes) { throw "${log}: no UI after $minutes min" }
+                if ($p.HasExited) { throw "${log}: run.bat exited before the UI answered" }
+                foreach ($d in 'python', '.venv', '.venv-ml', 'blender') {
+                  if (-not $seen.Contains($d) -and (Test-Path "$app\$d")) { $seen[$d] = [int]$t.Elapsed.TotalSeconds }
+                }
+                foreach ($u in '/api/health', '/') {
+                  if (-not $seen.Contains($u) -and (TestUrl "http://127.0.0.1:8000$u")) { $seen[$u] = [int]$t.Elapsed.TotalSeconds }
+                }
+                Start-Sleep 3
+              }
+            } finally {
+              taskkill /PID $p.Id /T /F 2>&1 | Out-Null # the tree: cmd, uv, python (uvicorn)
+              Start-Sleep 5
+            }
+            $seen
+          }
+          $before = CountUserFiles
+          $first = RunApp run1.log 90
+          $warm = RunApp run2.log 10
+          $after = CountUserFiles
+          function SizeMB($d) { [int]((Get-ChildItem $d -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum / 1MB) }
+          $phases = [ordered]@{
+            'CPython 3.12 download' = '.venv'
+            'backend env (.venv)' = '.venv-ml'
+            'ML env (.venv-ml: torch cu128, our wheels)' = 'blender'
+            'Blender 5.2.2 (+ other first-run installs), server start' = '/api/health'
+            'UI served' = '/'
+          }
+          $s = @(
+            "### Portable zip: first run on $env:ImageOS",
+            "",
+            "$($zip.Name): $([int]($zip.Length / 1MB)) MB, unzipped in $unzip s; free on $($app[0]): $([int]((Get-PSDrive $app[0]).Free / 1GB)) GB after the run",
+            "",
+            "| first run: phase | ends when | at (s) | took (s) |",
+            "|---|---|---|---|"
+          )
+          $prev = 0
+          foreach ($k in $phases.Keys) {
+            $at = $first[$phases[$k]]
+            $s += "| $k | $($phases[$k]) appears/answers | $at | $($at - $prev) |"
+            $prev = $at
+          }
+          $s += "", "Warm start (second run): UI after $($warm['/']) s.", ""
+          $s += "| folder | MB (cache and venvs share hardlinked files) |", "|---|---|"
+          foreach ($d in 'python', 'cache', '.venv', '.venv-ml', 'blender') { $s += "| $d | $(SizeMB "$app\$d") |" }
+          $s += "", "Outside the app folder: files in uv's user dirs before/after: $before/$after; registry HKCU\Software\Python\Astral: $(Test-Path HKCU:\Software\Python\Astral)"
+          $s | Add-Content $env:GITHUB_STEP_SUMMARY
+          $s
+          exit 0 # taskkill's exit code must not decide the step
+      - name: run.bat logs (on failure)
+        if: failure()
+        run: Get-ChildItem "$env:RUNNER_TEMP\effigy\*.log" -ErrorAction SilentlyContinue | ForEach-Object { "===== $($_.Name)"; Get-Content $_ -Tail 300 }
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: first-run-logs, path: "${{ runner.temp }}/effigy/*.log", if-no-files-found: ignore }

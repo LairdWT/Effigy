@@ -1,0 +1,126 @@
+# Every dependency, model, tool and dataset the tool uses (IMPLEMENTATION.md §3.8, PLAN.md §6).
+# Assets ship in a commercial game: every row must allow commercial use of its outputs.
+# Fields: name, kind (code|weights|tool|data), license, commercial,
+#         optional: region_note, attribution, flag, experimental
+
+# --- Python (.venv) ---
+- {name: fastapi, kind: code, license: MIT, commercial: true}
+- {name: uvicorn, kind: code, license: BSD-3-Clause, commercial: true}
+- {name: pyyaml, kind: code, license: MIT, commercial: true}
+- {name: sse-starlette, kind: code, license: BSD-3-Clause, commercial: true}
+- {name: mcp, kind: code, license: MIT, commercial: true}
+- {name: onnxruntime, kind: code, license: MIT, commercial: true}
+- {name: blender-mcp, kind: code, license: MIT, commercial: true, flag: "optional free Blender add-on + MCP server (ahujasid); .mcp.json runs blender-mcp==2.0.0 via uv"}
+- {name: numpy, kind: code, license: BSD-3-Clause, commercial: true}
+- {name: opencv-python-headless, kind: code, license: Apache-2.0, commercial: true}
+- {name: pillow, kind: code, license: MIT-CMU, commercial: true}
+- {name: trimesh, kind: code, license: MIT, commercial: true}
+- {name: scipy, kind: code, license: BSD-3-Clause, commercial: true, flag: "trimesh's convex hull (qhull)"}
+- {name: networkx, kind: code, license: BSD-3-Clause, commercial: true, flag: "trimesh orients the convex hull with it (pure Python; torch needs it too)"}
+- {name: httpx2, kind: code, license: BSD-3-Clause, commercial: true}
+- {name: pytest, kind: code, license: MIT, commercial: true}
+- {name: ruff, kind: code, license: MIT, commercial: true}
+
+# --- Python (.venv-ml) ---
+- {name: torch, kind: code, license: BSD-3-Clause, commercial: true}
+- {name: torchvision, kind: code, license: BSD-3-Clause, commercial: true}
+- {name: diffusers, kind: code, license: Apache-2.0, commercial: true}
+- {name: peft, kind: code, license: Apache-2.0, commercial: true, flag: "M50: diffusers loads the 2D style LoRAs (concepts op image) through it"}
+- {name: accelerate, kind: code, license: Apache-2.0, commercial: true}
+- {name: transformers, kind: code, license: Apache-2.0, commercial: true}
+- {name: timm, kind: code, license: Apache-2.0, commercial: true}
+- {name: kornia, kind: code, license: Apache-2.0, commercial: true}
+- {name: einops, kind: code, license: MIT, commercial: true}
+- {name: cumesh, kind: code, license: MIT, commercial: true, flag: "our sm_120 build (wheels/, wheels.yml) of JeffreyXiang/CuMesh 12289e1; bundles xatlas (MIT)"}
+- {name: flex-gemm, kind: code, license: MIT, commercial: true, flag: "our sm_120 build of JeffreyXiang/FlexGEMM 6dd94a8 + flex-gemm-windows.patch; .venv-moge (M55): upstream b2fadb2 as it is, pure Triton"}
+- {name: moge, kind: code, license: MIT, commercial: true, flag: "microsoft/MoGe 74fbce0 (MoGe-3), .venv-moge only: the depth step (M55); transitive via utils3d-moge: moderngl, glcontext (MIT); utils3d-moge's rasterizer imports nvdiffrast lazily, never installed and never reached by the depth step (MoGe-3 inference)"}
+- {name: utils3d-moge, kind: code, license: MIT, commercial: true, flag: "EasternJournalist/utils3d-moge 62f09d5, MoGe's geometry helpers"}
+- {name: pipeline, kind: code, license: MIT, commercial: true, flag: "EasternJournalist/pipeline 1c51139, MoGe's helper"}
+- {name: o-voxel, kind: code, license: MIT, commercial: true, flag: "our sm_120 build of TRELLIS.2 o-voxel 75fbf01 + o-voxel-windows.patch (plyfile, GPL, removed)"}
+- {name: triton-windows, kind: code, license: MIT, commercial: true, flag: "FlexGEMM's Triton kernels on Windows; transitive via the wheels: tqdm (MIT/MPL-2.0), zstandard (BSD-3-Clause), filelock (Unlicense)"}
+
+# --- vendored engine code ---
+- {name: microsoft/TRELLIS.2, kind: code, license: MIT, commercial: true}
+- {name: easydict, kind: code, license: LGPL-3.0, commercial: true, flag: "imported by the TRELLIS.2/Pixal3D samplers and o_voxel; unmodified dynamically imported Python, fine for use and distribution"}
+
+# --- model weights (meta.licenses names these rows) ---
+- {name: microsoft/TRELLIS.2-4B, kind: weights, license: MIT, commercial: true}
+- {name: yzd-v/DWPose, kind: weights, license: Apache-2.0, commercial: true, flag: "dw-ll_ucoco_384.onnx: whole-body keypoints for the A-pose gate (M16); yolox_l.onnx (YOLOX-L, COCO): the person detector of motion from video (M34)"}
+- {name: black-forest-labs/FLUX.2-klein-4B, kind: weights, license: Apache-2.0, commercial: true, flag: "M16 re-pose (steps/canon.py); klein-9B is non-commercial and never used"}
+- {name: microsoft/TRELLIS-image-large, kind: weights, license: MIT, commercial: true}
+- {name: facebook/dinov3-vitl16-pretrain-lvd1689m, kind: weights, license: DINOv3 License, commercial: true, attribution: "Built with DINOv3"}
+- {name: TencentARC/Pixal3D, kind: weights, license: MIT, commercial: true, flag: "code vendored in engine/pixal3d (MIT, LICENSE + NOTICE kept); HF card still shows an outdated EU restriction, the repo LICENSE is MIT"}
+- {name: VAST-AI/SkinTokens, kind: weights, license: MIT, commercial: true, flag: "M20 rig_skin engine skintokens (TokenRig + skin VAE, 1.5 GB); trained partly on VRoid Hub and ModelsResource characters (PLAN §6): the Blender bone-heat engine has no training-data provenance and QA can always pick it"}
+- {name: Qwen/Qwen3-0.6B, kind: weights, license: Apache-2.0, commercial: true, flag: "config and tokenizer files only: SkinTokens' backbone, its weights are inside the TokenRig checkpoint"}
+- {name: comfyui-skintokens-noblender, kind: code, license: MIT, commercial: true, flag: "the no-Blender SkinTokens port (pinned commit); vendors upstream's torch core whose michelangelo subtree is GPL-3 by provenance (research 05): installed in .venv-skin only, where the rig_skin step runs as a subprocess; the server never imports it"}
+- {name: xinntao/Real-ESRGAN, kind: weights, license: BSD-3-Clause, commercial: true, flag: "RealESRGAN_x4plus.pth (v0.1.0 release, 67 MB): the 4x upscale of the conditioning image before the face projection (M24); the RRDBNet is written out in steps/_sr.py, no basicsr or realesrgan package"}
+- {name: kimodo, kind: code, license: Apache-2.0, commercial: true, flag: "nv-tlabs/kimodo at 1aece8c (M26 text-to-motion), installed in .venv-kimodo only where the motion step runs as a subprocess; it pins transformers 5.1 and pulls hydra-core (MIT), omegaconf (BSD-3), peft (Apache-2.0), bvhio (MIT), scenepic (MIT), av (BSD-3), boto3 (Apache-2.0), gradio (Apache-2.0); the SMPL-X checkpoint (R&D-only) and the SOMA-X / viser extras are never installed"}
+- {name: nvidia/Kimodo-SOMA-RP-v1.1, kind: weights, license: NVIDIA Open Model License, commercial: true, flag: "M26: the motion denoiser (282 M parameters, 1.1 GB) on the SOMA 77-joint skeleton, trained on Bones Rigplay 1 (700 h commercial mocap); the licence claims no ownership of outputs and asks for attribution only when the model itself is redistributed, which we never do"}
+- {name: meta-llama/Meta-Llama-3-8B-Instruct, kind: weights, license: Llama 3 Community License, commercial: true, attribution: "Built with Meta Llama 3", flag: "M26: Kimodo's text encoder (LLM2Vec on Llama 3 8B Instruct, 16 GB bf16, run on the CPU as upstream recommends under 16 GB VRAM); gated: accept the licence on huggingface.co, then `hf auth login` (as DINOv3); the licence allows commercial use below 700 M monthly users; the generated motions are outputs, not Llama Materials; never redistributed by us"}
+- {name: McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp, kind: weights, license: MIT, commercial: true, flag: "M26: the LLM2Vec adapter (mntp) Kimodo's text encoder loads over Llama 3"}
+- {name: McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised, kind: weights, license: MIT, commercial: true, flag: "M26: the LLM2Vec adapter (mntp-supervised) Kimodo's text encoder loads over Llama 3"}
+- {name: geosam2, kind: code, license: Apache-2.0, commercial: true, flag: "M31 parts: VAST-AI-Research/GeoSAM2 at b5de23c as our own pure-Python wheel (wheels/, GEOSAM2_BUILD_CUDA=0, opencv-python and ninja dropped from its metadata) with its scripts in engine/geosam2 (LICENSE and NOTICE kept, PATCHES.md); it carries Meta's SAM 2 (Apache-2.0) modified"}
+- {name: VAST-AI/GeoSAM2, kind: weights, license: Apache-2.0, commercial: true, flag: "M31 parts: GeoSAM2's checkpoint (154 M parameters, 616 MB), a click on a rendered view → the part's faces"}
+- {name: facebook/sam2, kind: code, license: Apache-2.0, commercial: true, flag: "M31 parts: SAM 2 as modified inside the geosam2 wheel (sam2/), not installed on its own"}
+- {name: hydra-core, kind: code, license: MIT, commercial: true, flag: "geosam2 builds its model from a Hydra config"}
+- {name: omegaconf, kind: code, license: BSD-3-Clause, commercial: true, flag: "geosam2 (Hydra)"}
+# --- M34 motion from video (.venv-gemx, the mocap step's subprocess) ---
+- {name: NVlabs/GEM-X, kind: code, license: Apache-2.0, commercial: true, flag: "M34: GEM-X at 3299255 vendored unmodified in engine/gemx (gem/, configs/; LICENSE and ATTRIBUTIONS.md kept, PATCHES.md); never its SMPL variant"}
+- {name: nvidia/GEM-X, kind: weights, license: NVIDIA Open Model License, commercial: true, flag: "M34: gem_soma.ckpt (the video-to-motion model on SOMA), vitpose.pth (its 77-keypoint detector on a DINOv3 backbone) at 5ccf5ca; trained on NVIDIA-owned synthetic video only (Bones RigPlay-1, RenderPeople, internal characters), no SMPL or AMASS (owner decision 2026-10-08, research 12); outputs not claimed; gem_smpl.ckpt never fetched"}
+- {name: NVlabs/SOMA-X, kind: code, license: Apache-2.0, commercial: true, flag: "M34: py-soma-x 0.1.3 at e0f8ff0 (the body model GEM-X outputs) and its assets (SOMA_neutral.npz, correctives, the MHR wrap at lod6) from its Git LFS at that commit; the SMPL/SMPL-X adapters' files are never fetched"}
+- {name: facebook/sam-3d-body, kind: weights, license: SAM License, commercial: true, flag: "M34: SAM 3D Body's code (vendored unmodified at b5c765a in engine/gemx/sam_3d_body, LICENSE.sam-3d-body) and checkpoint (nvidia/GEM-X's copy): GEM-X's image features in the Best and Quick modes, not in Keypoints only; the licence bars military, ITAR, nuclear and weapons end uses"}
+- {name: facebookresearch/MHR, kind: weights, license: Apache-2.0, commercial: true, flag: "M34: the MHR body model SAM 3D Body loads (mhr_model.pt, nvidia/GEM-X's copy)"}
+- {name: py-soma-x, kind: code, license: Apache-2.0, commercial: true, flag: "M34: = NVlabs/SOMA-X, the installed package"}
+- {name: warp-lang, kind: code, license: Apache-2.0, commercial: true, flag: "NVIDIA Warp 1.12: SOMA's skinning kernels"}
+- {name: lightning, kind: code, license: Apache-2.0, commercial: true, flag: "GEM-X's model class"}
+- {name: pytorch-lightning, kind: code, license: Apache-2.0, commercial: true, flag: "SAM 3D Body's model class"}
+- {name: hydra-colorlog, kind: code, license: MIT, commercial: true, flag: "GEM-X's Hydra configs"}
+- {name: rich, kind: code, license: MIT, commercial: true, flag: "GEM-X's logging"}
+- {name: imageio, kind: code, license: BSD-2-Clause, commercial: true, flag: "GEM-X reads the clip through it (PyAV plugin)"}
+- {name: av, kind: code, license: BSD-3-Clause, commercial: true, flag: "PyAV: GEM-X's video reading"}
+- {name: ffmpeg-python, kind: code, license: Apache-2.0, commercial: true, flag: "imported by GEM-X's video helpers; the ones the step calls read through PyAV, so no ffmpeg program is needed"}
+- {name: huggingface-hub, kind: code, license: Apache-2.0, commercial: true}
+- {name: safetensors, kind: code, license: Apache-2.0, commercial: true}
+- {name: yacs, kind: code, license: Apache-2.0, commercial: true, flag: "SAM 3D Body's config"}
+- {name: roma, kind: code, license: BSD-3-Clause, commercial: true, flag: "naver/roma: rotations in SAM 3D Body"}
+- {name: braceexpand, kind: code, license: MIT, commercial: true, flag: "SAM 3D Body"}
+- {name: termcolor, kind: code, license: MIT, commercial: true, flag: "DINOv3's code (ViTPose's backbone class) logs with it"}
+- {name: onnxruntime-gpu, kind: code, license: MIT, commercial: true, flag: "M34: the YOLOX person detector on the GPU (< 1.24: the CUDA 12 builds)"}
+- {name: iopath, kind: code, license: MIT, commercial: true, flag: "geosam2 (SAM 2's file helpers)"}
+- {name: matplotlib, kind: code, license: PSF-based (Matplotlib License), commercial: true, flag: "geosam2 imports it for its own visualisations"}
+- {name: pandas, kind: code, license: BSD-3-Clause, commercial: true, flag: "geosam2 imports it in its lifting helpers"}
+- {name: tqdm, kind: code, license: MPL-2.0 AND MIT, commercial: true, flag: "geosam2 (SAM 2's progress bars)"}
+- {name: Mesh2Motion/mesh2motion-app, kind: data, license: CC0-1.0, commercial: true, attribution: "Animations from Mesh2Motion (mesh2motion.org), CC0", flag: "M21 clip pack: the three human animation GLBs (178 clips) at a pinned commit; M36, M41: the fox, horse, bird, kaiju, shark, dragon, spider and snake rigs (their bones in steps/templates/*.json) and their animation GLBs (tools/creature_bench.py also fetches their sample meshes); the app code is MIT, its art assets CC0 (README); no credit required, the line above is a courtesy"}
+- {name: valeoai/NAF, kind: weights, license: Apache-2.0, commercial: true, flag: "Pixal3D feature upsampler; code vendored in engine/pixal3d/naf (Apache-2.0, LICENSE kept)"}
+- {name: Ruicheng/moge-2-vitl, kind: weights, license: MIT, commercial: true}
+- {name: Ruicheng/moge-3-vitg, kind: weights, license: MIT, commercial: true, flag: "M55 depth for parallax layers (model group layers, 5.0 GB)"}
+- {name: Tongyi-MAI/Z-Image-Turbo, kind: weights, license: Apache-2.0, commercial: true}
+- {name: alibaba-pai/Z-Image-Turbo-Fun-Controlnet-Union-2.1, kind: weights, license: Apache-2.0, commercial: true, flag: "M43b refine: the Tile 2.1 (2601, 8 steps, lite) control net at revision 5155fc5, one 2.0 GB file; M46c: the full 2601 8-step file (6.7 GB) as the optional refine-full group, for cards that hold it; loaded by diffusers' own ZImageControlNetModel, no VideoX-Fun code"}
+- {name: ZhengPeng7/BiRefNet, kind: weights, license: MIT, commercial: true}
+- {name: tarn59/pixel_art_style_lora_z_image_turbo, kind: weights, license: Apache-2.0, commercial: true, flag: "M50 2D style 'pixel' (concepts op image) at revision 0a5092d; the training data's provenance is self-asserted by the uploader (research 15 §7)"}
+- {name: renderartist/Classic-Painting-Z-Image-Turbo-LoRA, kind: weights, license: Apache-2.0, commercial: true, flag: "M50 2D style 'painting' at revision e873cc4; trained on public-domain paintings (its card)"}
+- {name: ostris/z_image_turbo_childrens_drawings, kind: weights, license: Apache-2.0, commercial: true, flag: "M50 2D style 'drawing' at revision 7fcd66a"}
+
+# --- UI (ui/package.json) ---
+- {name: react, kind: code, license: MIT, commercial: true}
+- {name: react-dom, kind: code, license: MIT, commercial: true}
+- {name: vite, kind: code, license: MIT, commercial: true}
+- {name: typescript, kind: code, license: Apache-2.0, commercial: true}
+- {name: "@types/react", kind: code, license: MIT, commercial: true}
+- {name: "@types/react-dom", kind: code, license: MIT, commercial: true}
+- {name: three, kind: code, license: MIT, commercial: true}
+- {name: "@types/three", kind: code, license: MIT, commercial: true}
+- {name: "@playwright/test", kind: code, license: Apache-2.0, commercial: true}
+
+# --- tools (shipped in the Windows portable zip, tools/package.py) ---
+- {name: uv, kind: tool, license: MIT OR Apache-2.0, commercial: true, flag: "uv.exe 0.8.17 (Astral), SHA-256 pinned; MIT text shipped as uv-LICENSE-MIT.txt"}
+
+# --- tools (downloaded, not shipped) ---
+- {name: blender, kind: tool, license: GPL-3.0-or-later, commercial: true, attribution: ""}
+- {name: gltfpack, kind: tool, license: MIT, commercial: true, flag: "zeux/meshoptimizer v0.25 release binary (server/gltfpack_install.py); bundles Basis Universal (Apache-2.0) and libwebp (BSD-3-Clause)"}
+
+# --- data ---
+- {name: tests/fixtures/golden, kind: data, license: MIT, commercial: true, flag: "our prompts made into images by our concepts step (Z-Image-Turbo, Apache-2.0); no third-party images"}
+
+# --- palettes (research 15, M51) ---
+- {name: PICO-8 palette, kind: data, license: CC0-1.0, commercial: true, flag: "M51 pixelize: steps/palettes/pico-8.gpl, the 16-colour PICO-8 palette, released CC0 by Lexaloffle (the PICO-8 FAQ); a pixelize version that uses it lists this row"}

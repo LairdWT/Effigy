@@ -1,0 +1,926 @@
+{
+ "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp-supervised@baa8ebf04a1c kimodo -> HF cache": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  "README.md": [
+   62702,
+   null
+  ],
+  "adapter_config.json": [
+   794,
+   null
+  ],
+  "adapter_model.safetensors": [
+   167829552,
+   "53f8f94ebdf396667ba99dd96e78203edae27bbcdbd1cf5f12b611e1d916b225"
+  ]
+ },
+ "McGill-NLP/LLM2Vec-Meta-Llama-3-8B-Instruct-mntp@31474e395ada kimodo -> HF cache": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  "README.md": [
+   3315,
+   null
+  ],
+  "adapter_config.json": [
+   794,
+   null
+  ],
+  "adapter_model.safetensors": [
+   167829552,
+   "de9c8736618a13173c6a1623cdef1b75e86c69317f1073ae82cd516ac36a632d"
+  ],
+  "attn_mask_utils.py": [
+   11132,
+   null
+  ],
+  "config.json": [
+   781,
+   null
+  ],
+  "modeling_llama_encoder.py": [
+   2856,
+   null
+  ],
+  "special_tokens_map.json": [
+   335,
+   null
+  ],
+  "tokenizer.json": [
+   9085671,
+   null
+  ],
+  "tokenizer_config.json": [
+   51042,
+   null
+  ]
+ },
+ "Qwen/Qwen3-0.6B@c1899de289a0 skin -> SkinTokens/Qwen3-0.6B": {
+  ".gitattributes": [
+   1570,
+   null
+  ],
+  "LICENSE": [
+   11343,
+   null
+  ],
+  "README.md": [
+   13965,
+   null
+  ],
+  "config.json": [
+   726,
+   null
+  ],
+  "generation_config.json": [
+   239,
+   null
+  ],
+  "merges.txt": [
+   1671853,
+   null
+  ],
+  "tokenizer.json": [
+   11422654,
+   "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+  ],
+  "tokenizer_config.json": [
+   9732,
+   null
+  ],
+  "vocab.json": [
+   2776833,
+   null
+  ]
+ },
+ "Ruicheng/moge-2-vitl@39c4d5e957af faithful -> moge-2-vitl": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  "README.md": [
+   24,
+   null
+  ],
+  "model.pt": [
+   1305030700,
+   "3eefd4abb2102f38f12b2d1992e5ff15e4923e5431c67dd494afe157e0111cd5"
+  ]
+ },
+ "Ruicheng/moge-3-vitg@6ef26c5a4b41 layers -> HF cache": {
+  "README.md": [
+   51,
+   null
+  ],
+  "model.pt": [
+   5003249242,
+   "ce7c15417e9105c2ace7b4272e2cc69e36940921211eb7fa05d4d0bb03f0a00c"
+  ]
+ },
+ "TencentARC/Pixal3D@b0cb2e1b794c faithful -> Pixal3D": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  "LICENSE": [
+   1064,
+   null
+  ],
+  "NOTICE": [
+   12527,
+   null
+  ],
+  "README.md": [
+   13251,
+   null
+  ],
+  "ckpts/shape_dec_next_dc_f16c32_fp16.json": [
+   678,
+   null
+  ],
+  "ckpts/shape_dec_next_dc_f16c32_fp16.safetensors": [
+   948490494,
+   "e3b718d3e43e4f8780e9a24ac6fff231811a67e3b058e336e10fe654c911d581"
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16.json": [
+   535,
+   null
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16.safetensors": [
+   5546764048,
+   "3e6d1df0e62bc5bc863320d1d63d6b996235eef4abb8b851e878c88f316369f1"
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_512_bf16.json": [
+   535,
+   null
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_512_bf16.safetensors": [
+   5546764048,
+   "63569838c1da93f010e2fa805b202ecf802cc758830230abac202a81b70e5b45"
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16.json": [
+   535,
+   null
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16.safetensors": [
+   5546960656,
+   "65df179ad02f9e92bc18335d7861fadd95f268e6249217352468dd83cb79d1d0"
+  ],
+  "ckpts/ss_dec_conv3d_16l8_fp16.json": [
+   245,
+   null
+  ],
+  "ckpts/ss_dec_conv3d_16l8_fp16.safetensors": [
+   147591972,
+   "1c76d4a40519aa2d711cc263a8404105231ac26db31d946bed48b84fee79009a"
+  ],
+  "ckpts/ss_flow_img_dit_1_3B_64_bf16.json": [
+   503,
+   null
+  ],
+  "ckpts/ss_flow_img_dit_1_3B_64_bf16.safetensors": [
+   5359822584,
+   "6d0147bb347eb61fa81c304cc68c7fd69d447e91870357a549b47e1d0fd77242"
+  ],
+  "ckpts/tex_dec_next_dc_f16c32_fp16.json": [
+   705,
+   null
+  ],
+  "ckpts/tex_dec_next_dc_f16c32_fp16.safetensors": [
+   948458812,
+   "97ea69addea2ecd9312910f5f548234665eef51c088386180b7cd5b258645e3c"
+  ],
+  "pipeline.json": [
+   4068,
+   null
+  ]
+ },
+ "TencentARC/Pixal3D@b0cb2e1b794c multiview -> Pixal3D": {
+  "ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16_mv.json": [
+   535,
+   null
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16_mv.safetensors": [
+   5546764048,
+   "37b75c8f0f089a7e3e825dec035ac83b9c989efd14d0c8ada6a620d2be561c71"
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_512_bf16_mv.json": [
+   535,
+   null
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_512_bf16_mv.safetensors": [
+   5546764048,
+   "043a0d7fc7ee81792fcb22f836c91f5aaf69f4fda15e25c38488db13dd7b77ec"
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16_mv.json": [
+   535,
+   null
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16_mv.safetensors": [
+   5546960656,
+   "887fed6155fea44afbdab7130858984765d04a5b809b0993db0d3f0195060d86"
+  ],
+  "ckpts/ss_flow_img_dit_1_3B_64_bf16_mv.json": [
+   503,
+   null
+  ],
+  "ckpts/ss_flow_img_dit_1_3B_64_bf16_mv.safetensors": [
+   5359822584,
+   "e7ce63050e317cff70ed2c6dfcc549e668cd948c47347f31985fd4996b4ce5a6"
+  ],
+  "pipeline_mv.json": [
+   6036,
+   null
+  ]
+ },
+ "Tongyi-MAI/Z-Image-Turbo@f332072aa78b concepts refine -> HF cache": {
+  "assets/DMDR.webp": [
+   172966,
+   "2e6f3053b98d097f2aa11d3892bd9307326db41b65336bea54dc5825a0e03077"
+  ],
+  "assets/Z-Image-Gallery.pdf": [
+   15767436,
+   "6f9895b3246d2547bac74bbe0be975da500eaae93f2cad4248ad3281786b1ac6"
+  ],
+  "assets/architecture.webp": [
+   422392,
+   "261af62ecc7e9749ae28e1d3a84e2f70a6c192d2017b7d8f020c7bff982ef59c"
+  ],
+  "assets/decoupled-dmd.webp": [
+   152062,
+   "4568ca559b997fc38f57dc1c3f5b1da3a3c144ae12419caa855ced972bf8c7aa"
+  ],
+  "assets/leaderboard.png": [
+   2034429,
+   "e9fd4aa185bb7bff2b5515f2001b4d80df330595e78d6a098142e5a232bb4e4e"
+  ],
+  "assets/leaderboard.webp": [
+   63754,
+   null
+  ],
+  "assets/reasoning.png": [
+   7696993,
+   "96c16b2c8d8dc67bb92ecc22d54b9955ab55136977f515bb76f4b2eb42eb3cdb"
+  ],
+  "assets/showcase.jpg": [
+   6433750,
+   "f6ee74e066e00596e429f5a08140aebae1678e5935ce1e11ca6c1c6cd72432ee"
+  ],
+  "assets/showcase_editing.png": [
+   4746838,
+   "7d720c3157fd0b0c1f07ac826c6d380b4bcb1b6933c64eb11bfe804ccf7c26f4"
+  ],
+  "assets/showcase_realistic.png": [
+   6256136,
+   "697e6f6857f619314173508df72a14314cbb43e67475de7494123bb8b4f4eb2c"
+  ],
+  "assets/showcase_rendering.png": [
+   7599237,
+   "3556dd66be2200d53f957424e12ecf914ddf3eded151cde86c7353f8b231284f"
+  ],
+  "model_index.json": [
+   467,
+   null
+  ],
+  "scheduler/scheduler_config.json": [
+   173,
+   null
+  ],
+  "text_encoder/config.json": [
+   726,
+   null
+  ],
+  "text_encoder/generation_config.json": [
+   239,
+   null
+  ],
+  "text_encoder/model-00001-of-00003.safetensors": [
+   3957900840,
+   "328a91d3122359d5547f9d79521205bc0a46e1f79a792dfe650e99fc2d651223"
+  ],
+  "text_encoder/model-00002-of-00003.safetensors": [
+   3987450520,
+   "6cd087b316306a68c562436b5492edbcf6e16c6dba3a1308279caa5a58e21ca5"
+  ],
+  "text_encoder/model-00003-of-00003.safetensors": [
+   99630640,
+   "7ca841ee75b9c61267c0c6148fd8d096d3d21b6d3e161256a9b878154f91fc52"
+  ],
+  "text_encoder/model.safetensors.index.json": [
+   32819,
+   null
+  ],
+  "tokenizer/merges.txt": [
+   1671853,
+   null
+  ],
+  "tokenizer/tokenizer.json": [
+   11422654,
+   "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+  ],
+  "tokenizer/tokenizer_config.json": [
+   9732,
+   null
+  ],
+  "tokenizer/vocab.json": [
+   2776833,
+   null
+  ],
+  "transformer/config.json": [
+   473,
+   null
+  ],
+  "transformer/diffusion_pytorch_model-00001-of-00003.safetensors": [
+   9973693184,
+   "95facd593e2549e8252acb571c653d57f7ddb7f1060d4e81712f152555a88804"
+  ],
+  "transformer/diffusion_pytorch_model-00002-of-00003.safetensors": [
+   9973714824,
+   "a4bbe43ee184a1fb5af4b412d27555f532893bdc3165b1149e304ed82b5d7015"
+  ],
+  "transformer/diffusion_pytorch_model-00003-of-00003.safetensors": [
+   4672282880,
+   "aba4e37a590e63210878160a718d916d80398f4e1f78ab6c9b2b2a00d92769fa"
+  ],
+  "transformer/diffusion_pytorch_model.safetensors.index.json": [
+   48969,
+   null
+  ],
+  "vae/config.json": [
+   805,
+   null
+  ],
+  "vae/diffusion_pytorch_model.safetensors": [
+   167666902,
+   "f5b59a26851551b67ae1fe58d32e76486e1e812def4696a4bea97f16604d40a3"
+  ]
+ },
+ "VAST-AI/GeoSAM2@ba92f5f50418 parts -> GeoSAM2": {
+  "README.md": [
+   5256,
+   null
+  ],
+  "geosam2.pt": [
+   615627435,
+   "2e391c0d9455fe92b69d61cdc94754d9b8081b9b541d09e1b6a3a55ebf6c6de0"
+  ]
+ },
+ "VAST-AI/SkinTokens@79736cad0fd8 skin -> SkinTokens": {
+  "experiments/articulation_xl_quantization_256_token_4/grpo_1400.ckpt": [
+   1131603979,
+   "f4e4706a11cfb520cdde65156a0358545e4fbf8f36237aca01ea5e79d5cb5692"
+  ],
+  "experiments/skin_vae_2_10_32768/last.ckpt": [
+   487311745,
+   "4843f49e58afff88345806b94ca82e6cc9d8def6e7432e2853c677b154de0ed4"
+  ]
+ },
+ "ZhengPeng7/BiRefNet@e2bf8e4460fc fast faithful -> HF cache": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  ".gitignore": [
+   1908,
+   null
+  ],
+  "BiRefNet_config.py": [
+   298,
+   null
+  ],
+  "README.md": [
+   9965,
+   null
+  ],
+  "birefnet.py": [
+   91896,
+   null
+  ],
+  "config.json": [
+   405,
+   null
+  ],
+  "handler.py": [
+   4762,
+   null
+  ],
+  "model.safetensors": [
+   444473596,
+   "9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154"
+  ],
+  "requirements.txt": [
+   149,
+   null
+  ]
+ },
+ "alibaba-pai/Z-Image-Turbo-Fun-Controlnet-Union-2.1@5155fc56d178 refine -> Z-Image-Turbo-Fun-Controlnet-Union-2.1": {
+  "Z-Image-Turbo-Fun-Controlnet-Tile-2.1-lite-2601-8steps.safetensors": [
+   2016627488,
+   "880bf452b060abfcbccedee56f8d3dbf8aed2cb0311b599210361b414fc8f2fd"
+  ]
+ },
+ "alibaba-pai/Z-Image-Turbo-Fun-Controlnet-Union-2.1@5155fc56d178 refine-full -> Z-Image-Turbo-Fun-Controlnet-Union-2.1": {
+  "Z-Image-Turbo-Fun-Controlnet-Tile-2.1-2601-8steps.safetensors": [
+   6712485600,
+   "4ca1f20f684be3f0c53b204b2e61a83f1ac28821c8c9a48ea7d8196ce395eb71"
+  ]
+ },
+ "black-forest-labs/FLUX.2-klein-4B@e7b7dc27f91d canon-flux -> FLUX.2-klein-4B": {
+  ".gitattributes": [
+   1580,
+   null
+  ],
+  "LICENSE.md": [
+   9584,
+   null
+  ],
+  "README.md": [
+   9991,
+   null
+  ],
+  "model_index.json": [
+   446,
+   null
+  ],
+  "scheduler/scheduler_config.json": [
+   486,
+   null
+  ],
+  "text_encoder/config.json": [
+   1536,
+   null
+  ],
+  "text_encoder/generation_config.json": [
+   214,
+   null
+  ],
+  "text_encoder/model-00001-of-00002.safetensors": [
+   4967215360,
+   "8c0506e7f4936fa7e26183a4fd8da4e2bdbc5990ba64ae441f965d51228f36ea"
+  ],
+  "text_encoder/model-00002-of-00002.safetensors": [
+   3077766632,
+   "82f2bd839378541b0557bfabaf37c7d3d637071fdcb73302dedd7cf61162ce07"
+  ],
+  "text_encoder/model.safetensors.index.json": [
+   32855,
+   null
+  ],
+  "tokenizer/added_tokens.json": [
+   707,
+   null
+  ],
+  "tokenizer/chat_template.jinja": [
+   4168,
+   null
+  ],
+  "tokenizer/merges.txt": [
+   1671853,
+   null
+  ],
+  "tokenizer/special_tokens_map.json": [
+   613,
+   null
+  ],
+  "tokenizer/tokenizer.json": [
+   11422654,
+   "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+  ],
+  "tokenizer/tokenizer_config.json": [
+   5404,
+   null
+  ],
+  "tokenizer/vocab.json": [
+   2776833,
+   null
+  ],
+  "transformer/config.json": [
+   541,
+   null
+  ],
+  "transformer/diffusion_pytorch_model.safetensors": [
+   7751109744,
+   "9f29f9edcfdae452a653ffb51a534ca4decd389952c225724ff3b94042612a6e"
+  ],
+  "vae/config.json": [
+   821,
+   null
+  ],
+  "vae/diffusion_pytorch_model.safetensors": [
+   168120878,
+   "ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04"
+  ]
+ },
+ "facebook/dinov3-vitl16-pretrain-lvd1689m@ea8dc2863c51 fast faithful -> dinov3-vitl16": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  "LICENSE.md": [
+   7503,
+   null
+  ],
+  "README.md": [
+   14520,
+   null
+  ],
+  "config.json": [
+   745,
+   null
+  ],
+  "model.safetensors": [
+   1212559808,
+   "dcb2e45127cccbf1601e5f42fef165eea275c8e5213197e8dcf3f48822718179"
+  ],
+  "preprocessor_config.json": [
+   585,
+   null
+  ]
+ },
+ "file:GEM-X/dinov3-6876159.zip": {
+  "": [
+   13486624,
+   "8f3ba3a5e4f017c4ae209cf3052ac3ffae714bc8308d1e541db7c6050294ece2"
+  ]
+ },
+ "file:GEM-X/inputs/soma_assets/MHR/SOMA_wrap_lod1.obj": {
+  "": [
+   1816801,
+   "9ab7a2328d5b026c17ef1d09ed692ffeb68f96d3fc74970cba72e667dbe0f728"
+  ]
+ },
+ "file:GEM-X/inputs/soma_assets/MHR/base_body_lod6.obj": {
+  "": [
+   39006,
+   "cd46620ec46e968658527f25e2b54b8f2292bfd486eac59c596f8b5d5229b9e0"
+  ]
+ },
+ "file:GEM-X/inputs/soma_assets/MHR/mhr_model_lod6.pt": {
+  "": [
+   2080751,
+   "28839b7ee0eb38eb3943cf26cff61a306de78f86227a0f17bb044252c7bc06ac"
+  ]
+ },
+ "file:GEM-X/inputs/soma_assets/SOMA_neutral.npz": {
+  "": [
+   27488638,
+   "515f7d5bb74be4e370e9adf5e779760ec3581556374c0b33212a32d13ab3b53f"
+  ]
+ },
+ "file:GEM-X/inputs/soma_assets/correctives_model.pt": {
+  "": [
+   95437256,
+   "3b0f82928dc25c952e0a23af59dbc9c02854ccb4c4c1c988f70bbffd7c284636"
+  ]
+ },
+ "file:NAF/naf_release.pth": {
+  "": [
+   2664431,
+   "c096c1ab2217a5c3ac136365f721685e2201379cb69d509cfb0261183847c98f"
+  ]
+ },
+ "file:RealESRGAN/RealESRGAN_x4plus.pth": {
+  "": [
+   67040989,
+   "4fa0d38905f75ac06eb49a7951b426670021be3018265fd191d2125df9d682f1"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/bird-animations.glb": {
+  "": [
+   329424,
+   "9624b0bf70abe400ed0445c2423c69d5e046bd7d60074e399e2be161763c4f99"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/dragon-animations.glb": {
+  "": [
+   752088,
+   "73262041b09aa0499778818162b34955e76e17548212825548799643d5c925b3"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/fox-animations.glb": {
+  "": [
+   788588,
+   "80e80641a5692a14aba7616a46d2a28d3595479764887c578c766b99dba8a0d0"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/horse-animations.glb": {
+  "": [
+   1087132,
+   "c6f890c307e457b9aa7cceda1fbc1e39f8e6723ef340f23e3e667e122673b51c"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/kaiju-animations.glb": {
+  "": [
+   1046032,
+   "675a098d8cdddf5247c55d49fa04712556cd0493facec0be586b6bb9aaeed410"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/shark-animations.glb": {
+  "": [
+   470340,
+   "918321bbcab9439456fcc5838d745c810ea6fd5adb658ccc3651b5d4244f9107"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/snake-animations.glb": {
+  "": [
+   359604,
+   "795e4c62ba1e02f3f33e900832cdc6a1ca5a4aa4f6fe426fccd3aaa0f7f6ac25"
+  ]
+ },
+ "file:clips/mesh2motion/creatures/spider-animations.glb": {
+  "": [
+   597156,
+   "a321c1617c7f74cf86c050694bc254e74409c6c69db26fe542338f2f7c43d07a"
+  ]
+ },
+ "file:clips/mesh2motion/human-addon-animations.glb": {
+  "": [
+   5292804,
+   "a0d64d555e0d492026b72d58bf8e16c5e86779295f9093e376dcc001915c2c95"
+  ]
+ },
+ "file:clips/mesh2motion/human-base-animations.glb": {
+  "": [
+   5656648,
+   "406eb0a8dc4ab366e623b79b6e3005a4951392e1bda78ae39c1099d31147733c"
+  ]
+ },
+ "file:clips/mesh2motion/human-mocap-animations.glb": {
+  "": [
+   2025372,
+   "814593d62522f5be8d6bd32df2a8fa3c7feb90a8e1a1ba43f4aaf0048555280d"
+  ]
+ },
+ "meta-llama/Meta-Llama-3-8B-Instruct@8afb486c1db2 kimodo -> HF cache": {
+  "LICENSE": [
+   7801,
+   null
+  ],
+  "USE_POLICY.md": [
+   4696,
+   null
+  ],
+  "config.json": [
+   654,
+   null
+  ],
+  "generation_config.json": [
+   187,
+   null
+  ],
+  "model-00001-of-00004.safetensors": [
+   4976698672,
+   "d8cf9c4d0dd972e1a2131bfe656235ee98221679711a3beef6d46dadf0f20b5c"
+  ],
+  "model-00002-of-00004.safetensors": [
+   4999802720,
+   "8d4782b4a69ef03845159ce1a15e272aadaaf134dc138d68f616098e8531729c"
+  ],
+  "model-00003-of-00004.safetensors": [
+   4915916176,
+   "3acdd690e65c24f42a24581b8467af98bd3ca357444580f8012aacd2bd607921"
+  ],
+  "model-00004-of-00004.safetensors": [
+   1168138808,
+   "67e9ad31c8c32abf3a55ee7fc7217b3ecb35fd3c74d98a5bd233e0e4d6964f46"
+  ],
+  "model.safetensors.index.json": [
+   23950,
+   null
+  ],
+  "original/params.json": [
+   211,
+   null
+  ],
+  "special_tokens_map.json": [
+   73,
+   null
+  ],
+  "tokenizer.json": [
+   9085698,
+   null
+  ],
+  "tokenizer_config.json": [
+   50977,
+   null
+  ]
+ },
+ "microsoft/TRELLIS-image-large@25e0d31ffbeb fast -> TRELLIS-image-large": {
+  "ckpts/ss_dec_conv3d_16l8_fp16.json": [
+   245,
+   null
+  ],
+  "ckpts/ss_dec_conv3d_16l8_fp16.safetensors": [
+   147591972,
+   "1c76d4a40519aa2d711cc263a8404105231ac26db31d946bed48b84fee79009a"
+  ]
+ },
+ "microsoft/TRELLIS.2-4B@af44b45f2e35 fast -> TRELLIS.2-4B": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  "README.md": [
+   6417,
+   null
+  ],
+  "ckpts/shape_dec_next_dc_f16c32_fp16.json": [
+   678,
+   null
+  ],
+  "ckpts/shape_dec_next_dc_f16c32_fp16.safetensors": [
+   948490494,
+   "e3b718d3e43e4f8780e9a24ac6fff231811a67e3b058e336e10fe654c911d581"
+  ],
+  "ckpts/shape_enc_next_dc_f16c32_fp16.json": [
+   653,
+   null
+  ],
+  "ckpts/shape_enc_next_dc_f16c32_fp16.safetensors": [
+   708797208,
+   "f37c5ff5b983b68e9946060000f09bc131f3e84318a2c8b7430a81e4b4636c41"
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16.json": [
+   458,
+   null
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_1024_bf16.safetensors": [
+   2584574424,
+   "07cd0596f634c5adc1890023d16023afc5eed02fb84b22bb23aff5bf0030fbbd"
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_512_bf16.json": [
+   458,
+   null
+  ],
+  "ckpts/slat_flow_img2shape_dit_1_3B_512_bf16.safetensors": [
+   2584574424,
+   "ec5e0917ef9b7e25ad51dffc7d19687a42019871f94239f2fa7f86264c55b70f"
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16.json": [
+   458,
+   null
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_1024_bf16.safetensors": [
+   2584672728,
+   "580401269059a339b8318ab9ced459a13ba63391721c83a6c383198c29e77686"
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_512_bf16.json": [
+   458,
+   null
+  ],
+  "ckpts/slat_flow_imgshape2tex_dit_1_3B_512_bf16.safetensors": [
+   2584672728,
+   "8371aa1c5d13be79dcd5ddfd2cf3835e902e204dc34427169a1c702828e1a94d"
+  ],
+  "ckpts/ss_flow_img_dit_1_3B_64_bf16.json": [
+   467,
+   null
+  ],
+  "ckpts/ss_flow_img_dit_1_3B_64_bf16.safetensors": [
+   2584426920,
+   "ca01377c485bec418076d38ee80166d32dc776d744f2553b835cba1e97a7abf6"
+  ],
+  "ckpts/tex_dec_next_dc_f16c32_fp16.json": [
+   705,
+   null
+  ],
+  "ckpts/tex_dec_next_dc_f16c32_fp16.safetensors": [
+   948458812,
+   "97ea69addea2ecd9312910f5f548234665eef51c088386180b7cd5b258645e3c"
+  ],
+  "ckpts/tex_enc_next_dc_f16c32_fp16.json": [
+   676,
+   null
+  ],
+  "ckpts/tex_enc_next_dc_f16c32_fp16.safetensors": [
+   708797208,
+   "dd109f75f84b90fa411554ed6b0e4a87f430841163156fc0ebda2ebdc4752493"
+  ],
+  "pipeline.json": [
+   4186,
+   null
+  ],
+  "texturing_pipeline.json": [
+   2965,
+   null
+  ]
+ },
+ "nvidia/GEM-X@5ccf5ca3746c mocap -> GEM-X/inputs/checkpoints/sam-3d-body-dinov3": {
+  "model_config.yaml": [
+   1488,
+   null
+  ],
+  "sam3d_body.ckpt": [
+   2109129346,
+   "b5a2f9d305dd02626b967aa2e86021fba07065df66ce7a7e00ffb9664f150abf"
+  ]
+ },
+ "nvidia/GEM-X@5ccf5ca3746c mocap -> GEM-X/inputs/checkpoints/vitpose": {
+  "vitpose.pth": [
+   3388483384,
+   "8e3eec71dbd6bb745eba8c6debe3e4b97bcfd1d01f300099f2eedf50b9a80c8e"
+  ]
+ },
+ "nvidia/GEM-X@5ccf5ca3746c mocap -> GEM-X/inputs/mhr_data": {
+  "mhr_model.pt": [
+   696110248,
+   "352e271a6c42729c68554ceaea0c955e866970160c31e35506d782dc0f7377bc"
+  ]
+ },
+ "nvidia/GEM-X@5ccf5ca3746c mocap -> GEM-X/inputs/pretrained": {
+  "gem_soma.ckpt": [
+   541758499,
+   "4c1f85ca8c1e11e6588aead49fbc024bf660708def670043e0b537c101ee298e"
+  ]
+ },
+ "nvidia/GEM-X@5ccf5ca3746c mocap -> GEM-X/inputs/soma_data": {
+  "scale_comps.pth": [
+   8816,
+   "4c4861384b176fbe3d3bd7480e87ff8161f19553bf6ec1b718bc9b6bbb559cd6"
+  ],
+  "scale_mean.pth": [
+   1451,
+   "f696a0793217f27fcf23fa1fd63e8a34aa74ef64580078698fb9ea7322ce2891"
+  ]
+ },
+ "nvidia/Kimodo-SOMA-RP-v1.1@6c9233af1180 kimodo -> HF cache": {
+  ".gitattributes": [
+   1519,
+   null
+  ],
+  "LICENSE": [
+   10229,
+   null
+  ],
+  "README.md": [
+   13154,
+   null
+  ],
+  "config.yaml": [
+   675,
+   null
+  ],
+  "model.safetensors": [
+   1133185036,
+   "ef0a0ca45a6089ab4532dde609785771ae3f38755b4ae6cf314b0213e07cd4a3"
+  ],
+  "stats/motion/body/mean.npy": [
+   3040,
+   "d42f35f8bb7ef52fdec66ae29c5cf590bd038f4f1aabd2d560d1d0f78663ed6f"
+  ],
+  "stats/motion/body/std.npy": [
+   3040,
+   "965bbad497726ef4e6c46b519827e2cbcb29f974214b25718d20a725b82279ed"
+  ],
+  "stats/motion/global_root/mean.npy": [
+   168,
+   "6c110980f9a0386e57a8c186f8eac7f55dc05bade92f44c4b391450ada598da1"
+  ],
+  "stats/motion/global_root/std.npy": [
+   168,
+   "fb15aeed7143f5f0754611f0acf5fa5f55d1f6492a49c23e490fc62f7bf11fb0"
+  ],
+  "stats/motion/local_root/mean.npy": [
+   160,
+   "4c36e8e33d6d51e6c8206ac796a52b7b3a4da7f0dc49ebdbb4f130178e3e9d31"
+  ],
+  "stats/motion/local_root/std.npy": [
+   160,
+   "5f57b41f51ced7832cffa81702f6e04d8694e16475c184baec6c8be0e98c8dba"
+  ]
+ },
+ "ostris/z_image_turbo_childrens_drawings@7fcd66a99149 styles -> HF cache": {
+  "z_image_turbo_childrens_drawings.safetensors": [
+   170128264,
+   "25b9959eb2054ccb9dd1815e90add6da3818f550e8e60a081392095830ff0f7a"
+  ]
+ },
+ "renderartist/Classic-Painting-Z-Image-Turbo-LoRA@e873cc474ce5 styles -> HF cache": {
+  "Classic_Painting_Z_Image_Turbo_v1_renderartist_1750.safetensors": [
+   170128288,
+   "8beebb73725ec10ad21155d91c1d7667cb9a05544e8b2dfa0cbd72f5fa64a27b"
+  ]
+ },
+ "tarn59/pixel_art_style_lora_z_image_turbo@0a5092d16196 styles -> HF cache": {
+  "pixel_art_style_z_image_turbo.safetensors": [
+   170128328,
+   "09b1b45ceed0202929bca528e51b50208d0160f4e9d2ba0f42cb7e739a43577f"
+  ]
+ },
+ "yzd-v/DWPose@1a7144101628 mocap -> DWPose": {
+  "yolox_l.onnx": [
+   216746733,
+   "7860ae79de6c89a3c1eb72ae9a2756c0ccfbe04b7791bb5880afabd97855a411"
+  ]
+ },
+ "yzd-v/DWPose@1a7144101628 pose -> DWPose": {
+  "dw-ll_ucoco_384.onnx": [
+   134399116,
+   "724f4ff2439ed61afb86fb8a1951ec39c6220682803b4a8bd4f598cd913b1843"
+  ]
+ }
+}

@@ -1,0 +1,9 @@
+# commit: bdf04e9becb90b1b477aaf6b84f38d554a07f4f8
+# gpu, driver: NVIDIA GeForce RTX 5080 Laptop GPU, 617.42
+# torch: 2.8.0+cu128
+# blender: Blender 5.2.2 LTS
+# host: Windows-11-10.0.26200-SP0
+# preset: game-prop-2d, weights: preset default
+# date: 2026-10-13 09:54:29
+image,asset,ok,failed_step,error,s_prep,vram_prep,torch_prep,s_trellis2,vram_trellis2,torch_trellis2,s_clean,vram_clean,torch_clean,s_remesh,vram_remesh,torch_remesh,s_uv,vram_uv,torch_uv,s_bake,vram_bake,torch_bake,s_sprites,vram_sprites,torch_sprites,s_pixelize,vram_pixelize,torch_pixelize,s_validate,vram_validate,torch_validate,s_export,vram_export,torch_export,trellis2_seed,faces,non_manifold_edges,components,texel_p10,texel_p90,checklist_fails
+barrel.png,bench_faithful_barrel_4,True,,,20.1,2.47,,127.6,11.78,9.2,52.1,2.73,,5.6,0.96,,2.8,0.95,,18.4,4.08,,2.3,0.25,,0.6,0.17,,0.6,0.17,,1.1,0.17,,732708930,,,,,,0

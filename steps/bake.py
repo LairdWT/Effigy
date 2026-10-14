@@ -1,0 +1,279 @@
+"""Re-bake (IMPLEMENTATION.md M3): full PBR + a normal map for any UV-mapped version, from the volume.
+
+params: {texture_size: 2048, normal_map: true, supersample: 2, ao: true, detaper: false}
+`detaper` (2026-10-12): a flat prop's perspective taper undone after the sampling (the texture is read on the
+shape the picture gave, then the shape is squared: steps/_mesh.detaper; `metrics.detapered`).
+The input version's mesh.glb (library frame) is mapped back into the TRELLIS frame through the chain's
+recorded frame and transforms; each texel is projected onto the closest point of hi_trellis.ply (CuMesh
+BVH), samples the volume there and takes that surface's normal (turned to this mesh's side: the hi mesh's
+winding is random) into this mesh's tangent space (OpenGL +Y). Without CUDA nothing is projected (tests, CPU runs).
+M43a: the raster is `supersample`× the size and box-filtered down; AO (hemisphere rays on the hi BVH) goes
+into ORM R and the GLB's occlusionTexture (GPU only; CPU writes R = 255); UV seams are colour-levelled.
+"""
+
+import json
+import time
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+
+from steps._common import StepError, library_to_trellis, load_ovoxel, main, progress
+from steps._mesh import detaper
+
+
+def find_volume(version_dir: Path) -> tuple[Path, np.ndarray]:
+    """The nearest ancestor (or self) with ovoxel.npz, and the 4×4 TRELLIS → this version's library frame."""
+    transforms, d = [], version_dir
+    while True:
+        meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
+        if "ovoxel" in meta["outputs"]:
+            m = np.asarray(meta["frame"]["to_library_from_source"], float)
+            for t in reversed(transforms):  # transforms recorded later in the chain apply last
+                m = t @ m
+            return d, m
+        if t := meta.get("metrics", {}).get("transform"):
+            transforms.append(np.asarray(t, float))
+        if not meta["parent"]:
+            raise StepError("missing_input", f"no ovoxel.npz up the chain of {version_dir.name}")
+        d = d.parent / meta["parent"]
+
+
+def vertex_frames(v, f, uv, n):
+    """Per-vertex tangents and bitangent signs from UVs (area-weighted, Gram-Schmidt): ≈ MikkTSpace."""
+    import torch
+
+    p0, p1, p2 = v[f[:, 0]], v[f[:, 1]], v[f[:, 2]]
+    t0, t1, t2 = uv[f[:, 0]], uv[f[:, 1]], uv[f[:, 2]]
+    e1, e2, d1, d2 = p1 - p0, p2 - p0, t1 - t0, t2 - t0
+    r = d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0]
+    r = torch.where(r.abs() < 1e-20, torch.full_like(r, 1e-20), r)
+    du = (e1 * d2[:, 1:] - e2 * d1[:, 1:]) / r[:, None]  # ∂P/∂u
+    up = (
+        -(e2 * d1[:, :1] - e1 * d2[:, :1]) / r[:, None]
+    )  # -∂P/∂v: glTF v runs down the image, "up" is -v
+    tan, bit = torch.zeros_like(v), torch.zeros_like(v)
+    for k in range(3):
+        tan.index_add_(0, f[:, k], du)
+        bit.index_add_(0, f[:, k], up)
+    tan = torch.nn.functional.normalize(tan - (tan * n).sum(1, keepdim=True) * n, dim=1)
+    sign = torch.where((torch.cross(n, tan, dim=1) * bit).sum(1) >= 0, 1.0, -1.0)
+    return tan, sign
+
+
+def run(op, in_dir, out_dir, params):
+    import torch
+    import trimesh
+
+    from steps._bake import (
+        ao_faces,
+        ao_texels,
+        bake_volume,
+        box_filter,
+        fill_dark_islands,
+        fill_gutters,
+        heal_seams,
+        rasterize_uv,
+        seam_delta,
+        seams,
+        write_glb,
+    )
+
+    if not in_dir:
+        raise StepError("missing_input", "bake needs a parent version with a UV-mapped mesh.glb")
+    size = int(params.get("texture_size", 2048))
+    # 4096 bakes without supersampling unless asked
+    ss = int(params.get("supersample", 1 if size == 4096 else 2))
+    if size not in (256, 512, 1024, 2048, 4096) or ss not in (1, 2):
+        raise StepError("bad_params", f"bad bake params: {params}")
+    # ponytail: 8192² raster unmeasured on 16 GB; lift when a run shows it fits
+    if size * ss > 4096:
+        raise StepError(
+            "bad_params",
+            f"texture_size {size} × supersample {ss}: the {size * ss}² raster is over budget",
+        )
+    src = Path(in_dir)
+    meta = json.loads((src / "meta.json").read_text(encoding="utf-8"))
+    glb = next((f for f in meta["outputs"].values() if f.endswith(".glb")), None)
+    if not glb:
+        raise StepError("missing_input", f"{meta['version']} has no .glb")
+    mesh = trimesh.load(src / glb, force="mesh", process=False)
+    if getattr(mesh.visual, "uv", None) is None:
+        raise StepError("missing_input", f"{glb} has no UVs: run the uv step first")
+    vol_dir, frame = find_volume(src)
+    vol = load_ovoxel(vol_dir / "ovoxel.npz")
+    dev = "cuda" if torch.cuda.is_available() else "cpu"
+
+    progress(0.1, "mapping the mesh into the volume's frame")
+    to_trellis = library_to_trellis(frame)
+    v = torch.tensor(
+        mesh.vertices @ to_trellis[:3, :3].T + to_trellis[:3, 3], dtype=torch.float32, device=dev
+    )
+    f = torch.tensor(mesh.faces, dtype=torch.long, device=dev)
+    uv = torch.tensor(mesh.visual.uv, dtype=torch.float32, device=dev)
+    uv[:, 1] = 1 - uv[:, 1]  # trimesh's OpenGL UVs → glTF UVs (what the file holds)
+    n = torch.tensor(
+        mesh.vertex_normals @ np.linalg.inv(to_trellis[:3, :3]), dtype=torch.float32, device=dev
+    )
+    n = torch.nn.functional.normalize(n, dim=1)
+
+    def texels(s):  # the raster at s² and each covered texel's position and normal on this mesh
+        face_id, bary = rasterize_uv(uv, f, s)
+        corners, w = f[face_id[face_id >= 0]], bary[face_id >= 0][..., None]
+        return (
+            face_id,
+            bary,
+            corners,
+            w,
+            (v[corners] * w).sum(1),
+            torch.nn.functional.normalize((n[corners] * w).sum(1), dim=1),
+        )
+
+    progress(0.2, f"rasterizing {size * ss}² texels")
+    face_id, bary, corners, w, pts, nrm = texels(size * ss)
+    mask = face_id >= 0
+    hi, hi_n, project, p = None, nrm, None, None
+    if dev == "cuda":
+        hi = _Hi(vol_dir / "hi_trellis.ply")
+        hi_n, p = _project(hi, pts, nrm)
+        project = lambda _, p=p: p
+
+    progress(0.5, "sampling the volume")
+    rgba, mr, m = bake_volume(
+        face_id,
+        bary,
+        v,
+        f,
+        torch.from_numpy(vol["coords"]),
+        torch.from_numpy(vol["attrs"]).float(),
+        vol["layout"],
+        vol["resolution"],
+        project,
+        ss,
+    )
+    normal_map = None
+    if params.get("normal_map", True):
+        tan, sign = vertex_frames(v, f, uv, n)
+        t = torch.nn.functional.normalize((tan[corners] * w).sum(1), dim=1)
+        t = torch.nn.functional.normalize(t - (t * nrm).sum(1, keepdim=True) * nrm, dim=1)
+        b = torch.cross(nrm, t, dim=1) * (sign[corners] * w[..., 0]).sum(1, keepdim=True).sign()
+        local = torch.stack([(hi_n * t).sum(1), (hi_n * b).sum(1), (hi_n * nrm).sum(1)], 1)
+        img = torch.zeros(size * ss, size * ss, 3, device=dev)
+        img[..., 2] = 1  # flat where no texel landed
+        img[mask] = local
+        img, covered = box_filter((img * 0.5 + 0.5).mul(255).cpu().numpy(), mask.cpu().numpy(), ss)
+        normal_map = fill_gutters((img + 0.5).clip(0, 255).astype(np.uint8), covered)
+    del pts, nrm, corners, w, hi_n, project, p, hi  # the big per-texel tensors: AO needs the VRAM
+
+    progress(0.7, "levelling the UV seams")
+    uv_np = uv.cpu().numpy()
+    seam = seams(mesh.vertices, mesh.faces, uv_np, size)
+    before = seam_delta(rgba[..., :3], seam)
+    rgba[..., :3] = fill_gutters(heal_seams(rgba[..., :3], m, seam), m)
+    metrics = {
+        "texture_size": size,
+        "supersample": ss,
+        "coverage": round(float(m.mean()), 3),
+        "normal_mean": normal_map[m].mean(0).round(1).tolist() if normal_map is not None else None,
+        "projected": dev == "cuda",
+        "seam_delta_before": round(before, 3),
+        "seam_delta": round(seam_delta(rgba[..., :3], seam), 3),
+        "ao": False,
+    }
+
+    orm = mr.copy()
+    orm[..., 0] = 255  # R = AO (none on the CPU), G = roughness, B = metallic
+    if dev == "cuda" and params.get("ao", True) and len(f) > 8:  # cuBVH needs more than 8 triangles
+        progress(0.8, "baking ambient occlusion")
+        t0 = time.time()
+        fid, _, _, _, p1, n1 = texels(size)
+        m1 = fid >= 0
+        # rays go against this (clean, remeshed) mesh, not the hi one: TRELLIS's hi mesh is a double shell
+        # with interior layers, and rays from its inner layer hit the outer one (black blotches, M43a bench)
+        import cumesh
+
+        bvh = cumesh.cuBVH(v, f)
+        voxel, diag = 1 / vol["resolution"], float((v.amax(0) - v.amin(0)).norm())
+        # a few faces of the low mesh face inward (turned); an inner shell's faces are enclosed (hidden: no
+        # occlusion); where a torn outer shell shows the inner one, the AO map holds a tiny dark island (filled)
+        inward, enclosed = ao_faces(v, f, n, bvh, voxel)
+        n1[inward[fid[m1]]] *= -1
+        ao = ao_texels(bvh, p1, n1, voxel, 0.1 * diag)
+        hidden = enclosed[fid[m1]]
+        ao[hidden] = 1
+        img = torch.ones(size, size, device=dev)
+        img[m1] = ao
+        img, filled = fill_dark_islands(img.cpu().numpy(), m1.cpu().numpy())
+        ao_img = fill_gutters((img * 255 + 0.5).astype(np.uint8)[..., None], m1.cpu().numpy())
+        orm[..., 0] = ao_img[..., 0]
+        metrics |= {
+            "ao": True,
+            "ao_mean": round(float(ao.mean()), 3),
+            "ao_enclosed": round(float(hidden.float().mean()), 3),
+            "ao_filled": round(float(filled), 3),
+            "ao_seconds": round(time.time() - t0, 1),
+        }
+    if dev == "cuda":
+        metrics["vram_peak_gb"] = round(torch.cuda.max_memory_allocated() / 2**30, 2)
+
+    progress(0.9, "writing mesh.glb")
+    out = Path(out_dir)
+    Image.fromarray(rgba, "RGBA").save(out / "basecolor.png")
+    Image.fromarray(orm, "RGB").save(out / "orm.png")
+    outputs = {"mesh": "mesh.glb", "basecolor": "basecolor.png", "orm": "orm.png"}
+    if normal_map is not None:
+        Image.fromarray(normal_map, "RGB").save(out / "normal.png")
+        outputs["normal"] = "normal.png"
+    verts, normals = mesh.vertices, mesh.vertex_normals
+    if params.get(
+        "detaper"
+    ):  # after the sampling: the texture was read on the shape the picture gave
+        verts, taper = detaper(np.asarray(mesh.vertices, np.float64))
+        metrics["detapered"] = taper  # null: not a flat panel along X or Z, or no taper to undo
+        if taper:
+            normals = trimesh.Trimesh(verts, mesh.faces, process=False).vertex_normals
+    write_glb(
+        out / "mesh.glb",
+        verts,
+        mesh.faces,
+        uv_np,
+        rgba,
+        orm,
+        normals,
+        normal_map,
+        occlusion=metrics["ao"],
+    )
+    return {"outputs": outputs, "metrics": metrics | {"volume_from": vol_dir.name}}
+
+
+class _Hi:
+    """The hi-res surface on the GPU: vertices, faces, vertex normals, its BVH."""
+
+    def __init__(self, hi_ply: Path):
+        import cumesh
+        import torch
+        import trimesh
+
+        hi = trimesh.load(hi_ply, process=False)
+        self.v = torch.tensor(hi.vertices, dtype=torch.float32, device="cuda")
+        self.f = torch.tensor(hi.faces, dtype=torch.long, device="cuda")
+        self.n = torch.tensor(hi.vertex_normals, dtype=torch.float32, device="cuda")
+        self.bvh = cumesh.cuBVH(self.v, self.f)
+
+
+def _project(hi: _Hi, pts, nrm):
+    """GPU: the hi normal at, and the closest hi-surface point for, each texel, on the side of `nrm`.
+    Not a cage ray-cast: TRELLIS meshes are a thin double shell, and rays from outside hit the outer
+    layer ~4 voxels off the surface the low mesh follows, where the volume is empty (alpha 0, rings)."""
+    import torch
+
+    _, face, w = hi.bvh.unsigned_distance(pts, return_uvw=True)
+    corners = hi.f[face.long()]
+    p = (hi.v[corners] * w[..., None]).sum(1)
+    normals = torch.nn.functional.normalize((hi.n[corners] * w[..., None]).sum(1), dim=1)
+    normals = torch.where((normals * nrm).sum(1, keepdim=True) < 0, -normals, normals)
+    return normals, p
+
+
+if __name__ == "__main__":
+    main(run)

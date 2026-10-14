@@ -1,0 +1,1237 @@
+// The 3D viewport (ARCHITECTURE.md §3). Imperative; React only calls load()/setViewMode()/setWireframe()/frame().
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { TransformControls } from "three/addons/controls/TransformControls.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { ViewHelper } from "three/addons/helpers/ViewHelper.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { clone as cloneSkinned } from "three/addons/utils/SkeletonUtils.js";
+import { twoBone } from "../anim/clip";
+
+export const VIEW_MODES = ["pbr", "albedo", "normal", "ao", "roughness", "metallic", "uv"] as const;
+export type ViewMode = (typeof VIEW_MODES)[number];
+export type Stats = { triangles: number; vertices: number; meshes: number; materials: number; height: number; bones: string[]; clips: string[] };
+export type Vec3 = [number, number, number];
+export type Joint = { name: string; parent: string | null; position: Vec3; twist?: Vec3 };
+/** The skeleton editor (M22b): a click on a joint selects it (shift adds or removes); a finished gizmo gesture reports the new
+ * position and/or twist of every joint it moved (the selected ones, and for a bend everything that hangs off them). */
+export type SkeletonEdit = {
+  mode: "translate" | "rotate";
+  selected: string[]; // the active joint first
+  onSelect: (name: string, add: boolean) => void;
+  onJoints: (changes: Moved) => void;
+};
+
+/** M37: the animation editor's pose mode: the skeleton drawn on the moving model, a click near a joint selects its bone, the
+ * rotate gizmo (the bone's own axes) turns it; a finished turn reports the bone's new local rotation (x, y, z, w). */
+export type PoseEdit = {
+  selected: string | null; // a bone's three.js name
+  keyed?: string[]; // bones with a correction key at this frame: drawn in the key colour
+  mode?: "rotate" | "move" | "ik"; // M38: turn the bone; move it (the hips); drag it, the two bones above it solving (IK)
+  onSelect: (bone: string) => void;
+  onPose: (bone: string, q: Q4) => void;
+  onMove?: (bone: string, from: Vec3, to: Vec3) => void; // its local position before and after
+  onIK?: (turns: Record<string, Q4>) => void; // the bone and the two above it: their new local turns
+};
+type Q4 = [number, number, number, number];
+
+const V = (p: Vec3) => new THREE.Vector3(...p);
+const arr = (v: THREE.Vector3): Vec3 => [v.x, v.y, v.z];
+export type Moved = Record<string, { position: Vec3; twist?: Vec3 }>;
+const boneLines = (joints: Joint[]) => joints.flatMap((j) => (at(joints, j.parent ?? "") ? [...at(joints, j.parent!)!.position, ...j.position] : []));
+// a twist tick from the middle of each bone (the hands' longer)
+function twistTicks(joints: Joint[], size: number): number[] {
+  return joints.flatMap((j) => {
+    const c = mainChild(joints, j.name);
+    if (!c) return [];
+    const a = V(j.position).add(V(c.position)).multiplyScalar(0.5);
+    return [...arr(a), ...arr(a.addScaledVector(twistOf(joints, j.name), (/Hand$/.test(j.name) ? 0.05 : 0.025) * size))];
+  });
+}
+// a bright depth-tested pass and a dim see-through one: what is behind the surface reads dim, what is in front solid
+const overlayLines = (geo: THREE.BufferGeometry, color: number) =>
+  [true, false].map((depth) =>
+    Object.assign(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color, depthTest: depth, transparent: !depth, opacity: depth ? 1 : 0.35 })), {
+      renderOrder: 10,
+      frustumCulled: false,
+    }),
+  );
+const dropLine = (p: Vec3, floor: number) => [p[0], p[1], p[2], p[0], floor, p[2]];
+// A quad mesh (remesh, Topology: Quads) keeps its quads as triangle pairs in the GLB: Blender's exporter writes a quad's
+// two triangles one after the other, sharing one edge (its diagonal). The quad's outline is the pair's edges used once.
+// null when the geometry is not indexed or fewer than 90 % of the pairs share an edge: not a quad mesh after all, the
+// triangle wireframe then. After mr-mak-workspace's viewer (MIT), which paired by a shared first index instead.
+function quadOutline(geo: THREE.BufferGeometry): THREE.BufferGeometry | null {
+  const index = geo.index;
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  if (!index || !pos) return null;
+  const tris = Math.floor(index.count / 3);
+  const out: number[] = [];
+  const push = (u: number, v: number) => out.push(pos.getX(u), pos.getY(u), pos.getZ(u), pos.getX(v), pos.getY(v), pos.getZ(v));
+  const tri = (t: number) => [index.getX(3 * t), index.getX(3 * t + 1), index.getX(3 * t + 2)];
+  let paired = 0;
+  for (let t = 0; t < tris; ) {
+    const a = tri(t);
+    const b = t + 1 < tris ? tri(t + 1) : [];
+    const shared = a.filter((i) => b.includes(i));
+    const pair = shared.length === 2; // else a stray triangle: drawn alone, the next one may still start a pair
+    if (pair) paired++;
+    for (const x of pair ? [a, b] : [a])
+      for (let k = 0; k < 3; k++) {
+        const u = x[k];
+        const v = x[(k + 1) % 3];
+        if (!pair || !(shared.includes(u) && shared.includes(v))) push(u, v); // the diagonal stays out
+      }
+    t += pair ? 2 : 1;
+  }
+  if (paired < 0.9 * Math.floor(tris / 2)) return null; // ponytail: one number[] for the lines; a worker if a 1M-quad mesh stalls the click
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  return g;
+}
+const MAIN: Record<string, string> = { Hips: "Spine", Spine2: "Neck", LeftHand: "LeftHandMiddle1", RightHand: "RightHandMiddle1" }; // else the first child
+const at = (joints: Joint[], n: string) => joints.find((j) => j.name === n);
+const mainChild = (joints: Joint[], n: string) => {
+  const k = joints.filter((j) => j.parent === n);
+  return k.find((j) => j.name === MAIN[n]) ?? k[0];
+};
+// the bone's X: toward its main child; a leaf continues its parent's direction
+function boneAxis(joints: Joint[], n: string): THREE.Vector3 {
+  const j = at(joints, n)!;
+  const c = mainChild(joints, n);
+  const par = at(joints, j.parent ?? "");
+  const d = c ? V(c.position).sub(V(j.position)) : par ? V(j.position).sub(V(par.position)) : new THREE.Vector3();
+  return d.lengthSq() ? d.normalize() : new THREE.Vector3(0, 1, 0);
+}
+// the direction a bone's front faces: its own, else the retarget's default (forward; up for the feet; the hand's for forearm and fingers)
+function twistOf(joints: Joint[], n: string): THREE.Vector3 {
+  const own = at(joints, n)?.twist ?? (/^(Left|Right)(ForeArm|Hand)/.test(n) ? at(joints, n.replace(/^(Left|Right).*/, "$1Hand"))?.twist : undefined);
+  if (own) return V(own).normalize();
+  const dir = (a: string, b: string) => V(at(joints, a)?.position ?? [0, 0, 0]).sub(V(at(joints, b)?.position ?? [0, 0, 0]));
+  if (/Foot|ToeBase/.test(n)) {
+    const up = dir("Head", "Hips");
+    return up.lengthSq() ? up.normalize() : new THREE.Vector3(0, 1, 0);
+  }
+  const f = dir("LeftToeBase", "LeftFoot").add(dir("RightToeBase", "RightFoot")).setY(0); // forward: where the toes point
+  return f.lengthSq() > 1e-12 ? f.normalize() : new THREE.Vector3(0, 0, 1);
+}
+// the bone's own frame: X along the bone, Y the twist made perpendicular, Z = X x Y
+function boneFrame(joints: Joint[], n: string): THREE.Quaternion {
+  const x = boneAxis(joints, n);
+  const perp = (v: THREE.Vector3) => v.addScaledVector(x, -v.dot(x));
+  let y = perp(twistOf(joints, n));
+  if (y.lengthSq() < 1e-8) y = perp(new THREE.Vector3(...(Math.abs(x.y) < 0.9 ? [0, 1, 0] : [1, 0, 0])));
+  y.normalize();
+  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, x.clone().cross(y)));
+}
+
+// AO / roughness / metallic: one channel of the packed ORM texture (glTF: R = AO, G = rough, B = metal).
+const ORM_SHADER = {
+  vertexShader: `#include <skinning_pars_vertex>
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      #include <skinbase_vertex>
+      #include <begin_vertex>
+      #include <skinning_vertex>
+      #include <project_vertex>
+    }`,
+  fragmentShader: `uniform sampler2D map; uniform bool hasMap; uniform int channel; uniform float value;
+    varying vec2 vUv;
+    void main() { float v = hasMap ? texture2D(map, vUv)[channel] : value; gl_FragColor = vec4(vec3(v), 1.0); }`,
+};
+
+function checkerTexture(): THREE.Texture {
+  const c = document.createElement("canvas");
+  c.width = c.height = 256;
+  const g = c.getContext("2d")!;
+  for (let y = 0; y < 8; y++)
+    for (let x = 0; x < 8; x++) {
+      g.fillStyle = (x + y) % 2 ? "#e8e8e8" : "#d0402b";
+      g.fillRect(x * 32, y * 32, 32, 32);
+    }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+export class Viewer {
+  loaded = false; // read by the Playwright smoke test through window.__viewer
+  stats: Stats = { triangles: 0, vertices: 0, meshes: 0, materials: 0, height: 0, bones: [], clips: [] };
+  private renderer: THREE.WebGLRenderer;
+  private scene = new THREE.Scene();
+  private camera = new THREE.PerspectiveCamera(40, 1, 0.01, 1000);
+  private controls: OrbitControls;
+  private helper: ViewHelper;
+  private clock = new THREE.Clock();
+  private model: THREE.Object3D | null = null;
+  private mixer: THREE.AnimationMixer | null = null; // M21: the loaded GLB's clips
+  private clips: THREE.AnimationClip[] = [];
+  private originals = new WeakMap<THREE.Mesh, THREE.Material | THREE.Material[]>();
+  private checker = checkerTexture();
+  private mode: ViewMode = "pbr";
+  private tint: string[] | null = null; // part names: each such node gets its own flat colour
+  private wireframe = false;
+  private quads = false; // the shown model is a quad mesh: Wireframe draws its quads (mesh-gates, 2026-10-12)
+  private quadLines = new Map<THREE.Mesh, THREE.LineSegments | null>(); // per mesh, built once; null = not a quad mesh
+  quadEdges = 0; // how many quad edges the wireframe draws now (the tests read it)
+  private loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  private pmrem: THREE.PMREMGenerator;
+  private resizer = new ResizeObserver(() => this.resize());
+  private downAt: [number, number] | null = null;
+  private onPointerDown = (e: PointerEvent) => (this.downAt = [e.clientX, e.clientY]);
+  private onPointerUp = (e: PointerEvent) => {
+    this.helper.handleClick(e);
+    const d = this.downAt;
+    this.downAt = null;
+    const click = d && Math.hypot(e.clientX - d[0], e.clientY - d[1]) < 5; // a click, not an orbit
+    if ((this.onMarker || this.edit) && click) this.pick(e);
+    else if (this.pose && click && !this.poseTc?.axis) this.pickBone(e);
+  };
+  // the skeleton overlay (M19): bones, joints, and the markers the user places
+  private rig: THREE.Group | null = null;
+  private markers = new Map<string, THREE.Mesh>();
+  private selected: string | null = null;
+  private onMarker: ((name: string, p: Vec3 | null) => void) | null = null;
+  private raycaster = new THREE.Raycaster();
+  private edit: SkeletonEdit | null = null;
+  private joints: Joint[] = [];
+  private tc: TransformControls | null = null; // the gizmo, made on first use; it moves `proxy`, set in the selected bone's frame
+  private proxy = new THREE.Object3D();
+  private from = { p: new THREE.Vector3(), q: new THREE.Quaternion() }; // the proxy when the gesture began
+  private cancelled = false;
+  private xray = false;
+  private xsaved = new WeakMap<THREE.Material, { transparent: boolean; opacity: number; depthWrite: boolean }>();
+  private twin: ((name: string, p: Vec3) => [string, Vec3] | null) | null = null;
+  private committed: Record<string, Vec3> = {}; // the markers as the panel holds them
+  private live: { bones: THREE.BufferAttribute; ticks: THREE.BufferAttribute; drop: THREE.BufferAttribute; floor: number; size: number } | null = null; // the overlay's line attributes, rewritten while dragging
+  private onKey = (e: KeyboardEvent) => {
+    const tc = this.poseTc?.dragging ? this.poseTc : this.tc;
+    if (e.key !== "Escape" || !tc?.dragging) return;
+    tc.reset(); // back to where it began; the release then changes nothing
+    this.cancelled = true;
+  };
+  private helperSkel: THREE.SkeletonHelper | null = null;
+  private grid = new THREE.GridHelper(1, 40, 0x5a6068, 0x33383d); // the ground: under the model's lowest point, cells a 10th of its size
+  private heat = new WeakMap<THREE.BufferGeometry, { orig?: THREE.BufferAttribute | THREE.InterleavedBufferAttribute; buf: THREE.BufferAttribute }>(); // setWeights: the geometry's own colours + the reusable heatmap
+  // M37: the clip under the time bar, and the animation editor's pose mode
+  private action: THREE.AnimationAction | null = null;
+  private speed = 1;
+  private bones: THREE.Bone[] = [];
+  private pose: PoseEdit | null = null;
+  private poseGroup: THREE.Group | null = null; // a sphere per bone and the lines to their parents, redrawn every frame
+  private poseTc: TransformControls | null = null;
+  private posing = false; // a gizmo turn in progress: the mixer leaves the bones alone
+  private poseFrom = new THREE.Vector3(); // the moved bone's local position when the drag began
+  private ikTarget = new THREE.Object3D(); // the IK gizmo's handle, at the dragged bone
+  private ikStart: THREE.Quaternion[] | null = null; // the chain's turns when the IK drag began
+  private path: { group: THREE.Group; pos: Float32Array; col: THREE.BufferAttribute; now: THREE.Points; frame: number } | null = null; // M38: the selected bone's track
+  private ghosts: { root: THREE.Object3D; mixer: THREE.AnimationMixer; action: THREE.AnimationAction; frames: number }[] = []; // onion skins
+  private dirty = true; // render on demand: set by anything that changes the picture
+  private playing = false; // a clip runs: render every frame
+  private token = 0; // the latest load() wins; earlier ones resolve to null and free what they loaded
+
+  constructor(private canvas: HTMLCanvasElement) {
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // laptop: 4K panels at 2x are enough
+    this.renderer.autoClear = false; // the axis gizmo draws over the scene
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    // ponytail: procedural room light instead of a bundled HDRI; add RGBELoader + .hdr if looks matter
+    this.pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.scene.environment = this.pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    this.scene.background = new THREE.Color(0x1c1f22);
+    this.grid.visible = false;
+    this.scene.add(this.grid);
+    this.camera.position.set(1.5, 1, 2.5);
+    this.controls = new OrbitControls(this.camera, canvas);
+    this.controls.enableDamping = true;
+    this.controls.addEventListener("change", () => (this.dirty = true));
+    this.helper = new ViewHelper(this.camera, canvas);
+    canvas.addEventListener("pointerdown", this.onPointerDown);
+    canvas.addEventListener("pointerup", this.onPointerUp);
+    this.resizer.observe(canvas);
+    this.renderer.setAnimationLoop(() => this.render());
+  }
+
+  /** null when a later load() or clear() superseded this one. */
+  async load(url: string): Promise<Stats | null> {
+    const token = ++this.token;
+    this.loaded = false;
+    let gltf;
+    try {
+      gltf = await this.loader.loadAsync(url);
+    } catch (e) {
+      if (token !== this.token) return null;
+      throw e;
+    }
+    if (token !== this.token) {
+      this.free(gltf.scene);
+      return null;
+    }
+    this.drop();
+    this.model = gltf.scene;
+    this.clips = gltf.animations ?? [];
+    this.mixer = this.clips.length ? new THREE.AnimationMixer(this.model) : null;
+    this.scene.add(this.model);
+    this.stats = { triangles: 0, vertices: 0, meshes: 0, materials: 0, height: 0, bones: [], clips: [] };
+    const mats = new Set<THREE.Material>();
+    this.model.traverse((o) => {
+      if (!(o as THREE.Mesh).isMesh) return;
+      const mesh = o as THREE.Mesh;
+      const g = mesh.geometry;
+      this.originals.set(mesh, mesh.material);
+      this.stats.meshes++;
+      for (const m of [mesh.material].flat()) mats.add(m);
+      this.stats.vertices += g.attributes.position.count;
+      this.stats.triangles += (g.index ? g.index.count : g.attributes.position.count) / 3;
+      const sk = (mesh as THREE.SkinnedMesh).skeleton;
+      if (sk && !this.stats.bones.length) {
+        this.stats.bones = sk.bones.map((b) => b.name);
+        this.bones = sk.bones;
+        for (const b of this.bones) b.userData.rest = b.position.toArray(); // the node's own translation, before any clip
+      }
+    });
+    this.stats.materials = mats.size;
+    this.stats.height = new THREE.Box3().setFromObject(this.model).getSize(new THREE.Vector3()).y;
+    this.frameModel();
+    this.setViewMode(this.mode);
+    this.playing = false;
+    this.stats.clips = this.clips.map((c) => c.name);
+    this.loaded = true;
+    return this.stats;
+  }
+
+  /** M42: two viewers share one camera (position + target) while linked; returns the unlink. */
+  link(other: Viewer): () => void {
+    let busy = false;
+    const copy = (a: Viewer, b: Viewer) => () => {
+      if (busy) return;
+      busy = true;
+      b.camera.position.copy(a.camera.position);
+      b.controls.target.copy(a.controls.target);
+      b.controls.update();
+      b.dirty = true;
+      busy = false;
+    };
+    const ab = copy(this, other), ba = copy(other, this);
+    this.controls.addEventListener("change", ab);
+    other.controls.addEventListener("change", ba);
+    ab();
+    return () => {
+      this.controls.removeEventListener("change", ab);
+      other.controls.removeEventListener("change", ba);
+    };
+  }
+
+  clear() {
+    this.token++;
+    this.drop();
+    this.setRig(null, null); // a cleared skeleton view kept its rig and gizmo in the scene (UI-008)
+    this.loaded = false;
+    this.dirty = true;
+  }
+
+  /** Unmount: stop rendering and release the GPU resources and listeners this viewer owns. */
+  dispose() {
+    this.clear();
+    this.renderer.setAnimationLoop(null);
+    this.resizer.disconnect();
+    this.canvas.removeEventListener("pointerdown", this.onPointerDown);
+    this.canvas.removeEventListener("pointerup", this.onPointerUp);
+    this.setRig(null, null);
+    this.poseTc?.dispose();
+    this.tc?.dispose(); // the skeleton gizmo, made on first use (UI-007: it kept its pointer listeners)
+    this.controls.dispose();
+    this.helper.dispose();
+    this.scene.environment?.dispose();
+    this.pmrem.dispose();
+    this.checker.dispose();
+    this.renderer.dispose();
+  }
+
+  /** What the camera frames now, as a refine view window (steps/_views.ortho: yaw 0 looks at +Z from +Z and turns
+   * towards +X, pitch negative looks down, `extent` metres across the square view, centred on the orbit target). */
+  view(): { yaw: number; pitch: number; center: [number, number, number]; extent: number } {
+    const t = this.controls.target;
+    const d = this.camera.position.clone().sub(t);
+    const dist = d.length() || 1;
+    const deg = (r: number) => Math.round((r * 180) / Math.PI);
+    const height = 2 * dist * Math.tan((this.camera.fov * Math.PI) / 360); // what the view shows at the target
+    return {
+      yaw: deg(Math.atan2(d.x, d.z)),
+      pitch: 0 - deg(Math.asin(Math.max(-1, Math.min(1, d.y / dist)))), // 0 - …: never -0
+      center: [t.x, t.y, t.z].map((x) => Math.round(x * 1e4) / 1e4) as [number, number, number],
+      extent: Math.round(Math.min(height, height * this.camera.aspect) * 1e4) / 1e4,
+    };
+  }
+
+  /** Frame the whole model, or look at it from the front (+Z), the side (+X) or the top (+Y). */
+  frame(side?: "front" | "side" | "top") {
+    if (!this.model) return;
+    this.frameModel();
+    this.dirty = true;
+    if (!side) return;
+    const box = new THREE.Box3().setFromObject(this.model);
+    const dir = { front: [0, 0, 1], side: [1, 0, 0], top: [0, 1, 1e-4] }[side] as [number, number, number];
+    const dist = box.getSize(new THREE.Vector3()).length() * 1.2 || 1;
+    this.camera.position.copy(this.controls.target).add(new THREE.Vector3(...dir).normalize().multiplyScalar(dist));
+  }
+
+  /** Draw a skeleton over the model (drawn through it), with draggable markers when onMarker is given:
+   * a click on a marker selects it (onMarker(name, null)); then a click on the model moves it to the
+   * middle of the body under the cursor (onMarker(name, position)). */
+  setRig(
+    joints: Joint[] | null,
+    markers: Record<string, Vec3> | null,
+    onMarker?: (name: string, p: Vec3 | null) => void,
+    selected?: string | null,
+    label?: (name: string) => string,
+    edit?: SkeletonEdit,
+    twin?: (name: string, p: Vec3) => [string, Vec3] | null, // marker editor: where the mirrored marker goes while one is dragged
+    outside?: string[], // joints the inside check flags: drawn red
+  ) {
+    if (this.rig) {
+      this.scene.remove(this.rig);
+      this.rig.traverse((o) => {
+        const m = o as THREE.Mesh;
+        m.geometry?.dispose();
+        ((m.material as THREE.SpriteMaterial | undefined)?.map as THREE.Texture | undefined)?.dispose();
+        (m.material as THREE.Material | undefined)?.dispose();
+      });
+    }
+    this.rig = null;
+    this.dirty = true;
+    this.markers.clear();
+    this.onMarker = onMarker ?? null;
+    this.selected = selected ?? null;
+    this.edit = edit ?? null;
+    this.twin = twin ?? null;
+    this.committed = markers ?? {};
+    this.joints = joints ?? [];
+    window.removeEventListener("keydown", this.onKey);
+    if (!joints || !edit) this.tc?.detach();
+    if (!joints) return;
+    const size = this.model ? new THREE.Box3().setFromObject(this.model).getSize(new THREE.Vector3()).y || 1 : 1;
+    const g = new THREE.Group();
+    g.renderOrder = 10;
+    const lines = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(boneLines(joints), 3));
+    this.live = null;
+    g.add(...overlayLines(lines, 0xffd400));
+    const dot = (p: Vec3, r: number, color: number, name?: string) => {
+      const geo = new THREE.SphereGeometry(r * size, 12, 8);
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color }));
+      const dim = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, depthTest: false, transparent: true, opacity: 0.35 })); // the see-through pass, moves with m
+      m.add(dim);
+      m.position.set(...p);
+      m.renderOrder = dim.renderOrder = 11;
+      g.add(m);
+      if (name) {
+        m.userData.marker = dim.userData.marker = name; // the pick() hit list is shared with the markers
+        this.markers.set(name, m);
+      }
+      return m;
+    };
+    for (const j of joints) {
+      const color = edit?.selected.includes(j.name) ? 0xff8a00 : outside?.includes(j.name) ? 0xff2020 : 0x40ff70; // red: the inside check flags it
+      dot(j.position, edit ? 0.01 : 0.006, color, edit ? j.name : undefined);
+    }
+    if (edit) this.editRig(g, size, label, lines.attributes.position as THREE.BufferAttribute);
+    for (const [name, p] of Object.entries(markers ?? {})) {
+      dot(p, 0.014, name === this.selected ? 0xff8a00 : 0x3aa0ff, name);
+      if (name === this.selected && label) g.add(this.tag(label(name), p, size));
+    }
+    this.rig = g;
+    this.scene.add(g);
+    if (this.onMarker) this.markerGizmo();
+  }
+
+  // the editor's extras: a twist tick from the middle of each bone (the hands' longer), the gizmo at the selected joint
+  private editRig(g: THREE.Group, size: number, label: ((name: string) => string) | undefined, bones: THREE.BufferAttribute) {
+    for (const j of this.joints)
+      if (/Hand$/.test(j.name) && j.name === this.selected && mainChild(this.joints, j.name)) {
+        const t = twistTicks([j, mainChild(this.joints, j.name)!], size); // this hand's tick: its end is the palm label's place
+        g.add(this.tag("palm", [t[3], t[4], t[5]], size));
+      }
+    const lines = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(twistTicks(this.joints, size), 3));
+    g.add(...overlayLines(lines, 0x00d4ff));
+    const sel = this.selected ? at(this.joints, this.selected) : undefined;
+    const floor = this.model ? new THREE.Box3().setFromObject(this.model).min.y : 0;
+    // the active joint's plumb line to the ground
+    const drop = new THREE.BufferGeometry().setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(sel ? dropLine(sel.position, floor) : [0, 0, 0, 0, 0, 0], 3),
+    );
+    g.add(
+      Object.assign(new THREE.LineSegments(drop, new THREE.LineBasicMaterial({ color: 0xffffff, depthTest: false, transparent: true, opacity: 0.6 })), {
+        renderOrder: 10,
+        frustumCulled: false,
+      }),
+    );
+    this.live = { bones, ticks: lines.attributes.position as THREE.BufferAttribute, drop: drop.attributes.position as THREE.BufferAttribute, floor, size };
+    if (sel && label) g.add(this.tag(label(sel.name), sel.position, size));
+    const tc = this.gizmo();
+    if (!sel) return void tc.detach();
+    this.proxy.position.copy(this.centroid(this.selection())); // the pivot of every gesture; the axes are the active bone's
+    this.proxy.quaternion.copy(boneFrame(this.joints, sel.name));
+    tc.setSpace("local");
+    tc.setMode(this.edit!.mode);
+    tc.attach(this.proxy);
+  }
+
+  // the gizmo, made on first use; it moves `proxy`
+  private gizmo(): TransformControls {
+    window.addEventListener("keydown", this.onKey);
+    if (this.tc) return this.tc;
+    const tc = (this.tc = new TransformControls(this.camera, this.canvas));
+    this.scene.add(this.proxy, tc.getHelper());
+    tc.addEventListener("change", () => (this.dirty = true));
+    tc.addEventListener("dragging-changed", (e) => (this.controls.enabled = !e.value));
+    tc.addEventListener("mouseDown", () => {
+      this.cancelled = false;
+      this.from.p.copy(this.proxy.position);
+      this.from.q.copy(this.proxy.quaternion);
+    });
+    tc.addEventListener("objectChange", () => (this.edit ? this.preview(this.gesture()) : this.moveMarker(this.proxy.position)));
+    tc.addEventListener("mouseUp", () => this.finish());
+    return tc;
+  }
+
+  // marker editor: the gizmo (translate, world axes) at the selected marker
+  private markerGizmo() {
+    const tc = this.gizmo();
+    const p = this.selected && this.committed[this.selected];
+    if (!p) return void tc.detach();
+    this.proxy.position.set(...p);
+    this.proxy.quaternion.identity();
+    tc.setSpace("world");
+    tc.setMode("translate");
+    tc.attach(this.proxy);
+  }
+
+  // the selected marker's sphere (and its mirrored twin's) at p, or back at the committed positions when p is null
+  private moveMarker(p: THREE.Vector3 | null) {
+    const n = this.selected;
+    if (!n || !this.committed[n]) return;
+    const to = p ? arr(p) : this.committed[n];
+    this.markers.get(n)?.position.set(...to);
+    const t = this.twin?.(n, to);
+    if (t) this.markers.get(t[0])?.position.set(...(p ? t[1] : (this.committed[t[0]] ?? t[1])));
+    this.dirty = true;
+  }
+
+  private selection = () => (this.edit?.selected ?? []).filter((n) => at(this.joints, n));
+  private centroid = (names: string[]) => names.reduce((c, n) => c.add(V(at(this.joints, n)!.position)), new THREE.Vector3()).divideScalar(names.length || 1);
+
+  // what a gesture (a shift dp, a turn dw about the pivot) does to the joints: the one place for the maths, shared by the live preview and the final report
+  private delta(dp: THREE.Vector3, dw: THREE.Quaternion, mode: string, axis: string | null): Moved | null {
+    const names = this.selection();
+    if (!names.length) return null;
+    const moved: Moved = {};
+    if (mode === "translate") {
+      if (dp.length() < 1e-7) return null;
+      for (const n of names) moved[n] = { position: arr(V(at(this.joints, n)!.position).add(dp)) };
+      return moved;
+    }
+    if (Math.abs(dw.w) > 1 - 1e-9) return null;
+    const turn = (t?: Vec3) => t && arr(V(t).applyQuaternion(dw));
+    if (axis === "X") {
+      for (const n of names) moved[n] = { position: at(this.joints, n)!.position, twist: arr(twistOf(this.joints, n).applyQuaternion(dw)) }; // about the bone: the twists
+      return moved;
+    }
+    const pivot = this.centroid(names); // a bend: the selected joints and all that hangs off them swing rigidly around the pivot
+    const swing = (n: string) => {
+      const j = at(this.joints, n)!;
+      moved[n] = { position: arr(V(j.position).sub(pivot).applyQuaternion(dw).add(pivot)), twist: turn(j.twist) };
+      this.joints.filter((c) => c.parent === n).forEach((c) => swing(c.name));
+    };
+    names.forEach(swing);
+    return moved;
+  }
+
+  private gesture(): Moved | null {
+    if (!this.tc?.dragging) return null;
+    const { p: p0, q: q0 } = this.from;
+    return this.delta(this.proxy.position.clone().sub(p0), this.proxy.quaternion.clone().multiply(q0.clone().invert()), this.tc.mode, this.tc.axis);
+  }
+
+  // the overlay follows the gesture in place (no setRig per frame); null puts it back to the committed joints
+  private preview(moved: Moved | null) {
+    if (!this.live) return;
+    const js = this.joints.map((j) => (moved?.[j.name] ? { ...j, position: moved[j.name].position, twist: moved[j.name].twist ?? j.twist } : j));
+    js.forEach((j) => this.markers.get(j.name)?.position.set(...j.position));
+    const { bones, ticks, drop, floor, size } = this.live;
+    bones.array.set(boneLines(js));
+    ticks.array.set(twistTicks(js, size));
+    const act = this.selected && at(js, this.selected);
+    if (act) drop.array.set(dropLine(act.position, floor));
+    bones.needsUpdate = ticks.needsUpdate = drop.needsUpdate = true;
+    this.dirty = true;
+  }
+
+  // a gizmo gesture ended: report it as joint data (the panel owns the state and redraws)
+  private finish() {
+    if (!this.edit) {
+      const n = this.selected;
+      const p = this.proxy.position.clone();
+      this.proxy.position.copy(this.from.p);
+      if (!n || this.cancelled || p.distanceTo(this.from.p) < 1e-7) return this.moveMarker(null);
+      return this.onMarker?.(n, arr(p));
+    }
+    const moved = this.cancelled ? null : this.gesture();
+    if (!moved) {
+      this.proxy.position.copy(this.from.p);
+      this.proxy.quaternion.copy(this.from.q);
+      return this.preview(null);
+    }
+    this.edit.onJoints(moved);
+  }
+
+  /** Playwright hooks: a joint sphere's position, a joint moved as the gizmo would, the whole selection shifted. */
+  testJoint = (name: string) => this.markers.get(name)?.position.toArray() as Vec3 | undefined;
+  testMoveJoint = (name: string, position: Vec3) => this.edit?.onJoints({ [name]: { position } });
+  testMoveSelected = (d: Vec3) => this.edit?.onJoints(this.delta(V(d), new THREE.Quaternion(), "translate", null) ?? {});
+  testSelection = () => this.edit?.selected;
+  /** M37: a bone turned as the pose gizmo would (its new local rotation), and a pose-mode click on a bone. */
+  testPose = (bone: string, q: [number, number, number, number]) => this.pose?.onPose(bone, q);
+  testPickBone = (bone: string) => this.pose?.onSelect(bone);
+  /** M38: a hips move and an IK drag as the gizmo would end them; the motion path's points and the ghosts. */
+  testMove = (bone: string, to: Vec3) => this.pose?.onMove?.(bone, this.bones.find((b) => b.name === bone)!.position.toArray() as Vec3, to);
+  testIK = (to: Vec3) => {
+    const B = this.bones.find((b) => b.name === this.pose?.selected);
+    const L = B?.parent as THREE.Bone | undefined;
+    if (!B || !L) return;
+    this.ikStart = [L.parent!, L, B].map((b) => b.quaternion.clone());
+    this.ikTarget.position.set(...to);
+    this.solveIK();
+    const U = L.parent as THREE.Bone;
+    this.pose?.onIK?.(Object.fromEntries([U, L, B].map((b) => [b.name, b.quaternion.toArray() as Q4])));
+  };
+  testPath = () => (this.path ? Array.from(this.path.pos) : null);
+  testGhosts = () => this.ghosts.map((g) => g.frames);
+  worldOf = (bone: string) => this.bones.find((b) => b.name === bone)?.getWorldPosition(new THREE.Vector3()).toArray() as Vec3 | undefined;
+  testMoveMarker = (name: string, position: Vec3) => this.onMarker?.(name, position);
+
+  /** The model's lowest point: the ground the grid and the joints' height are measured from. */
+  ground = () => (this.model ? new THREE.Box3().setFromObject(this.model).min.y : 0);
+
+  /** Semi-transparent model, so a skeleton drawn inside it reads as inside; the materials' own values come back on off. */
+  setXray(on: boolean) {
+    this.xray = on;
+    this.dirty = true;
+    this.model?.traverse((o) => {
+      if (!(o as THREE.Mesh).isMesh) return;
+      for (const m of [(o as THREE.Mesh).material].flat()) {
+        if (on && !this.xsaved.has(m)) this.xsaved.set(m, { transparent: m.transparent, opacity: m.opacity, depthWrite: m.depthWrite });
+        const was = this.xsaved.get(m);
+        if (!was) continue;
+        m.transparent = on || was.transparent;
+        m.opacity = on ? 0.3 : was.opacity;
+        m.depthWrite = on ? false : was.depthWrite;
+        m.needsUpdate = true;
+        if (!on) this.xsaved.delete(m);
+      }
+    });
+  }
+
+  // a name over the selected marker: which dot is the character's left shoulder isn't obvious
+  private tag(text: string, p: Vec3, size: number): THREE.Sprite {
+    const c = document.createElement("canvas");
+    c.width = 512;
+    c.height = 96;
+    const g = c.getContext("2d")!;
+    g.font = "bold 56px system-ui, sans-serif";
+    g.fillStyle = "rgba(20,20,24,0.8)";
+    g.fillRect(0, 0, Math.min(512, g.measureText(text).width + 40), 96);
+    g.fillStyle = "#ff8a00";
+    g.fillText(text, 20, 68);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true }));
+    s.center.set(0, 0); // its corner at the marker, the text up and to the right
+    s.scale.set(0.088 * size, 0.0165 * size, 1); // about half the size it had
+    s.position.set(p[0] + 0.012 * size, p[1] + 0.012 * size, p[2]);
+    s.renderOrder = 12;
+    return s;
+  }
+
+  private pick(e: PointerEvent) {
+    if (this.tc?.axis) return; // a click on the gizmo, not on a joint
+    const r = this.canvas.getBoundingClientRect();
+    this.raycaster.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), this.camera);
+    const hit = this.raycaster.intersectObjects([...this.markers.values()])[0];
+    if (hit) return this.edit ? this.edit.onSelect(hit.object.userData.marker, e.shiftKey) : this.onMarker!(hit.object.userData.marker, null);
+    if (this.edit || !this.selected || !this.model) return;
+    // both sides, or the exit surface is culled; the displayed materials get their side back right after
+    const mats = new Set<THREE.Material>();
+    this.model.traverse((o) => (o as THREE.Mesh).isMesh && [(o as THREE.Mesh).material].flat().forEach((m) => mats.add(m)));
+    const sides = [...mats].map((m) => m.side);
+    mats.forEach((m) => (m.side = THREE.DoubleSide));
+    let hits: THREE.Intersection[];
+    try {
+      hits = this.raycaster.intersectObject(this.model, true);
+    } finally {
+      [...mats].forEach((m, i) => (m.side = sides[i]));
+    }
+    if (!hits.length) return;
+    // the middle of the body under the cursor: entry and the next surface the ray leaves through
+    const a = hits[0].point;
+    const b = hits.find((h) => h.distance > hits[0].distance + 1e-4)?.point ?? a;
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    this.onMarker!(this.selected, [mid.x, mid.y, mid.z]);
+  }
+
+  private drop() {
+    this.setPoseEdit(null);
+    this.setMotionPath(null);
+    this.setOnion(null);
+    this.action = null;
+    this.playing = this.posing = false; // nothing to play: the render loop went on every frame (UI-008)
+    this.bones = [];
+    this.helperSkel?.removeFromParent();
+    this.helperSkel?.dispose();
+    this.helperSkel = null;
+    this.grid.visible = false;
+    this.dirty = true;
+    if (!this.model) return;
+    this.scene.remove(this.model);
+    this.mixer?.stopAllAction();
+    this.mixer = null;
+    this.clips = [];
+    this.free(this.model);
+    this.model = null;
+  }
+
+  // geometry, the glTF's own materials and their textures; channel-view materials share those textures
+  private free(root: THREE.Object3D) {
+    const skeletons = new Set<THREE.Skeleton>();
+    root.traverse((o) => {
+      const mesh = o as THREE.SkinnedMesh;
+      if (!mesh.isMesh) return;
+      if (mesh.skeleton) skeletons.add(mesh.skeleton);
+      mesh.geometry.dispose();
+      const lines = this.quadLines.get(mesh);
+      if (lines) {
+        lines.geometry.dispose();
+        (lines.material as THREE.Material).dispose();
+      }
+      this.quadLines.delete(mesh);
+      const own = [this.originals.get(mesh) ?? mesh.material].flat();
+      for (const m of [mesh.material].flat()) if (!own.includes(m)) m.dispose();
+      for (const m of own) {
+        for (const v of Object.values(m)) if (v instanceof THREE.Texture) v.dispose();
+        m.dispose();
+      }
+    });
+    skeletons.forEach((s) => s.dispose());
+  }
+
+  setViewMode(mode: ViewMode) {
+    this.mode = mode;
+    this.dirty = true;
+    this.model?.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const orig = this.originals.get(mesh)!;
+      if (mesh.material !== orig) (mesh.material as THREE.Material).dispose(); // the previous channel view
+      const src = (Array.isArray(orig) ? orig[0] : orig) as THREE.MeshStandardMaterial;
+      // the glTF node's own name (GLTFLoader keeps it in userData; `name` has spaces turned into "_");
+      // a multi-primitive node: the mesh sits in a group named like the part
+      const named = (o?: THREE.Object3D | null) => (o?.userData?.name as string | undefined) ?? o?.name;
+      const part = this.tint ? this.tint.findIndex((n) => n === named(mesh) || n === named(mesh.parent)) : -1;
+      mesh.material =
+        part >= 0
+          ? new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL((part * 0.381966) % 1, 0.7, 0.55), roughness: 0.8 })
+          : mode === "pbr"
+            ? orig
+            : this.channelMaterial(mode, src);
+    });
+    this.setWireframe(this.wireframe);
+    this.setXray(this.xray);
+  }
+
+  /** M31: colour the nodes named like these parts (null: back to the textures). */
+  setTint(names: string[] | null) {
+    this.tint = names;
+    this.setViewMode(this.mode);
+  }
+
+  /** M20 weights view: each skinned vertex coloured by its weight for `bone` (blue 0 → red 1); null
+   * restores the view mode. With `skeleton`, the bones are drawn too. */
+  setWeights(bone: string | null, skeleton = false) {
+    this.helperSkel?.removeFromParent();
+    this.helperSkel?.dispose();
+    this.helperSkel = null;
+    this.dirty = true;
+    if (skeleton && this.model && this.stats.bones.length) {
+      this.helperSkel = new THREE.SkeletonHelper(this.model);
+      (this.helperSkel.material as THREE.LineBasicMaterial).depthTest = false;
+      this.helperSkel.renderOrder = 10;
+      this.scene.add(this.helperSkel);
+    }
+    this.model?.traverse((o) => {
+      const mesh = o as THREE.SkinnedMesh;
+      if (!mesh.isSkinnedMesh) return;
+      const g = mesh.geometry;
+      let h = this.heat.get(g);
+      if (!bone) {
+        // back to the geometry's own colours
+        if (h) h.orig ? g.setAttribute("color", h.orig) : g.deleteAttribute("color");
+        return this.heat.delete(g);
+      }
+      h ??= { orig: g.attributes.color, buf: new THREE.BufferAttribute(new Float32Array(g.attributes.skinIndex.count * 3), 3) };
+      this.heat.set(g, h);
+      const idx = g.attributes.skinIndex,
+        wt = g.attributes.skinWeight;
+      const b = mesh.skeleton.bones.findIndex((x) => x.name === bone);
+      const c = new THREE.Color();
+      for (let i = 0; i < idx.count; i++) {
+        let w = 0;
+        for (let k = 0; k < 4; k++) if (idx.getComponent(i, k) === b) w += wt.getComponent(i, k);
+        c.setHSL((1 - w) * 0.66, 1, 0.5); // blue (0) → red (1)
+        h.buf.setXYZ(i, c.r, c.g, c.b);
+      }
+      h.buf.needsUpdate = true;
+      g.setAttribute("color", h.buf);
+      if (mesh.material !== this.originals.get(mesh)) (mesh.material as THREE.Material).dispose();
+      mesh.material = new THREE.MeshBasicMaterial({ vertexColors: true });
+    });
+    if (!bone) this.setViewMode(this.mode);
+  }
+
+  /** Play one of the GLB's animation clips (looping), or null to return to the rest pose. */
+  setClip(name: string | null) {
+    if (!this.mixer) return;
+    this.mixer.stopAllAction();
+    this.dirty = true;
+    const clip = name ? this.clips.find((c) => c.name === name) : null;
+    this.playing = !!clip;
+    this.action = clip ? this.mixer.clipAction(clip).reset().play() : null;
+    if (!clip) this.model?.traverse((o) => (o as THREE.SkinnedMesh).isSkinnedMesh && (o as THREE.SkinnedMesh).skeleton.pose());
+  }
+
+  // M37: the time bar's controls over the playing clip (the paused action holds its pose; a seek re-applies it)
+  clipName = () => this.action?.getClip().name ?? null;
+  duration = () => this.action?.getClip().duration ?? 0;
+  time = () => this.action?.time ?? 0;
+  isPaused = () => !this.action || this.action.paused;
+  play() {
+    if (!this.action) return;
+    if (this.action.time >= this.duration() - 1e-4) this.action.time = 0;
+    this.action.paused = false;
+    this.playing = true;
+  }
+  pause() {
+    if (!this.action) return;
+    this.action.paused = true;
+    this.playing = false;
+    this.dirty = true;
+  }
+  seek(t: number) {
+    if (!this.action || !this.mixer) return;
+    this.action.time = Math.min(Math.max(t, 0), Math.max(this.duration() - 1e-4, 0)); // the end itself would wrap to 0
+    this.mixer.update(0);
+    this.dirty = true;
+  }
+  setSpeed(s: number) {
+    this.speed = s;
+  }
+  /** Frames per second of the playing clip: its tracks' key spacing (glTF stores none; ours are baked at 24). */
+  fps(): number {
+    const dt = Math.min(...(this.action?.getClip().tracks ?? []).filter((t) => t.times.length > 2).map((t) => t.times[1] - t.times[0]));
+    return Number.isFinite(dt) && dt > 0 ? Math.round(1 / dt) : 24;
+  }
+  /** The animation editor's evaluated clip in place of the one with its name, at the same time and pause. */
+  useClip(clip: THREE.AnimationClip) {
+    if (!this.mixer) return;
+    const t = this.action?.time ?? 0;
+    const paused = this.action ? this.action.paused : true;
+    const i = this.clips.findIndex((c) => c.name === clip.name);
+    this.mixer.stopAllAction();
+    if (i >= 0 && this.clips[i] !== clip) this.mixer.uncacheClip(this.clips[i]);
+    if (i >= 0) this.clips[i] = clip;
+    else this.clips.push(clip);
+    this.action = this.mixer.clipAction(clip).play();
+    this.action.paused = paused;
+    this.playing = !paused;
+    this.seek(t);
+  }
+  /** The model's bones: three.js name → the glTF node's own name (the loader drops dots and colons) and the parent's. */
+  boneNames = () =>
+    this.bones.map((b) => ({
+      name: b.name,
+      node: (b.userData.name as string | undefined) ?? b.name,
+      parent: (b.parent as THREE.Bone)?.isBone ? b.parent!.name : null,
+      rest: b.userData.rest as Vec3, // its node's translation as loaded
+    }));
+  /** A bone's local rotation now (x, y, z, w). */
+  boneQuat = (name: string) => this.bones.find((b) => b.name === name)?.quaternion.toArray() as [number, number, number, number] | undefined;
+  /** World positions of bones over a clip's frames (Snap to ground): the lowest Y of `names`, the clip left at its time. */
+  lowest(names: string[]): number {
+    const pick = this.bones.filter((b) => names.includes(b.name));
+    if (!this.action || !this.mixer || !pick.length) return 0;
+    const t0 = this.action.time;
+    const n = Math.max(2, Math.round(this.duration() * this.fps()) + 1);
+    let low = Infinity;
+    const w = new THREE.Vector3();
+    for (let i = 0; i < n; i++) {
+      this.seek((i / (n - 1)) * this.duration());
+      this.model!.updateMatrixWorld(true);
+      for (const b of pick) low = Math.min(low, b.getWorldPosition(w).y);
+    }
+    this.seek(t0);
+    return low;
+  }
+  /** M44: forget a clip (the editor's copies, when it closes). */
+  dropClip(name: string) {
+    const i = this.clips.findIndex((c) => c.name === name);
+    if (i < 0) return;
+    if (this.action?.getClip() === this.clips[i]) (this.action.stop(), (this.action = null), (this.playing = false));
+    this.mixer?.uncacheClip(this.clips.splice(i, 1)[0]);
+  }
+  /** A clip as loaded (the animation editor puts it back when it closes). */
+  getClip = (name: string) => this.clips.find((c) => c.name === name);
+  /** The feet: the bones within 5 % of the skeleton's height above its lowest in the rest pose, and that lowest height
+   * (Snap to ground: the clip's lowest foot back to it); every bone's rest height as a share of the skeleton's (Find foot
+   * contacts). The pose is put back after. */
+  feet(): { names: string[]; rest: number; heights: Record<string, number> } {
+    let mesh: THREE.SkinnedMesh | undefined;
+    this.model?.traverse((o) => (mesh ??= (o as THREE.SkinnedMesh).isSkinnedMesh ? (o as THREE.SkinnedMesh) : undefined));
+    if (!mesh || !this.bones.length) return { names: [], rest: 0, heights: {} };
+    const saved = this.bones.map((b) => [b.position.clone(), b.quaternion.clone(), b.scale.clone()] as const);
+    mesh.skeleton.pose();
+    this.model!.updateMatrixWorld(true);
+    const ys = this.bones.map((b) => b.getWorldPosition(new THREE.Vector3()).y);
+    this.bones.forEach((b, i) => (b.position.copy(saved[i][0]), b.quaternion.copy(saved[i][1]), b.scale.copy(saved[i][2])));
+    this.model!.updateMatrixWorld(true);
+    const lo = Math.min(...ys);
+    const hi = Math.max(...ys);
+    const heights = Object.fromEntries(this.bones.map((b, i) => [b.name, (ys[i] - lo) / (hi - lo || 1)]));
+    return { names: this.bones.filter((b) => heights[b.name] <= 0.05).map((b) => b.name), rest: lo, heights };
+  }
+
+  setPoseEdit(edit: PoseEdit | null) {
+    this.pose = edit;
+    this.dirty = true;
+    if (!edit) {
+      this.poseTc?.detach();
+      this.ikTarget.removeFromParent();
+      if (this.poseGroup) {
+        this.scene.remove(this.poseGroup);
+        this.poseGroup.traverse((o) => {
+          (o as THREE.Mesh).geometry?.dispose();
+          ((o as THREE.Mesh).material as THREE.Material | undefined)?.dispose();
+        });
+      }
+      this.poseGroup = null;
+      return;
+    }
+    if (!this.poseGroup && this.model) {
+      const size = new THREE.Box3().setFromObject(this.model).getSize(new THREE.Vector3()).length() || 1;
+      const g = (this.poseGroup = new THREE.Group());
+      const geo = new THREE.SphereGeometry(size * 0.009, 10, 8);
+      for (const b of this.bones) {
+        const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x8fd46a, depthTest: false, transparent: true }));
+        m.renderOrder = 11;
+        m.userData.bone = b.name;
+        g.add(m);
+      }
+      const links = this.bones.filter((b) => (b.parent as THREE.Bone)?.isBone);
+      const lines = new THREE.LineSegments(
+        new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(links.length * 6), 3)),
+        new THREE.LineBasicMaterial({ color: 0xd8c25a, depthTest: false, transparent: true, opacity: 0.8 }),
+      );
+      Object.assign(lines, { renderOrder: 10, frustumCulled: false });
+      lines.userData.links = links;
+      g.add(lines);
+      this.scene.add(g);
+    }
+    const keyed = new Set(edit.keyed ?? []);
+    this.poseGroup?.children.forEach((o) => {
+      const b = o.userData.bone as string | undefined;
+      if (b) ((o as THREE.Mesh).material as THREE.MeshBasicMaterial).color.set(b === edit.selected ? 0xffffff : keyed.has(b) ? 0xf0a030 : 0x8fd46a);
+    });
+    const bone = this.bones.find((b) => b.name === edit.selected);
+    const mode = edit.mode ?? "rotate";
+    const tc = this.poseGizmo();
+    if (tc.dragging) return;
+    tc.setMode(mode === "rotate" ? "rotate" : "translate");
+    tc.setSpace(mode === "rotate" ? "local" : "world");
+    const chain = bone && (bone.parent as THREE.Bone)?.isBone && (bone.parent!.parent as THREE.Bone)?.isBone;
+    if (!bone || (mode === "ik" && !chain)) tc.detach();
+    else if (mode === "ik") {
+      bone.getWorldPosition(this.ikTarget.position);
+      if (!this.ikTarget.parent) this.scene.add(this.ikTarget);
+      tc.attach(this.ikTarget);
+    } else tc.attach(bone);
+  }
+
+  // the IK drag: the chain back where it began, then the two-bone solve putting the bone at the handle
+  private solveIK() {
+    const B = this.bones.find((b) => b.name === this.pose?.selected);
+    const L = B?.parent as THREE.Bone | undefined;
+    const U = L?.parent as THREE.Bone | undefined;
+    if (!B || !L || !U || !this.ikStart) return;
+    [U, L, B].forEach((b, i) => b.quaternion.copy(this.ikStart![i]));
+    U.updateWorldMatrix(true, true);
+    const wq = (o: THREE.Object3D) => o.getWorldQuaternion(new THREE.Quaternion()).toArray() as Q4;
+    const wp = (o: THREE.Object3D) => o.getWorldPosition(new THREE.Vector3()).toArray() as Vec3;
+    const turns = twoBone(wq(U.parent!), wq(U), wq(L), wq(B), wp(U), wp(L), wp(B), this.ikTarget.position.toArray() as Vec3);
+    turns?.forEach((q, i) => [U, L, B][i].quaternion.fromArray(q));
+    this.dirty = true;
+  }
+
+  /** M38: the selected bone's track over the playing clip: a line and a dot a frame, before the playhead orange, after it
+   * green, the playhead's frame a white dot (a bone that hardly moves is still a visible cluster); null: none. */
+  setMotionPath(bone: string | null) {
+    if (this.path) {
+      this.scene.remove(this.path.group);
+      this.path.group.traverse((o) => {
+        (o as THREE.Points).geometry?.dispose();
+        ((o as THREE.Points).material as THREE.Material | undefined)?.dispose();
+      });
+      this.path = null;
+    }
+    const b = this.bones.find((x) => x.name === bone);
+    if (!b || !this.action) return;
+    const fps = this.fps();
+    const n = Math.round(this.duration() * fps) + 1;
+    const t0 = this.action.time;
+    const pos = new Float32Array(n * 3);
+    const w = new THREE.Vector3();
+    for (let i = 0; i < n; i++) {
+      this.seek(i / fps);
+      this.model!.updateMatrixWorld(true);
+      b.getWorldPosition(w).toArray(pos, i * 3);
+    }
+    this.seek(t0);
+    const col = new THREE.BufferAttribute(new Float32Array(n * 3), 3);
+    const geo = new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(pos, 3)).setAttribute("color", col);
+    const over = { depthTest: false, transparent: true, sizeAttenuation: false };
+    const now = new THREE.Points(
+      new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(3), 3)),
+      new THREE.PointsMaterial({ color: 0xffffff, size: 11, ...over }),
+    );
+    const group = new THREE.Group().add(
+      new THREE.Line(geo, new THREE.LineBasicMaterial({ vertexColors: true, depthTest: false, transparent: true })),
+      new THREE.Points(geo, new THREE.PointsMaterial({ vertexColors: true, size: 6, ...over })), // the line's geometry
+      now,
+    );
+    group.children.forEach((o, i) => Object.assign(o, { renderOrder: 12 + i, frustumCulled: false }));
+    this.scene.add(group);
+    this.path = { group, pos, col, now, frame: -1 };
+    this.dirty = true;
+  }
+
+  /** M38: ghosts of the model `frames` away from the playhead (e.g. [-8, -4, 4, 8]: before blue, after green); null: none. */
+  setOnion(frames: number[] | null) {
+    for (const g of this.ghosts) {
+      this.scene.remove(g.root);
+      g.mixer.stopAllAction();
+      g.mixer.uncacheRoot(g.root);
+      g.root.traverse((o) => {
+        ((o as THREE.Mesh).material as THREE.Material | undefined)?.dispose();
+        (o as THREE.SkinnedMesh).skeleton?.dispose(); // its bone texture
+      });
+    }
+    this.ghosts = [];
+    this.dirty = true;
+    if (!frames?.length || !this.model || !this.action) return;
+    for (const k of frames) {
+      const root = cloneSkinned(this.model);
+      const mat = new THREE.MeshBasicMaterial({ color: k < 0 ? 0x5a8cff : 0x5adc7a, transparent: true, opacity: 0.22, depthWrite: false });
+      root.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh) (o as THREE.Mesh).material = mat.clone();
+      });
+      mat.dispose();
+      const mixer = new THREE.AnimationMixer(root);
+      const action = mixer.clipAction(this.action.getClip()).play();
+      action.paused = true;
+      this.scene.add(root);
+      this.ghosts.push({ root, mixer, action, frames: k });
+    }
+  }
+
+  // the motion path's colours and the ghosts' times follow the playhead
+  private follow() {
+    if (!this.action || (!this.path && !this.ghosts.length)) return;
+    const fps = this.fps();
+    const now = Math.round(this.action.time * fps);
+    if (this.path && this.path.frame !== now) {
+      const { pos, col } = this.path;
+      for (let i = 0; i < col.count; i++) col.setXYZ(i, ...((i <= now ? [1, 0.6, 0.15] : [0.35, 0.9, 0.45]) as Vec3));
+      col.needsUpdate = true;
+      const at = (this.path.now.geometry.attributes.position as THREE.BufferAttribute).copyArray(pos.subarray(3 * Math.min(now, col.count - 1), 3 * Math.min(now, col.count - 1) + 3));
+      at.needsUpdate = true;
+      this.path.frame = now;
+      this.dirty = true;
+    }
+    for (const g of this.ghosts) {
+      const t = Math.min(Math.max(this.action.time + g.frames / fps, 0), Math.max(this.duration() - 1e-4, 0));
+      if (Math.abs(g.action.time - t) > 1e-6) {
+        g.action.time = t;
+        g.mixer.update(0);
+      }
+    }
+  }
+
+  private poseGizmo(): TransformControls {
+    window.addEventListener("keydown", this.onKey);
+    if (this.poseTc) return this.poseTc;
+    const tc = (this.poseTc = new TransformControls(this.camera, this.canvas));
+    tc.setMode("rotate");
+    tc.setSpace("local");
+    tc.setSize(0.7);
+    this.scene.add(tc.getHelper());
+    tc.addEventListener("change", () => (this.dirty = true));
+    tc.addEventListener("mouseDown", () => {
+      this.cancelled = false;
+      const o = tc.object;
+      if (o && o !== this.ikTarget) this.poseFrom.copy(o.position);
+      const B = this.bones.find((b) => b.name === this.pose?.selected);
+      const L = B?.parent as THREE.Bone | undefined;
+      this.ikStart = o === this.ikTarget && B && L ? [L.parent!, L, B].map((b) => b.quaternion.clone()) : null;
+    });
+    tc.addEventListener("objectChange", () => tc.object === this.ikTarget && this.solveIK());
+    tc.addEventListener("dragging-changed", (e) => {
+      this.controls.enabled = !e.value;
+      this.posing = !!e.value;
+      if (e.value || this.cancelled || !this.pose) return;
+      const o = tc.object;
+      const B = this.bones.find((b) => b.name === this.pose!.selected);
+      if (o === this.ikTarget && B && this.ikStart) {
+        const L = B.parent as THREE.Bone;
+        const U = L.parent as THREE.Bone;
+        this.pose.onIK?.(Object.fromEntries([U, L, B].map((b) => [b.name, b.quaternion.toArray() as Q4])));
+      } else if (o && this.pose.mode === "move") this.pose.onMove?.(o.name, this.poseFrom.toArray() as Vec3, o.position.toArray() as Vec3);
+      else if (o) this.pose.onPose(o.name, (o as THREE.Bone).quaternion.toArray() as Q4);
+    });
+    return tc;
+  }
+
+  private pickBone(e: PointerEvent) {
+    const r = this.canvas.getBoundingClientRect();
+    const w = new THREE.Vector3();
+    let best: [number, string] | null = null;
+    for (const b of this.bones) {
+      const p = b.getWorldPosition(w).project(this.camera);
+      const d = Math.hypot(((p.x + 1) / 2) * r.width - (e.clientX - r.left), ((1 - p.y) / 2) * r.height - (e.clientY - r.top));
+      if (p.z < 1 && d < 14 && (!best || d < best[0])) best = [d, b.name];
+    }
+    if (best) this.pose?.onSelect(best[1]);
+  }
+
+  // the pose overlay follows the moving bones (and the IK handle its bone, between drags)
+  private drawPose() {
+    const g = this.poseGroup;
+    if (!g) return;
+    if (this.poseTc?.object === this.ikTarget && !this.posing) this.bones.find((b) => b.name === this.pose?.selected)?.getWorldPosition(this.ikTarget.position);
+    const w = new THREE.Vector3();
+    const at = new Map(this.bones.map((b) => [b.name, b.getWorldPosition(new THREE.Vector3())]));
+    for (const o of g.children) {
+      const b = o.userData.bone as string | undefined;
+      if (b) o.position.copy(at.get(b) ?? w);
+      const links = o.userData.links as THREE.Bone[] | undefined;
+      if (!links) continue;
+      const pos = (o as THREE.LineSegments).geometry.attributes.position as THREE.BufferAttribute;
+      links.forEach((l, i) => {
+        pos.setXYZ(2 * i, ...(at.get(l.parent!.name) ?? w).toArray());
+        pos.setXYZ(2 * i + 1, ...(at.get(l.name) ?? w).toArray());
+      });
+      pos.needsUpdate = true;
+    }
+  }
+
+  setWireframe(on: boolean, quads = this.quads) {
+    this.wireframe = on;
+    this.quads = quads;
+    this.dirty = true;
+    this.quadEdges = 0;
+    this.model?.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      // a quad mesh shows its quads as lines over the shaded surface; a skinned mesh keeps the triangle wireframe (its
+      // vertices move with the bones, a still line set would not)
+      const lines = on && quads && !(mesh as THREE.SkinnedMesh).isSkinnedMesh ? this.quadLinesOf(mesh) : null;
+      for (const m of [mesh.material].flat()) {
+        (m as THREE.MeshBasicMaterial).wireframe = on && !lines;
+        m.polygonOffset = !!lines; // the surface a hair back, so the lines on it win the depth test
+        m.polygonOffsetFactor = m.polygonOffsetUnits = lines ? 1 : 0;
+      }
+      const had = this.quadLines.get(mesh);
+      if (had && had !== lines) mesh.remove(had);
+      if (lines) {
+        if (lines.parent !== mesh) mesh.add(lines);
+        this.quadEdges += lines.geometry.attributes.position.count / 2;
+      }
+    });
+  }
+
+  private quadLinesOf(mesh: THREE.Mesh): THREE.LineSegments | null {
+    if (!this.quadLines.has(mesh)) {
+      const geo = quadOutline(mesh.geometry);
+      this.quadLines.set(
+        mesh,
+        geo && Object.assign(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x202020, transparent: true, opacity: 0.9 })), { frustumCulled: false }),
+      );
+    }
+    return this.quadLines.get(mesh)!;
+  }
+
+  private channelMaterial(mode: ViewMode, src: THREE.MeshStandardMaterial): THREE.Material {
+    // ponytail: a new material per mesh per switch; cache in a WeakMap if switching gets slow
+    if (mode === "albedo") return new THREE.MeshBasicMaterial({ map: src.map, color: src.color });
+    if (mode === "normal") return new THREE.MeshNormalMaterial({ normalMap: src.normalMap });
+    if (mode === "uv") return new THREE.MeshBasicMaterial({ map: this.checker });
+    const orm: Record<string, [number, THREE.Texture | null, number]> = {
+      ao: [0, src.aoMap, 1],
+      roughness: [1, src.roughnessMap, src.roughness],
+      metallic: [2, src.metalnessMap, src.metalness],
+    };
+    const [channel, map, value] = orm[mode];
+    return new THREE.ShaderMaterial({
+      ...ORM_SHADER,
+      uniforms: { map: { value: map }, hasMap: { value: !!map }, channel: { value: channel }, value: { value } },
+    });
+  }
+
+  private frameModel() {
+    const box = new THREE.Box3().setFromObject(this.model!);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3()).length() || 1;
+    this.grid.position.set(center.x, box.min.y, center.z);
+    this.grid.scale.setScalar(4 * size);
+    this.grid.visible = true;
+    this.controls.target.copy(center);
+    this.helper.center.copy(center);
+    this.camera.position.copy(center).add(new THREE.Vector3(0.6, 0.4, 1).multiplyScalar(size));
+    this.camera.near = size / 1000;
+    this.camera.far = size * 100;
+    this.camera.updateProjectionMatrix();
+  }
+
+  private resize() {
+    const { clientWidth: w, clientHeight: h } = this.canvas;
+    if (!w || !h) return;
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.dirty = true;
+  }
+
+  private render() {
+    const dt = this.clock.getDelta();
+    if (!this.posing) this.mixer?.update(dt * this.speed); // a gizmo turn owns its bone until it ends
+    if (this.poseGroup && (this.dirty || this.playing || this.posing)) this.drawPose(); // the bones moved
+    this.follow();
+    const animating = this.helper.animating;
+    if (animating) this.helper.update(dt);
+    else this.controls.update(); // fires "change" (dirty) while damping still moves the camera
+    if (!this.dirty && !this.playing && !animating && !this.posing) return;
+    this.dirty = false;
+    this.renderer.clear();
+    this.renderer.render(this.scene, this.camera);
+    this.helper.render(this.renderer);
+  }
+}

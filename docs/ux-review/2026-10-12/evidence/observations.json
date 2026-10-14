@@ -1,0 +1,5616 @@
+{
+  "baseline": "06be15b87798128a6ed1024c2f1f19d5c2aa8946",
+  "isolation": "Vite port 8147; mocked API/files/EventSource; installed Playwright; synthetic meshes and lantern image; no backend",
+  "captures": [
+    {
+      "name": "library",
+      "path": "screenshots/library.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "New asset",
+          "rect": {
+            "x": 1309,
+            "y": 76,
+            "width": 99,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Library\nNew asset\nNewest first\nOldest first\nName A–Z\nAll\nMine\nBench\nGolden\nArchived\nTag: all\ncharacter\nprop\nSelect\n8 of 8 assets\nBrass lantern\n14 versions · 12. Okt., 12:00 · ux_fixture\n#prop\nRename\nTags\nArchive\nDelete\nForest creature\n14 versions · 12. Okt., 12:00\n#character\nRename\nTags\nArchive\nDelete\nStone arch\n14 versions · 12. Okt., 12:00\n#prop\nRename\nTags\nArchive\nDelete\nHelmet\n14 versions · 12. Okt., 12:00\n#character\nRename\nTags\nArchive\nDelete\nChair\n14 versions · 12. Okt., 12:00\n#prop\nRename\nTags\nArchive\nDelete\nBrass lantern\n14 versions · 12. Okt., 12:00 · fixture_5\n#character\nRename\nTags\nArchive\nDelete\nDragon\n14 versions · 12. Okt., 12:00\n#prop\nRename\nTags\nArchive\nDelete\nA very long asset name for examining line wrapping in the card and workspace\n14 versions · 12. Okt., 12:00\n#character\nRename\nTags\nArchive\nDelete"
+    },
+    {
+      "name": "new-description",
+      "path": "screenshots/new-description.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Generate 4 concepts",
+          "rect": {
+            "x": 32,
+            "y": 540,
+            "width": 720,
+            "height": 44
+          },
+          "disabled": true
+        }
+      ],
+      "bodyText": "New asset\nWhat would you like to make?\nFrom a description\nFrom an image\nName (optional)\nDescription\nKind (adds framing for a clean 3D reference picture)\nObject\ncentred, three-quarter view, plain grey background\nCharacter\nfull body in an A-pose, front view, plain background\nCreature\nfull body, side three-quarter view, legs apart\nGenerate 4 concepts"
+    },
+    {
+      "name": "import",
+      "path": "screenshots/import.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Import",
+          "rect": {
+            "x": 32,
+            "y": 578,
+            "width": 720,
+            "height": 44
+          },
+          "disabled": true
+        }
+      ],
+      "bodyText": "Import\nBring in a model you already have\n\nFBX, glTF or GLB, OBJ, USD or USDZ, STL and PLY. A model that comes with other files (an OBJ with its .mtl and textures, a .gltf with its .bin) goes in as one .zip: right-click its folder, Send to, Compressed folder. A character on a Mixamo-style skeleton, or one exported from this app, keeps its skeleton and animations; anything else comes in as a still model you can rig here.\n\nName (optional)\nModel file or .zip\n…or drop the file here.\nKeep it as a still model (ignore its skeleton and animations)\nImport"
+    },
+    {
+      "name": "setup",
+      "path": "screenshots/setup.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Open the guided setup",
+          "rect": {
+            "x": 1208,
+            "y": 191,
+            "width": 187,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Setup\n\nEverything for pictures, 3D models, faces and animation from text is installed (16 GB on disk). Blender is not connected.\n\nSetting up for the first time, or on another computer? The guided setup checks your computer, asks where the models go and what you want to make, logs you in to Hugging Face and installs it all in one go.\nOpen the guided setup\nWhat this app can do\n\nEach feature needs some files on this computer. Install the ones you want to use.\n\nConcept images\nMakes four pictures from your description.\nInstalled · 2 GB\nCheck and repair\n3D model, Faithful (recommended)\nMakes the 3D model from your picture. This is the recommended one.\nInstalled · 2 GB\nCheck and repair\n3D model, Fast (alternative)\nMakes the 3D model from your picture with less memory. Use it if Faithful does not run.\nInstalled · 2 GB\nCheck and repair\nFace detail\nSharpens your picture before it is copied onto the face.\nInstalled · 2 GB\nCheck and repair\nTexture detail\nRedraws a texture's fine detail, such as buttons, stitching and wood grain (Z-Image + Tile, 2 GB more).\nInstalled · 2 GB\nCheck and repair\nParts\nFinds the pieces of a model from a click and names them; the game files keep each piece as its own object (GeoSAM2, 0.6 GB).\nInstalled · 2 GB\nCheck and repair\nText to motion\nMakes an animation from a sentence (NVIDIA Kimodo). Needs a Hugging Face login with access to Meta Llama 3.\nInstalled · 2 GB\nCheck and repair\nMotion from video\nTurns a video of a person into an animation for your character (NVIDIA GEM-X, 7 GB).\nInstalled · 2 GB\nCheck and repair\nWhere the models are\nD:\\Effigy\\models\nnow ·\n240.0 GB free\nE:\\Effigy-models\n600.0 GB free\nUse this folder\nSpace on disk\n\nWhat this app keeps on your drives. You can remove model files and environments you do not use and install them again here later.\n\nD:\n240.0 GB free of 1000.0 GB\nOther files\n760.0 GB\nFree\n240.0 GB\nMeasured 0 min ago.\nMeasure again\nTools\n\nOther programs the app can work with.\n\nBlender connection\nNeeded for Edit in Blender.\nNot connected · open Blender and start its add-on server\nCheck again\nConnect an agent\n\nClaude, Codex or another AI agent can use this app over MCP: it imports your files, runs the steps, looks at the results as pictures, checks them and exports into your game project. Every step it runs appears here as a new version, and it cannot delete anything.\n\nCodex\n\nPaste into your agent configuration.\n\nFixture configuration; no connection made.\nCopy\nTest the connection\n\nThe app itself has to be running (run.bat) while the agent works.\n\nCredits for your game\n\nWhen you export, these lines are written into CREDITS.txt. Put them in your game's credits.\n\nAdvanced\nModel files and licences"
+    },
+    {
+      "name": "welcome",
+      "path": "screenshots/welcome.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Install Characters (60.0 GB to download)",
+          "rect": {
+            "x": 32,
+            "y": 1469,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Get started\n\nFive steps, about ten minutes of your time, then the downloads run on their own. Everything here can be changed later in Setup.\n\n1\nYour computer\nNVIDIA RTX 5080 Laptop · 16 GB video memory\n32 GB RAM · Enough memory\nBlender available · Fixture reading\n2\nWhere the models go\n\nThe model files are big (60 to 140 GB). Choose a drive with room; an SSD loads them faster.\n\nD:\\Effigy\\models\nnow ·\n240.0 GB free\nE:\\Effigy-models\n600.0 GB free\nUse this folder\n3\nWhat you want to make\nProps\nPictures and static 3D models\n30.0 GB to download · about 10 min at 500 Mbit/s, 80 min at 50 Mbit/s\nCharacters\nPictures, models and character rigs\n60.0 GB to download · about 15 min at 500 Mbit/s, 2.7 h at 50 Mbit/s\nCharacters with motion\nCharacter rigs with text and video motion\n90.0 GB to download · about 25 min at 500 Mbit/s, 4.0 h at 50 Mbit/s\nEverything\nEvery available feature\n120.0 GB to download · about 30 min at 500 Mbit/s, 5.3 h at 50 Mbit/s\n4\nHugging Face\n\nNot logged in\n\nSome models are shared only with people who accept their licence on Hugging Face, the site the models come from.\n\nCreate a free account: huggingface.co/join\nAccept the DINOv3 License, signed in: huggingface.co/facebook/dinov3 · log in to check\nCreate a token of type Read at huggingface.co/settings/tokens, copy it, paste it here and log in:\nLog in\n\nThe token goes only into Hugging Face's own login on this computer (where hf auth login keeps it). This app does not store it. Check again\n\n5\nInstall\nConcept images\n3D model, Faithful\n3D model, Fast\n\nA licence in step 4 is not accepted yet: everything else downloads now; once Hugging Face approves it, click Install again for the rest.\n\nInstall Characters (60.0 GB to download)\n\nSkip for now: you can install features one by one in Setup, or come back here from Setup."
+    },
+    {
+      "name": "new-image",
+      "path": "screenshots/new-image.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Remove background",
+          "rect": {
+            "x": 32,
+            "y": 618,
+            "width": 720,
+            "height": 44
+          },
+          "disabled": true
+        }
+      ],
+      "bodyText": "New asset\nWhat would you like to make?\nFrom a description\nFrom an image\nName (optional)\nPicture (PNG, JPEG or WebP)\n…or drop the file here.\nViews in the picture\nOne view\nTurnaround sheet: Front · Right · Back · Left\nTurnaround sheet: Front · Left · Back · Right\nTurnaround sheet: Front · Right · Back\nTurnaround sheet: Front · Left · Back\nTurnaround sheet: Front · Back\n\nClick Remove background to cut out your subject. You can check the result before you make the 3D model. A picture that is already transparent keeps its own cut-out.\n\nRemove background"
+    },
+    {
+      "name": "concepts",
+      "path": "screenshots/concepts.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "Reference",
+          "disabled": false,
+          "rect": {
+            "x": 296,
+            "y": 112,
+            "width": 75,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate",
+          "disabled": false,
+          "rect": {
+            "x": 380,
+            "y": 112,
+            "width": 70,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 459,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 517,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 590,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 711,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Pick a concept"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Use this image",
+          "rect": {
+            "x": 12,
+            "y": 808,
+            "width": 130,
+            "height": 44
+          },
+          "disabled": true
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nConcept images · 003\nLicences\nHistory (14)\nReference\nGenerate\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\n#1 reference checks passed\n#2 reference checks passed\n#3 reference checks passed\n#4 reference checks passed\nUse this image\nGenerate 4 more\nPick a concept\n\nClick the best picture, then click Use this image. The ranking is only a hint. It does not promise a good 3D model.\n\nEdit description\nAdvanced: run any step"
+    },
+    {
+      "name": "reference-generate",
+      "path": "screenshots/reference-generate.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "Reference",
+          "disabled": false,
+          "rect": {
+            "x": 296,
+            "y": 112,
+            "width": 75,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate",
+          "disabled": false,
+          "rect": {
+            "x": 380,
+            "y": 112,
+            "width": 70,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 459,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 517,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 590,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 711,
+        "scrollWidth": 340,
+        "clientHeight": 711,
+        "sections": [
+          "Generate the 3D model"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Generate 3D",
+          "rect": {
+            "x": 1121,
+            "y": 623,
+            "width": 308,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nCut-out reference · 004\nLicences\nHistory (14)\nReference\nGenerate\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nCut-out\nOriginal\nGenerate the 3D model\nGenerator\nFaithful — Recommended\nPixal3D: follows the picture closely.\nFast — Alternative model\nTRELLIS.2: needs less memory.\nBackground behind your picture\nAutomatic\nGrey: for dark subjects (black fur, dark armour)\nBlack\nWhite\n\nThe generator sees your cut-out on a plain background. On black, very dark parts can look like background and come out missing, such as a black cat's back. Grey avoids that. Automatic uses grey for Fast when the subject is dark.\n\nAdvanced\nGenerate 3D\nAdvanced: run any step"
+    },
+    {
+      "name": "generated-prepare",
+      "path": "screenshots/generated-prepare.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 283,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate",
+          "disabled": false,
+          "rect": {
+            "x": 380,
+            "y": 112,
+            "width": 70,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 459,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 517,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 590,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 895,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Prepare for your project"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Prepare model",
+          "rect": {
+            "x": 1121,
+            "y": 685,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nGenerated model (faithful) · 005\nLicences\nHistory (14)\n✓ Reference\nGenerate\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nPrepare for your project\nTopology\nTriangles (game-ready, smallest)\nQuads (clean loops for rigging and sculpting)\nTriangle budget\nClose slits up to (mm)\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nHeight in metres\nLevel it and turn it square\n\nclean → simplify → unwrap → bake → check\n\nPrepare model\n\nRight after generating, a model shows small holes and loose bits: Prepare model closes them (its first step is Clean). If a whole area is missing, such as a black cat's back, generate again from the picture with Background: Grey.\n\nTry another variation\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "textured-bake",
+      "path": "screenshots/textured-bake.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 230,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 326,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 419,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 491,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 576,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": false,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": false,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 2111,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Run this step again",
+          "Preparation in progress",
+          "Face from image",
+          "Texture detail",
+          "Parts",
+          "Rig for animation (optional)"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Bake",
+          "rect": {
+            "x": 1121,
+            "y": 372,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Continue preparation",
+          "rect": {
+            "x": 1121,
+            "y": 567,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Refine texture",
+          "rect": {
+            "x": 1121,
+            "y": 1196,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 1121,
+            "y": 2082,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nTextured model · 009\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nRun this step again\n\nClick Bake to run only this step on this model, with your own settings.\n\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nBake\nPreparation in progress\n\nPreparation stopped partway. Click Continue preparation to finish the remaining steps.\n\ncheck\n\nContinue preparation\nFace from image\n\nClick Face from image to copy the face from your picture onto the texture. This makes the face as sharp as the picture. It takes a few seconds.\n\nHead\nWhole front\nStrength\nFace from image\nTexture detail\n\nClick Refine texture to redraw the texture's fine detail (buttons, stitching, wood grain) from close-up views. The shape and the colours stay. It takes about 4–5 minutes.\n\nDescription\nStrength\n1.0\nRefine texture\nRemove baked shadows\n0.00\nShadows only\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "checked-model",
+      "path": "screenshots/checked-model.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 217,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 313,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 405,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 477,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 563,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 648,
+            "y": 112,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": false,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": false,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": true,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": true,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 1323,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "2 checks passed · 2 warnings",
+          "Rig for animation (optional)",
+          "Choose an export destination"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 1121,
+            "y": 959,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Export for Godot",
+          "rect": {
+            "x": 1121,
+            "y": 1355,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nChecks · 010\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\n2 checks passed · 2 warnings\nPassed triangles: 9.842\nPassed has UVs: yes\nWarning open (boundary) edges: 2 · clean it, or fix it in Blender\nWarning UV overlap, % of the texels: 2.10 · unwrap it again (Prepare): islands over each other paint through each other in Bake and Texture detail\nFor 009 with a 100.000-triangle budget; a later edit needs a new check. Not checked: rigging, animation, print wall thickness.\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nChoose an export destination\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nThis exports \"Textured model\" (009).\n\nExport for Godot\nAdvanced: run any step"
+    },
+    {
+      "name": "export-obj",
+      "path": "screenshots/export-obj.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 217,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 313,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 405,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 477,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 563,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 648,
+            "y": 112,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": false,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": false,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": true,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": true,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 730,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Exported for OBJ",
+          "Export for another destination"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Download lantern.obj",
+          "rect": {
+            "x": 1121,
+            "y": 203,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nExport: OBJ · 011\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nExported for OBJ\nDownload lantern.obj\nlantern.mtl\nalbedo.png\nCREDITS.txt\nLICENSES.json\n\nKeep the other files next to the main file. CREDITS.txt and LICENSES.json list what your game's credits must mention.\n\nExport for another destination\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nThis exports \"Textured model\" (009).\n\nExport for Godot\nAdvanced: run any step"
+    },
+    {
+      "name": "imported-model",
+      "path": "screenshots/imported-model.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "Reference · skipped",
+          "disabled": true,
+          "rect": {
+            "x": 187,
+            "y": 112,
+            "width": 129,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate · skipped",
+          "disabled": true,
+          "rect": {
+            "x": 325,
+            "y": 112,
+            "width": 125,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 459,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": true,
+          "rect": {
+            "x": 517,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": true,
+          "rect": {
+            "x": 590,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": true,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": true,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": true,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 1725,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "What came in",
+          "Parts",
+          "Imported model",
+          "Rig for animation (optional)",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 1121,
+            "y": 629,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 1121,
+            "y": 1223,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nImported model · 012\nLicences\nHistory (14)\nReference · skipped\nGenerate · skipped\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nWhat came in\nFile\nGLB\nHeight\n1.80 m\nTriangles\n10.000\nMaterials\n2 materials, 3 textures\nSkeleton\nnone\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nImported model\n\nClick Check model to test it. Its original materials stay unchanged.\n\nCheck model\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nThis exports \"Imported model\" (012). It has not been checked yet.\n\nExport for Godot\nSimplify geometry (untextured copy)\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "skin-animation-options",
+      "path": "screenshots/skin-animation-options.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 217,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 313,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 405,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 477,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 563,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 648,
+            "y": 112,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 2245,
+        "scrollWidth": 416,
+        "clientHeight": 711,
+        "sections": [
+          "Skinned model",
+          "Check the model",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Add 3 animations",
+          "rect": {
+            "x": 1121,
+            "y": 1515,
+            "width": 384,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 1121,
+            "y": 1661,
+            "width": 384,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nSkinned model · 013\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nAnimation: off\nPlay: Idle\nPlay: Walk\nWeights: off\nWeights: Hips\nWeights: Spine\nWeights: Head\nSkeleton\nFrame model\nFront\nSide\nTop\n24 triangles · 16 vertices · 1 mesh\nSkinned model\n\nWeights by import.\n\nThe model now moves with its skeleton. In the viewer, choose \"Weights: a bone\" to see what each bone moves. Red means fully and blue means not at all.If a part follows the wrong bone, click Edit skeleton and fix the joints.\n\nEdit skeleton\nMake an animation from a sentence\n\nDescribe the movement, then click Generate motion. When it is ready, its page opens: click Put this motion on the model there to see your character do it.\n\nSeconds\nSeed\nGenerate motion\nMake an animation from a video\n\nFilm one person from head to toe with the camera held still, then choose the video (MP4, MOV or WebM). A 15-second clip takes about two minutes. When the motion is ready, its page opens: click Put this motion on the model there to see your character do it.\n\nQuality\nBest: smooth and accurate (recommended)\nQuick: follows the video most closely, a little shakier\nLight: from the body points alone, may drift across the floor\nFrom\nto\ns\nKeep planted feet still\nIn place (no travel)\nSmoothing\nMake motion from video\n\nChoose the animations you want from the 4 ready-made ones, then click Add. Each one takes about 10 seconds. They play in the viewer and export with the model.\n\n✓ Idle_A\n✓ Jog\n✓ Walk\nWave\nAdd 3 animations\nCheck the model\n\nClick Check model to test it before you export it.\n\nCheck model\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nOff for a rigged character: the hull would stay frozen in the rest pose while the character moves. The game engine gives a moving character its own collision (Unreal's physics asset, capsules on the bones in Godot). Tick it if you want the hull anyway; Unreal imports it as a separate static mesh beside the character.\n\nThis exports \"Skinned model\" (013). It has not been checked yet.\n\nExport for Godot\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "animated-model",
+      "path": "screenshots/animated-model.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 203,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 300,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 392,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 464,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 550,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 634,
+            "y": 112,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 702,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 796,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 899,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 996,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1084,
+            "y": 112,
+            "width": 98,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 1225,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Animated model",
+          "Check the model",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Edit animation",
+          "rect": {
+            "x": 1121,
+            "y": 358,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 1121,
+            "y": 621,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nAnimated model · 014\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\n✓ Skin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nAnimation: off\nPlay: Idle\nPlay: Walk\nWeights: off\nWeights: Hips\nWeights: Spine\nWeights: Head\nSkeleton\nFrame model\nFront\nSide\nTop\n24 triangles · 16 vertices · 1 mesh\nAnimated model\n\nYour model is animated. Choose an animation in the viewer's Animation menu to play it: the bar under the view pauses it, steps through it a frame at a time and plays it slower. The animations export with the model.\n\nIdle · 0.5 s\nWalk · 1.0 s\nEdit animation\nBack\n\nEdit animation opens a timeline under the view: turn bones at any frame to correct a pose, trim, loop or smooth a clip.\n\nCheck the model\n\nClick Check model to test it before you export it.\n\nCheck model\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nOff for a rigged character: the hull would stay frozen in the rest pose while the character moves. The game engine gives a moving character its own collision (Unreal's physics asset, capsules on the bones in Godot). Tick it if you want the hull anyway; Unreal imports it as a separate static mesh beside the character.\n\nThis exports \"Animated model\" (014). It has not been checked yet.\n\nExport for Godot\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "animation-editor",
+      "path": "screenshots/animation-editor.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 203,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 300,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 392,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 464,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 550,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 634,
+            "y": 112,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 702,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 796,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 899,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 996,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1084,
+            "y": 112,
+            "width": 98,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 1607,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Edit animation",
+          "Check the model",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Save as a new version",
+          "rect": {
+            "x": 1121,
+            "y": 821,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": true
+        },
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 1121,
+            "y": 1003,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nAnimated model · 014\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\n✓ Skin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nWeights: off\nWeights: Hips\nWeights: Spine\nWeights: Head\nSkeleton\nFrame model\nFront\nSide\nTop\n|◀\n◀\n▶\n▶\n▶|\nTIMELINE\nKeys\nCurves\nSHOW\nMotion path\nOnion skin\nFRAME\n/ 12 · 0.00 s\nSPEED\n1×\n0.5×\n0.25×\n▸ Body\nEdit animation\nClip\nIdle\nWalk\nDuplicate\nEdited\nOriginal\nClick a joint in the view (or a bone in the timeline) to select it, then turn it with the rings: that keys it at this frame.\nMove shifts the hips with arrows; IK drag pulls a hand or foot, the arm or leg bending to follow.\nA key fades in and out over its falloff, so the motion around it stays smooth. Keys are diamonds; drag them in time, or switch the timeline to Curves.\nKeys: Space plays, ←/→ a frame, I keys the bone as it is, X deletes the selected keys, Ctrl+Z undoes; Ctrl+wheel zooms the timeline.\nBone\n\nNo bone selected.\n\nFoot locks\nClip tools\nUndo\nRedo\nSave as a new version\nClose\nCheck the model\n\nClick Check model to test it before you export it.\n\nCheck model\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nOff for a rigged character: the hull would stay frozen in the rest pose while the character moves. The game engine gives a moving character its own collision (Unreal's physics asset, capsules on the bones in Godot). Tick it if you want the hull anyway; Unreal imports it as a separate static mesh beside the character.\n\nThis exports \"Animated model\" (014). It has not been checked yet.\n\nExport for Godot\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "history",
+      "path": "screenshots/history.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 230,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 326,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 419,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 491,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 576,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": false,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": false,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 2111,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Run this step again",
+          "Preparation in progress",
+          "Face from image",
+          "Texture detail",
+          "Parts",
+          "Rig for animation (optional)"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Bake",
+          "rect": {
+            "x": 1121,
+            "y": 372,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Continue preparation",
+          "rect": {
+            "x": 1121,
+            "y": 567,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Refine texture",
+          "rect": {
+            "x": 1121,
+            "y": 1196,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 1121,
+            "y": 2082,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nTextured model · 009\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nHistory\nClose\nStarred only\nUploaded picture\n001\n☆\n⇆\n✎\n×\nDescription\n002\n☆\n⇆\n✎\n×\nConcept images\n003\n☆\n⇆\n✎\n×\nCut-out reference\n004\n☆\n⇆\n✎\n×\nGenerated model (faithful)\n005\n☆\n⇆\n✎\n×\n▸ 3 steps\nTextured model\n009\n☆\n✎\n×\nChecks\n010\n☆\n⇆\n✎\n×\nExport: OBJ\n011\n☆\n⇆\n✎\n×\nImported model\n012\n☆\n⇆\n✎\n×\nSkinned model\n013\n☆\n⇆\n✎\n×\nAnimated model\n014\n☆\n⇆\n✎\n×\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nRun this step again\n\nClick Bake to run only this step on this model, with your own settings.\n\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nBake\nPreparation in progress\n\nPreparation stopped partway. Click Continue preparation to finish the remaining steps.\n\ncheck\n\nContinue preparation\nFace from image\n\nClick Face from image to copy the face from your picture onto the texture. This makes the face as sharp as the picture. It takes a few seconds.\n\nHead\nWhole front\nStrength\nFace from image\nTexture detail\n\nClick Refine texture to redraw the texture's fine detail (buttons, stitching, wood grain) from close-up views. The shape and the colours stay. It takes about 4–5 minutes.\n\nDescription\nStrength\n1.0\nRefine texture\nRemove baked shadows\n0.00\nShadows only\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "licences",
+      "path": "screenshots/licences.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 230,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 326,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 419,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 491,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 576,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": false,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": false,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 2111,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Run this step again",
+          "Preparation in progress",
+          "Face from image",
+          "Texture detail",
+          "Parts",
+          "Rig for animation (optional)"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Bake",
+          "rect": {
+            "x": 1121,
+            "y": 372,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Continue preparation",
+          "rect": {
+            "x": 1121,
+            "y": 567,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Refine texture",
+          "rect": {
+            "x": 1121,
+            "y": 1196,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 1121,
+            "y": 2082,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nTextured model · 009\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nLicences of Textured model · 009\nClose\nFixture/faithful · MIT\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nRun this step again\n\nClick Bake to run only this step on this model, with your own settings.\n\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nBake\nPreparation in progress\n\nPreparation stopped partway. Click Continue preparation to finish the remaining steps.\n\ncheck\n\nContinue preparation\nFace from image\n\nClick Face from image to copy the face from your picture onto the texture. This makes the face as sharp as the picture. It takes a few seconds.\n\nHead\nWhole front\nStrength\nFace from image\nTexture detail\n\nClick Refine texture to redraw the texture's fine detail (buttons, stitching, wood grain) from close-up views. The shape and the colours stay. It takes about 4–5 minutes.\n\nDescription\nStrength\n1.0\nRefine texture\nRemove baked shadows\n0.00\nShadows only\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "compare",
+      "path": "screenshots/compare.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 230,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 326,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 419,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 491,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 576,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 661,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": false,
+          "rect": {
+            "x": 715,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": false,
+          "rect": {
+            "x": 810,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 912,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 1009,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 1097,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1191,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1308,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1369,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 1104,
+        "y": 153,
+        "width": 336,
+        "height": 711,
+        "scrollHeight": 2111,
+        "scrollWidth": 335,
+        "clientHeight": 711,
+        "sections": [
+          "Run this step again",
+          "Preparation in progress",
+          "Face from image",
+          "Texture detail",
+          "Parts",
+          "Rig for animation (optional)"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 1104,
+        "height": 711
+      },
+      "primary": [
+        {
+          "text": "Bake",
+          "rect": {
+            "x": 1121,
+            "y": 372,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Continue preparation",
+          "rect": {
+            "x": 1121,
+            "y": 567,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Refine texture",
+          "rect": {
+            "x": 1121,
+            "y": 1196,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 1121,
+            "y": 2082,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nTextured model · 009\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nRun this step again\n\nClick Bake to run only this step on this model, with your own settings.\n\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nBake\nPreparation in progress\n\nPreparation stopped partway. Click Continue preparation to finish the remaining steps.\n\ncheck\n\nContinue preparation\nFace from image\n\nClick Face from image to copy the face from your picture onto the texture. This makes the face as sharp as the picture. It takes a few seconds.\n\nHead\nWhole front\nStrength\nFace from image\nTexture detail\n\nClick Refine texture to redraw the texture's fine detail (buttons, stitching, wood grain) from close-up views. The shape and the colours stay. It takes about 4–5 minutes.\n\nDescription\nStrength\n1.0\nRefine texture\nRemove baked shadows\n0.00\nShadows only\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "laptop-bake",
+      "path": "screenshots/laptop-bake.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 70,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 166,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 259,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 331,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 416,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 501,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": false,
+          "rect": {
+            "x": 555,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": false,
+          "rect": {
+            "x": 650,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 752,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 849,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 937,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1031,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1148,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1209,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 944,
+        "y": 153,
+        "width": 336,
+        "height": 531,
+        "scrollHeight": 2111,
+        "scrollWidth": 335,
+        "clientHeight": 531,
+        "sections": [
+          "Run this step again",
+          "Preparation in progress",
+          "Face from image",
+          "Texture detail",
+          "Parts",
+          "Rig for animation (optional)"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 944,
+        "height": 531
+      },
+      "primary": [
+        {
+          "text": "Bake",
+          "rect": {
+            "x": 961,
+            "y": 372,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Continue preparation",
+          "rect": {
+            "x": 961,
+            "y": 567,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Refine texture",
+          "rect": {
+            "x": 961,
+            "y": 1196,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 961,
+            "y": 2082,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nTextured model · 009\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nRun this step again\n\nClick Bake to run only this step on this model, with your own settings.\n\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nBake\nPreparation in progress\n\nPreparation stopped partway. Click Continue preparation to finish the remaining steps.\n\ncheck\n\nContinue preparation\nFace from image\n\nClick Face from image to copy the face from your picture onto the texture. This makes the face as sharp as the picture. It takes a few seconds.\n\nHead\nWhole front\nStrength\nFace from image\nTexture detail\n\nClick Refine texture to redraw the texture's fine detail (buttons, stitching, wood grain) from close-up views. The shape and the colours stay. It takes about 4–5 minutes.\n\nDescription\nStrength\n1.0\nRefine texture\nRemove baked shadows\n0.00\nShadows only\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "laptop-imported",
+      "path": "screenshots/laptop-imported.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [
+        {
+          "text": "Reference · skipped",
+          "disabled": true,
+          "rect": {
+            "x": 27,
+            "y": 112,
+            "width": 129,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate · skipped",
+          "disabled": true,
+          "rect": {
+            "x": 165,
+            "y": 112,
+            "width": 125,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 299,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": true,
+          "rect": {
+            "x": 357,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": true,
+          "rect": {
+            "x": 430,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": true,
+          "rect": {
+            "x": 501,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 555,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 650,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 752,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 849,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": true,
+          "rect": {
+            "x": 937,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": true,
+          "rect": {
+            "x": 1031,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1148,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1209,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 944,
+        "y": 153,
+        "width": 336,
+        "height": 531,
+        "scrollHeight": 1725,
+        "scrollWidth": 335,
+        "clientHeight": 531,
+        "sections": [
+          "What came in",
+          "Parts",
+          "Imported model",
+          "Rig for animation (optional)",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 944,
+        "height": 531
+      },
+      "primary": [
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 961,
+            "y": 629,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 961,
+            "y": 1223,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nImported model · 012\nLicences\nHistory (14)\nReference · skipped\nGenerate · skipped\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nWhat came in\nFile\nGLB\nHeight\n1.80 m\nTriangles\n10.000\nMaterials\n2 materials, 3 textures\nSkeleton\nnone\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nImported model\n\nClick Check model to test it. Its original materials stay unchanged.\n\nCheck model\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nThis exports \"Imported model\" (012). It has not been checked yet.\n\nExport for Godot\nSimplify geometry (untextured copy)\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "laptop-generate",
+      "path": "screenshots/laptop-generate.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [
+        {
+          "text": "Reference",
+          "disabled": false,
+          "rect": {
+            "x": 136,
+            "y": 112,
+            "width": 75,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate",
+          "disabled": false,
+          "rect": {
+            "x": 220,
+            "y": 112,
+            "width": 70,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 299,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 357,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 430,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 501,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 555,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 650,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 752,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 849,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 937,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1031,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1148,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1209,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 944,
+        "y": 153,
+        "width": 336,
+        "height": 531,
+        "scrollHeight": 591,
+        "scrollWidth": 340,
+        "clientHeight": 531,
+        "sections": [
+          "Generate the 3D model"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 944,
+        "height": 531
+      },
+      "primary": [
+        {
+          "text": "Generate 3D",
+          "rect": {
+            "x": 961,
+            "y": 623,
+            "width": 308,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nCut-out reference · 004\nLicences\nHistory (14)\nReference\nGenerate\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nCut-out\nOriginal\nGenerate the 3D model\nGenerator\nFaithful — Recommended\nPixal3D: follows the picture closely.\nFast — Alternative model\nTRELLIS.2: needs less memory.\nBackground behind your picture\nAutomatic\nGrey: for dark subjects (black fur, dark armour)\nBlack\nWhite\n\nThe generator sees your cut-out on a plain background. On black, very dark parts can look like background and come out missing, such as a black cat's back. Grey avoids that. Automatic uses grey for Fast when the subject is dark.\n\nAdvanced\nGenerate 3D\nAdvanced: run any step"
+    },
+    {
+      "name": "laptop-prepare",
+      "path": "screenshots/laptop-prepare.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 123,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate",
+          "disabled": false,
+          "rect": {
+            "x": 220,
+            "y": 112,
+            "width": 70,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 299,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 357,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 430,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 501,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 555,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 650,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 752,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 849,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 937,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1031,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1148,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1209,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 944,
+        "y": 153,
+        "width": 336,
+        "height": 531,
+        "scrollHeight": 895,
+        "scrollWidth": 335,
+        "clientHeight": 531,
+        "sections": [
+          "Prepare for your project"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 944,
+        "height": 531
+      },
+      "primary": [
+        {
+          "text": "Prepare model",
+          "rect": {
+            "x": 961,
+            "y": 685,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nGenerated model (faithful) · 005\nLicences\nHistory (14)\n✓ Reference\nGenerate\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nPrepare for your project\nTopology\nTriangles (game-ready, smallest)\nQuads (clean loops for rigging and sculpting)\nTriangle budget\nClose slits up to (mm)\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nHeight in metres\nLevel it and turn it square\n\nclean → simplify → unwrap → bake → check\n\nPrepare model\n\nRight after generating, a model shows small holes and loose bits: Prepare model closes them (its first step is Clean). If a whole area is missing, such as a black cat's back, generate again from the picture with Background: Grey.\n\nTry another variation\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "laptop-skin",
+      "path": "screenshots/laptop-skin.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 57,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 153,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 245,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 317,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 403,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 488,
+            "y": 112,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 555,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 650,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 752,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 849,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 937,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1031,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1148,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1209,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 944,
+        "y": 153,
+        "width": 336,
+        "height": 531,
+        "scrollHeight": 2245,
+        "scrollWidth": 416,
+        "clientHeight": 531,
+        "sections": [
+          "Skinned model",
+          "Check the model",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 944,
+        "height": 531
+      },
+      "primary": [
+        {
+          "text": "Add 3 animations",
+          "rect": {
+            "x": 961,
+            "y": 1515,
+            "width": 384,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 961,
+            "y": 1661,
+            "width": 384,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nSkinned model · 013\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nAnimation: off\nPlay: Idle\nPlay: Walk\nWeights: off\nWeights: Hips\nWeights: Spine\nWeights: Head\nSkeleton\nFrame model\nFront\nSide\nTop\n24 triangles · 16 vertices · 1 mesh\nSkinned model\n\nWeights by import.\n\nThe model now moves with its skeleton. In the viewer, choose \"Weights: a bone\" to see what each bone moves. Red means fully and blue means not at all.If a part follows the wrong bone, click Edit skeleton and fix the joints.\n\nEdit skeleton\nMake an animation from a sentence\n\nDescribe the movement, then click Generate motion. When it is ready, its page opens: click Put this motion on the model there to see your character do it.\n\nSeconds\nSeed\nGenerate motion\nMake an animation from a video\n\nFilm one person from head to toe with the camera held still, then choose the video (MP4, MOV or WebM). A 15-second clip takes about two minutes. When the motion is ready, its page opens: click Put this motion on the model there to see your character do it.\n\nQuality\nBest: smooth and accurate (recommended)\nQuick: follows the video most closely, a little shakier\nLight: from the body points alone, may drift across the floor\nFrom\nto\ns\nKeep planted feet still\nIn place (no travel)\nSmoothing\nMake motion from video\n\nChoose the animations you want from the 4 ready-made ones, then click Add. Each one takes about 10 seconds. They play in the viewer and export with the model.\n\n✓ Idle_A\n✓ Jog\n✓ Walk\nWave\nAdd 3 animations\nCheck the model\n\nClick Check model to test it before you export it.\n\nCheck model\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nOff for a rigged character: the hull would stay frozen in the rest pose while the character moves. The game engine gives a moving character its own collision (Unreal's physics asset, capsules on the bones in Godot). Tick it if you want the hull anyway; Unreal imports it as a separate static mesh beside the character.\n\nThis exports \"Skinned model\" (013). It has not been checked yet.\n\nExport for Godot\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "laptop-editor",
+      "path": "screenshots/laptop-editor.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 43,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 140,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 232,
+            "y": 112,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 304,
+            "y": 112,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 390,
+            "y": 112,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 474,
+            "y": 112,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 542,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 636,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 739,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 836,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 924,
+            "y": 112,
+            "width": 98,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1031,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 1148,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 1209,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 944,
+        "y": 153,
+        "width": 336,
+        "height": 531,
+        "scrollHeight": 1607,
+        "scrollWidth": 335,
+        "clientHeight": 531,
+        "sections": [
+          "Edit animation",
+          "Check the model",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 944,
+        "height": 531
+      },
+      "primary": [
+        {
+          "text": "Save as a new version",
+          "rect": {
+            "x": 961,
+            "y": 821,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": true
+        },
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 961,
+            "y": 1003,
+            "width": 303,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nAnimated model · 014\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\n✓ Skin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nWeights: off\nWeights: Hips\nWeights: Spine\nWeights: Head\nSkeleton\nFrame model\nFront\nSide\nTop\n|◀\n◀\n▶\n▶\n▶|\nTIMELINE\nKeys\nCurves\nSHOW\nMotion path\nOnion skin\nFRAME\n/ 12 · 0.00 s\nSPEED\n1×\n0.5×\n0.25×\n▸ Body\nEdit animation\nClip\nIdle\nWalk\nDuplicate\nEdited\nOriginal\nClick a joint in the view (or a bone in the timeline) to select it, then turn it with the rings: that keys it at this frame.\nMove shifts the hips with arrows; IK drag pulls a hand or foot, the arm or leg bending to follow.\nA key fades in and out over its falloff, so the motion around it stays smooth. Keys are diamonds; drag them in time, or switch the timeline to Curves.\nKeys: Space plays, ←/→ a frame, I keys the bone as it is, X deletes the selected keys, Ctrl+Z undoes; Ctrl+wheel zooms the timeline.\nBone\n\nNo bone selected.\n\nFoot locks\nClip tools\nUndo\nRedo\nSave as a new version\nClose\nCheck the model\n\nClick Check model to test it before you export it.\n\nCheck model\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nOff for a rigged character: the hull would stay frozen in the rest pose while the character moves. The game engine gives a moving character its own collision (Unreal's physics asset, capsules on the bones in Godot). Tick it if you want the hull anyway; Unreal imports it as a separate static mesh beside the character.\n\nThis exports \"Animated model\" (014). It has not been checked yet.\n\nExport for Godot\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "missing-concepts",
+      "path": "screenshots/missing-concepts.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Generate 4 concepts",
+          "rect": {
+            "x": 32,
+            "y": 612,
+            "width": 720,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "New asset\nWhat would you like to make?\nFrom a description\nFrom an image\nName (optional)\nDescription\nKind (adds framing for a clean 3D reference picture)\nObject\ncentred, three-quarter view, plain grey background\nCharacter\nfull body in an A-pose, front view, plain background\nCreature\nfull body, side three-quarter view, legs apart\n\nConcept-image files weren't found. Set them up; your description stays here.\n\nGenerate 4 concepts"
+    },
+    {
+      "name": "missing-generator",
+      "path": "screenshots/missing-generator.png",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "documentWidth": 1280,
+      "stages": [
+        {
+          "text": "Reference",
+          "disabled": false,
+          "rect": {
+            "x": 136,
+            "y": 112,
+            "width": 75,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate",
+          "disabled": false,
+          "rect": {
+            "x": 220,
+            "y": 112,
+            "width": 70,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 299,
+            "y": 112,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 357,
+            "y": 112,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 430,
+            "y": 112,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 501,
+            "y": 112,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 555,
+            "y": 112,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 650,
+            "y": 112,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 752,
+            "y": 112,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 849,
+            "y": 112,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 937,
+            "y": 112,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 1031,
+            "y": 112,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 1148,
+            "y": 112,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 1209,
+            "y": 112,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 944,
+        "y": 153,
+        "width": 336,
+        "height": 531,
+        "scrollHeight": 685,
+        "scrollWidth": 340,
+        "clientHeight": 531,
+        "sections": [
+          "Generate the 3D model"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 153,
+        "width": 944,
+        "height": 531
+      },
+      "primary": [
+        {
+          "text": "Generate 3D",
+          "rect": {
+            "x": 961,
+            "y": 717,
+            "width": 308,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nCut-out reference · 004\nLicences\nHistory (14)\nReference\nGenerate\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nCut-out\nOriginal\nGenerate the 3D model\nGenerator\nFaithful — Recommended\nPixal3D: follows the picture closely.\nFast — Alternative model\nTRELLIS.2: needs less memory.\n\nThe faithful generator's files weren't found. Set it up.\n\nBackground behind your picture\nAutomatic\nGrey: for dark subjects (black fur, dark armour)\nBlack\nWhite\n\nThe generator sees your cut-out on a plain background. On black, very dark parts can look like background and come out missing, such as a black cat's back. Grey avoids that. Automatic uses grey for Fast when the subject is dark.\n\nAdvanced\nGenerate 3D\nAdvanced: run any step"
+    },
+    {
+      "name": "compact-library",
+      "path": "screenshots/compact-library.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "New asset",
+          "rect": {
+            "x": 275,
+            "y": 134,
+            "width": 99,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Library\nNew asset\nNewest first\nOldest first\nName A–Z\nAll\nMine\nBench\nGolden\nArchived\nTag: all\ncharacter\nprop\nSelect\n8 of 8 assets\nBrass lantern\n14 versions · 12. Okt., 12:00 · ux_fixture\n#prop\nRename\nTags\nArchive\nDelete\nForest creature\n14 versions · 12. Okt., 12:00\n#character\nRename\nTags\nArchive\nDelete\nStone arch\n14 versions · 12. Okt., 12:00\n#prop\nRename\nTags\nArchive\nDelete\nHelmet\n14 versions · 12. Okt., 12:00\n#character\nRename\nTags\nArchive\nDelete\nChair\n14 versions · 12. Okt., 12:00\n#prop\nRename\nTags\nArchive\nDelete\nBrass lantern\n14 versions · 12. Okt., 12:00 · fixture_5\n#character\nRename\nTags\nArchive\nDelete\nDragon\n14 versions · 12. Okt., 12:00\n#prop\nRename\nTags\nArchive\nDelete\nA very long asset name for examining line wrapping in the card and workspace\n14 versions · 12. Okt., 12:00\n#character\nRename\nTags\nArchive\nDelete"
+    },
+    {
+      "name": "compact-new",
+      "path": "screenshots/compact-new.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Generate 4 concepts",
+          "rect": {
+            "x": 16,
+            "y": 788,
+            "width": 358,
+            "height": 44
+          },
+          "disabled": true
+        }
+      ],
+      "bodyText": "New asset\nWhat would you like to make?\nFrom a description\nFrom an image\nName (optional)\nDescription\nKind (adds framing for a clean 3D reference picture)\nObject\ncentred, three-quarter view, plain grey background\nCharacter\nfull body in an A-pose, front view, plain background\nCreature\nfull body, side three-quarter view, legs apart\nGenerate 4 concepts"
+    },
+    {
+      "name": "compact-import",
+      "path": "screenshots/compact-import.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "Import",
+          "rect": {
+            "x": 16,
+            "y": 677,
+            "width": 358,
+            "height": 44
+          },
+          "disabled": true
+        }
+      ],
+      "bodyText": "Import\nBring in a model you already have\n\nFBX, glTF or GLB, OBJ, USD or USDZ, STL and PLY. A model that comes with other files (an OBJ with its .mtl and textures, a .gltf with its .bin) goes in as one .zip: right-click its folder, Send to, Compressed folder. A character on a Mixamo-style skeleton, or one exported from this app, keeps its skeleton and animations; anything else comes in as a still model you can rig here.\n\nName (optional)\nModel file or .zip\n…or drop the file here.\nKeep it as a still model (ignore its skeleton and animations)\nImport"
+    },
+    {
+      "name": "compact-workspace",
+      "path": "screenshots/compact-workspace.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "stages": [
+        {
+          "text": "Reference · skipped",
+          "disabled": true,
+          "rect": {
+            "x": 52,
+            "y": 216,
+            "width": 129,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate · skipped",
+          "disabled": true,
+          "rect": {
+            "x": 190,
+            "y": 216,
+            "width": 125,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 324,
+            "y": 216,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": true,
+          "rect": {
+            "x": 90,
+            "y": 250,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": true,
+          "rect": {
+            "x": 163,
+            "y": 250,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": true,
+          "rect": {
+            "x": 234,
+            "y": 250,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 288,
+            "y": 250,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 95,
+            "y": 284,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": false,
+          "rect": {
+            "x": 198,
+            "y": 284,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 295,
+            "y": 284,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": true,
+          "rect": {
+            "x": 47,
+            "y": 318,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": true,
+          "rect": {
+            "x": 141,
+            "y": 318,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 258,
+            "y": 318,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 319,
+            "y": 318,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 0,
+        "y": 865,
+        "width": 390,
+        "height": 1642,
+        "scrollHeight": 1641,
+        "scrollWidth": 390,
+        "clientHeight": 1641,
+        "sections": [
+          "What came in",
+          "Parts",
+          "Imported model",
+          "Rig for animation (optional)",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 359,
+        "width": 390,
+        "height": 506
+      },
+      "primary": [
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 16,
+            "y": 1342,
+            "width": 358,
+            "height": 44
+          },
+          "disabled": false
+        },
+        {
+          "text": "Fit a skeleton",
+          "rect": {
+            "x": 16,
+            "y": 1852,
+            "width": 358,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nImported model · 012\nLicences\nHistory (14)\nReference · skipped\nGenerate · skipped\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nFrame model\nFront\nSide\nTop\n2 triangles · 4 vertices · 1 mesh\nWhat came in\nFile\nGLB\nHeight\n1.80 m\nTriangles\n10.000\nMaterials\n2 materials, 3 textures\nSkeleton\nnone\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nImported model\n\nClick Check model to test it. Its original materials stay unchanged.\n\nCheck model\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nThis exports \"Imported model\" (012). It has not been checked yet.\n\nExport for Godot\nSimplify geometry (untextured copy)\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "compact-concepts",
+      "path": "screenshots/compact-concepts.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "stages": [
+        {
+          "text": "Reference",
+          "disabled": false,
+          "rect": {
+            "x": 18,
+            "y": 216,
+            "width": 75,
+            "height": 32
+          }
+        },
+        {
+          "text": "Generate",
+          "disabled": false,
+          "rect": {
+            "x": 102,
+            "y": 216,
+            "width": 70,
+            "height": 32
+          }
+        },
+        {
+          "text": "Clean",
+          "disabled": false,
+          "rect": {
+            "x": 181,
+            "y": 216,
+            "width": 50,
+            "height": 32
+          }
+        },
+        {
+          "text": "Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 239,
+            "y": 216,
+            "width": 64,
+            "height": 32
+          }
+        },
+        {
+          "text": "Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 312,
+            "y": 216,
+            "width": 62,
+            "height": 32
+          }
+        },
+        {
+          "text": "Bake",
+          "disabled": false,
+          "rect": {
+            "x": 34,
+            "y": 250,
+            "width": 45,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 88,
+            "y": 250,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 183,
+            "y": 250,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 286,
+            "y": 250,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": true,
+          "rect": {
+            "x": 23,
+            "y": 284,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 111,
+            "y": 284,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 204,
+            "y": 284,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": false,
+          "rect": {
+            "x": 321,
+            "y": 284,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": false,
+          "rect": {
+            "x": 319,
+            "y": 318,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 0,
+        "y": 865,
+        "width": 390,
+        "height": 258,
+        "scrollHeight": 257,
+        "scrollWidth": 390,
+        "clientHeight": 257,
+        "sections": [
+          "Pick a concept"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": 359,
+        "width": 390,
+        "height": 506
+      },
+      "primary": [
+        {
+          "text": "Use this image",
+          "rect": {
+            "x": 12,
+            "y": 809,
+            "width": 130,
+            "height": 44
+          },
+          "disabled": true
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nConcept images · 003\nLicences\nHistory (14)\nReference\nGenerate\nClean\nSimplify\nUnwrap\nBake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\nSkin\noptional\nAnimate\noptional\nCheck\nExport\n#1 reference checks passed\n#2 reference checks passed\n#3 reference checks passed\n#4 reference checks passed\nUse this image\nGenerate 4 more\nPick a concept\n\nClick the best picture, then click Use this image. The ranking is only a hint. It does not promise a good 3D model.\n\nEdit description\nAdvanced: run any step"
+    },
+    {
+      "name": "zoom-equivalent-editor",
+      "path": "screenshots/zoom-equivalent-editor.png",
+      "viewport": {
+        "width": 640,
+        "height": 360
+      },
+      "documentWidth": 1037,
+      "stages": [
+        {
+          "text": "✓ Reference",
+          "disabled": false,
+          "rect": {
+            "x": 40,
+            "y": -353,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Generate",
+          "disabled": false,
+          "rect": {
+            "x": 136,
+            "y": -353,
+            "width": 84,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Clean",
+          "disabled": false,
+          "rect": {
+            "x": 229,
+            "y": -353,
+            "width": 63,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Simplify",
+          "disabled": false,
+          "rect": {
+            "x": 301,
+            "y": -353,
+            "width": 77,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Unwrap",
+          "disabled": false,
+          "rect": {
+            "x": 386,
+            "y": -353,
+            "width": 76,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Bake",
+          "disabled": false,
+          "rect": {
+            "x": 471,
+            "y": -353,
+            "width": 59,
+            "height": 32
+          }
+        },
+        {
+          "text": "Face optional",
+          "disabled": true,
+          "rect": {
+            "x": 538,
+            "y": -353,
+            "width": 86,
+            "height": 32
+          }
+        },
+        {
+          "text": "Detail optional",
+          "disabled": true,
+          "rect": {
+            "x": 60,
+            "y": -319,
+            "width": 94,
+            "height": 32
+          }
+        },
+        {
+          "text": "Parts optional",
+          "disabled": true,
+          "rect": {
+            "x": 162,
+            "y": -319,
+            "width": 88,
+            "height": 32
+          }
+        },
+        {
+          "text": "Rig optional",
+          "disabled": false,
+          "rect": {
+            "x": 260,
+            "y": -319,
+            "width": 79,
+            "height": 32
+          }
+        },
+        {
+          "text": "✓ Skin optional",
+          "disabled": false,
+          "rect": {
+            "x": 348,
+            "y": -319,
+            "width": 98,
+            "height": 32
+          }
+        },
+        {
+          "text": "Animate optional",
+          "disabled": false,
+          "rect": {
+            "x": 454,
+            "y": -319,
+            "width": 108,
+            "height": 32
+          }
+        },
+        {
+          "text": "Check",
+          "disabled": true,
+          "rect": {
+            "x": 571,
+            "y": -319,
+            "width": 53,
+            "height": 32
+          }
+        },
+        {
+          "text": "Export",
+          "disabled": true,
+          "rect": {
+            "x": 569,
+            "y": -285,
+            "width": 55,
+            "height": 32
+          }
+        }
+      ],
+      "panel": {
+        "x": 0,
+        "y": -28,
+        "width": 640,
+        "height": 1377,
+        "scrollHeight": 1376,
+        "scrollWidth": 640,
+        "clientHeight": 1376,
+        "sections": [
+          "Edit animation",
+          "Check the model",
+          "Export"
+        ]
+      },
+      "preview": {
+        "x": 0,
+        "y": -244,
+        "width": 640,
+        "height": 216
+      },
+      "primary": [
+        {
+          "text": "Save as a new version",
+          "rect": {
+            "x": 16,
+            "y": 491,
+            "width": 608,
+            "height": 44
+          },
+          "disabled": true
+        },
+        {
+          "text": "Check model",
+          "rect": {
+            "x": 16,
+            "y": 674,
+            "width": 608,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Brass lantern\nRename\nAnimated model · 014\nLicences\nHistory (14)\n✓ Reference\n✓ Generate\n✓ Clean\n✓ Simplify\n✓ Unwrap\n✓ Bake\nFace\noptional\nDetail\noptional\nParts\noptional\nRig\noptional\n✓ Skin\noptional\nAnimate\noptional\nCheck\nExport\nMaterial\nBase color\nSurface normals\nAmbient occlusion\nRoughness\nMetallic\nUV checker\nWireframe\nWeights: off\nWeights: Hips\nWeights: Spine\nWeights: Head\nSkeleton\nFrame model\nFront\nSide\nTop\n|◀\n◀\n▶\n▶\n▶|\nTIMELINE\nKeys\nCurves\nSHOW\nMotion path\nOnion skin\nFRAME\n/ 12 · 0.00 s\nSPEED\n1×\n0.5×\n0.25×\n▸ Body\nEdit animation\nClip\nIdle\nWalk\nDuplicate\nEdited\nOriginal\nClick a joint in the view (or a bone in the timeline) to select it, then turn it with the rings: that keys it at this frame.\nMove shifts the hips with arrows; IK drag pulls a hand or foot, the arm or leg bending to follow.\nA key fades in and out over its falloff, so the motion around it stays smooth. Keys are diamonds; drag them in time, or switch the timeline to Curves.\nKeys: Space plays, ←/→ a frame, I keys the bone as it is, X deletes the selected keys, Ctrl+Z undoes; Ctrl+wheel zooms the timeline.\nBone\n\nNo bone selected.\n\nFoot locks\nClip tools\nUndo\nRedo\nSave as a new version\nClose\nCheck the model\n\nClick Check model to test it before you export it.\n\nCheck model\nExport\nDestination\nGodot\nUnreal\nUnity\nWeb / AR\nOBJ\n3D print\n\nSaves a GLB file. Godot makes the lower detail levels (LODs) itself.\n\nCollision hull\n\nOff for a rigged character: the hull would stay frozen in the rest pose while the character moves. The game engine gives a moving character its own collision (Unreal's physics asset, capsules on the bones in Godot). Tick it if you want the hull anyway; Unreal imports it as a separate static mesh beside the character.\n\nThis exports \"Animated model\" (014). It has not been checked yet.\n\nExport for Godot\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "empty-library",
+      "path": "screenshots/empty-library.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "stages": [],
+      "panel": null,
+      "preview": null,
+      "primary": [
+        {
+          "text": "New asset",
+          "rect": {
+            "x": 65,
+            "y": 207,
+            "width": 99,
+            "height": 44
+          },
+          "disabled": false
+        }
+      ],
+      "bodyText": "Library\nYour next asset starts here.\nNew asset\nImport a model"
+    }
+  ],
+  "probes": [
+    {
+      "name": "unsaved_animation_close",
+      "saveEnabled": true,
+      "dialogs": 0,
+      "closed": true,
+      "reopenedSpeed": "1",
+      "posts": [
+        {
+          "path": "/api/assets/ux_fixture/steps/anim_edit",
+          "method": "POST",
+          "body": {
+            "parent": "014_anim",
+            "params": {
+              "clips": {
+                "Idle": {
+                  "speed": 0.5
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "history_keyboard_focus",
+      "order": [
+        {
+          "tag": "INPUT",
+          "name": "",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 223
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Uploaded picture001",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 255
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Uploaded picture 001",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 255
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Uploaded picture 001 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 255
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Uploaded picture 001",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 255
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Uploaded picture 001 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 255
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Description002",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 297
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Description 002",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 297
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Description 002 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 297
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Description 002",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 297
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Description 002 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 297
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Concept images003",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 339
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Concept images 003",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 339
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Concept images 003 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 339
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Concept images 003",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 339
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Concept images 003 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 339
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Cut-out reference004",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 381
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Cut-out reference 004",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 381
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Cut-out reference 004 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 381
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Cut-out reference 004",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 381
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Cut-out reference 004 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 381
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Generated model (faithful)005",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 423
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Generated model (faithful) 005",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 423
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Generated model (faithful) 005 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 423
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Generated model (faithful) 005",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 423
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Generated model (faithful) 005 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 423
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "▸ 3 steps",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 465
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Textured model009",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 505
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Textured model 009",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 505
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Textured model 009",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 505
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Textured model 009 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 505
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Checks010",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 547
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Checks 010",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 547
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Checks 010 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 547
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Checks 010",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 547
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Checks 010 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 547
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Export: OBJ011",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 589
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Export: OBJ 011",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 589
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Export: OBJ 011 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 589
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Export: OBJ 011",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 589
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Export: OBJ 011 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 589
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Imported model012",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 631
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Imported model 012",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 631
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Imported model 012 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 631
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Imported model 012",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 631
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Imported model 012 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 631
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Skinned model013",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 673
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Skinned model 013",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 673
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Skinned model 013 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 673
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Skinned model 013",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 673
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Skinned model 013 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 673
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Animated model014",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 16,
+            "y": 715
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Star Animated model 014",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 279,
+            "y": 715
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Compare Animated model 014 with the shown version",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 311,
+            "y": 715
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Label Animated model 014",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 343,
+            "y": 715
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Delete Animated model 014 and what was made from it",
+          "insideDrawer": true,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 375,
+            "y": 715
+          }
+        },
+        {
+          "tag": "SELECT",
+          "name": "Inspect",
+          "insideDrawer": false,
+          "obscuredByDrawer": true,
+          "rect": {
+            "x": 12,
+            "y": 165
+          }
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "insideDrawer": false,
+          "obscuredByDrawer": true,
+          "rect": {
+            "x": 178,
+            "y": 172
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Frame model",
+          "insideDrawer": false,
+          "obscuredByDrawer": true,
+          "rect": {
+            "x": 281,
+            "y": 165
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Front",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 392,
+            "y": 165
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Side",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 459,
+            "y": 165
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Top",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 519,
+            "y": 165
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "",
+          "insideDrawer": false,
+          "obscuredByDrawer": true,
+          "rect": {
+            "x": 12,
+            "y": 738
+          }
+        },
+        {
+          "tag": "SELECT",
+          "name": "1K (1024 px)2K (2048 px)",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 286
+          }
+        },
+        {
+          "tag": "INPUT",
+          "name": "",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 340
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Bake",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 372
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Continue preparation",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 567
+          }
+        },
+        {
+          "tag": "SELECT",
+          "name": "Region",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 773
+          }
+        },
+        {
+          "tag": "INPUT",
+          "name": "Strength",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1251,
+            "y": 784
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Face from image",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 824
+          }
+        },
+        {
+          "tag": "INPUT",
+          "name": "Description",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 488
+          }
+        },
+        {
+          "tag": "INPUT",
+          "name": "Detail strength",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1123,
+            "y": 565
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Refine texture",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 638
+          }
+        },
+        {
+          "tag": "INPUT",
+          "name": "Remove baked shadows",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1123,
+            "y": 719
+          }
+        },
+        {
+          "tag": "BUTTON",
+          "name": "Render the views",
+          "insideDrawer": false,
+          "obscuredByDrawer": false,
+          "rect": {
+            "x": 1121,
+            "y": 488
+          }
+        }
+      ],
+      "drawerRemainsAfterEscapeFromPreview": 1
+    },
+    {
+      "name": "licences_layout",
+      "layout": {
+        "workspaceRows": "97px 0px 711.156px",
+        "children": [
+          {
+            "className": "ws-title",
+            "height": 97,
+            "top": 56,
+            "gridRow": "auto"
+          },
+          {
+            "className": "licences",
+            "height": 33,
+            "top": 153,
+            "gridRow": "auto",
+            "text": "Licences of Textured model · 009\nClose\nFixture/faithful · MIT"
+          },
+          {
+            "className": "ws-body",
+            "height": 711,
+            "top": 153,
+            "gridRow": "auto"
+          }
+        ],
+        "licenceHitAtHeading": false
+      }
+    },
+    {
+      "name": "preparation_copy_with_active_job",
+      "panelText": "Checking…\nChecking mesh\nCancel\nRun this step again\n\nClick Bake to run only this step on this model, with your own settings.\n\nTexture size\n1K (1024 px)\n2K (2048 px)\nSquare a flat prop's perspective taper\nBake\nPreparation in progress\n\nPreparation stopped partway. Click Continue preparation to finish the remaining steps.\n\ncheck\n\nContinue preparation\nFace from image\n\nClick Face from image to copy the face from your picture onto the texture. This makes the face as sharp as the picture. It takes a few seconds.\n\nHead\nWhole front\nStrength\nFace from image\nTexture detail\n\nClick Refine texture to redraw the texture's fine detail (buttons, stitching, wood grain) from close-up views. The shape and the colours stay. It takes about 4–5 minutes.\n\nDescription\nStrength\n1.0\nRefine texture\nRemove baked shadows\n0.00\nShadows only\nParts\n\nOptional: click Render the views to take twelve pictures of the model from around it. Then you can click a piece, such as a helmet or a shield, to give it a name. It takes about 15 seconds.\n\nRender the views\nRig for animation (optional)\n\nClick Fit a skeleton to add a skeleton to a character or an animal. Skip this for props and scenery. A person works best standing upright with the arms away from the body; an animal standing on all its legs. It takes about 10 seconds. You can correct the result by hand afterwards.\n\nWhat is it?\nA person or humanoid character\nA four-legged animal (dog, cat, fox, wolf)\nA hoofed animal (horse, deer, cow)\nA bird\nA two-legged monster with a tail (kaiju, dinosaur)\nA shark or fish with fins and a tail\nA winged dragon (spread wings, four legs, a tail)\nA spider or other eight-legged creature\nA snake (no legs)\nFit a skeleton\nEdit in Blender\nAdvanced: run any step"
+    },
+    {
+      "name": "failed_save_retains_editor",
+      "editorCount": 1,
+      "speed": "0.5",
+      "saveEnabled": true
+    },
+    {
+      "name": "library_filter_navigation",
+      "before": 1,
+      "searchOnReturn": "",
+      "cardsOnReturn": 8,
+      "hash": "#/library"
+    },
+    {
+      "name": "missing_feature_actions",
+      "concepts": {
+        "warning": 1,
+        "enabled": true
+      },
+      "generate": {
+        "warning": 1,
+        "enabled": true
+      }
+    },
+    {
+      "name": "contrast_and_structure",
+      "textVsPage": 15.78,
+      "secondaryVsPanel": 7.79,
+      "inputBorderVsPage": 1.76,
+      "inputBorderVsFill": 1.36,
+      "placeholderColor": "rgb(117, 117, 117)",
+      "skipLinks": 0
+    }
+  ],
+  "errors": []
+}
