@@ -3388,7 +3388,7 @@ above are the contract; each milestone's "As built" note lands here.
 - Claim a GPU acceptance check passed without having run it on the reference machine.
 - Round estimates into the docs as if measured.
 
-## 7. PR template (copy into the description)
+## 7. PR template (`.github/pull_request_template.md` puts it into every pull request)
 
 ```
 Milestone: M<n> <title>
