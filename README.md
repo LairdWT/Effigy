@@ -350,7 +350,7 @@ Environment variables (never committed): `EFFIGY_MODELS` and `EFFIGY_LIBRARY` mo
 too).
 
 How the project is run: one milestone per branch and PR, acceptance checks in the PR, the numbers recorded in
-`docs/bench/`. Contracts between steps (file names, frames, units, `meta.json`) are frozen in
+`docs/bench/`; contributors start at [CONTRIBUTING.md](CONTRIBUTING.md). Contracts between steps (file names, frames, units, `meta.json`) are frozen in
 [docs/IMPLEMENTATION.md §3](docs/IMPLEMENTATION.md); coding agents start there. CI workflows run on request
 only.
 
