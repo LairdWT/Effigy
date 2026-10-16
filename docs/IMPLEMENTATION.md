@@ -3370,7 +3370,7 @@ above are the contract; each milestone's "As built" note lands here.
   - **Scope**: step `redraw`, ops `upscale` and `redraw` (§3.2 row). `steps/_sr.upscale` now blends overlapping windows
     on the CPU (`Blend`, `plan`, `u8`; was hard-cut tiles accumulated on the GPU, 3.8 GB at 321 MP); `refine._Tile`
     takes any h x w (multiples of 16); `concepts.style_file` shared. `Image.MAX_IMAGE_PIXELS = None` in the step only:
-    thumbnails and Look read `preview.png` (2048 px). UI: labels only; the 2D track shows it as a Picture version.
+    thumbnails and Look read `preview.png` (2048 px). UI: a `RedrawForm` disclosure ("Upscale or redraw") in `ui/src/pixel/Panels.tsx` on any picture version (op, factor, description, strength slider, seed, style, mask select + upload, a window/time hint) and a `RedrawInfo` section (size, drift, seam, downloads) on a redraw version, built from the existing 2D panel controls; it shows as a Picture version.
     `presets.VRAM_GB["redraw"]`. Protect is a post-blend (ceiling in `_mix`). MCP: `run_step`/`describe_steps` take
     it as they find it; `import_file(asset_id=…)` uploads a file as a new version of an existing asset (the protect
     mask), nothing run; `mcp/SKILL.md` (effigy://guide) has the how-to.

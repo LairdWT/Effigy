@@ -614,6 +614,15 @@ every direction with no visible seam. The view shows it **Repeated 3 × 3** or a
 **Pixelize** keeps it a tile: the pixel size must divide the tile's (a 512 tile: 8, 16, 32, 64, 128 or 256 pixels a
 side). The check measures whether the edges meet (1.10 or less is seamless). Export it for Godot as a TileSet.
 
+### Upscale or redraw a picture
+
+On a picture, **Upscale or redraw** (a disclosure in the panel) makes it bigger or draws it again. **Make it bigger**
+enlarges it 2× or 4× a side (Real-ESRGAN, Setup card **Face detail**). **Draw it again** repaints it from itself in
+overlapping windows, so any size works: give a description (there is no negative prompt), a strength (0.2 to 1: how far
+it is redrawn), optionally a style, a bigger size first, and a **mask**, a grey picture in the same asset (white stays,
+black is redrawn); **Add the mask** uploads one. The panel says how many windows it will take (about 10 seconds each).
+The new version shows how far it moved from the picture and whether the windows meet. Needs **Texture detail**.
+
 ### Parallax layers
 
 A background picture split into layers from far to near, which scroll at their own speeds as the camera moves: the

@@ -1414,6 +1414,7 @@ const STEP_ACTS: Record<string, string> = {
   concepts: "Generating concepts",
   prep: "Removing the background",
   pixelize: "Making pixel art",
+  redraw: "Redrawing the picture",
   sprites: "Rendering sprites",
   trellis2: "Generating the 3D model",
   clean: "Cleaning",
