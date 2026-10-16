@@ -14,6 +14,16 @@ from steps import _sr, redraw
 from steps._common import StepError
 
 
+@pytest.fixture(autouse=True)
+def _tile_installed(monkeypatch, tmp_path_factory):
+    from steps.refine import TILE_DIR, TILES
+
+    root = tmp_path_factory.mktemp("models")
+    (root / TILE_DIR).mkdir()
+    (root / TILE_DIR / TILES["lite"][0]).write_bytes(b"")
+    monkeypatch.setenv("EFFIGY_MODELS", str(root))
+
+
 def _version(root, name, arr, key="image"):
     d = root / name
     d.mkdir(parents=True)
@@ -137,3 +147,37 @@ def test_params_are_checked():
             redraw._params(op, bad)
         assert e.value.code == "bad_params"
     assert redraw._params("redraw", {"prompt": "x"})["strength"] == 0.35
+
+
+def test_a_window_the_mask_covers_wholly_is_never_drawn(monkeypatch, tmp_path):
+    calls = []
+
+    @contextmanager
+    def spy(p):
+        yield (lambda win, seed: calls.append(seed) or win), []
+
+    monkeypatch.setattr(redraw, "_model", spy)
+    mask = np.zeros((300, 700), np.uint8)
+    mask[:, :400] = 255
+    _version(tmp_path, "003_mask", mask)
+    src = _version(tmp_path, "001_upload", np.full((300, 700, 3), 90, np.uint8))
+    out = tmp_path / "004_redraw"
+    out.mkdir()
+    m = redraw.run("redraw", src, out, {"prompt": "x", "window": 256, "protect": "003_mask"})[
+        "metrics"
+    ]
+    assert m["skipped"] > 0 and len(calls) == m["windows"] - m["skipped"]
+
+
+def test_the_output_size_is_capped_and_missing_files_fail_before_any_work(monkeypatch, tmp_path):
+    src = _version(tmp_path, "001_upload", np.zeros((40, 40, 3), np.uint8))
+    out = tmp_path / "002"
+    out.mkdir()
+    monkeypatch.setattr(redraw, "MAX_PX", 40 * 40 * 4 - 1)
+    with pytest.raises(StepError, match="limit"):
+        redraw.run("upscale", src, out, {"factor": 2})
+    monkeypatch.setenv("EFFIGY_MODELS", str(tmp_path))
+    with pytest.raises(StepError, match="refine"):
+        redraw.run("redraw", src, out, {"prompt": "x"})
+    with pytest.raises(StepError):
+        redraw._params("upscale", {"factor": True})

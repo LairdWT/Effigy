@@ -300,7 +300,7 @@ class _Tile:
         from steps.concepts import MODEL, REVISION
 
         if not torch.cuda.is_available():
-            raise StepError("failed", "refine needs a CUDA GPU")
+            raise StepError("failed", "this step needs a CUDA GPU")
         root = Path(os.environ.get("EFFIGY_MODELS", Path(__file__).resolve().parents[1] / "models"))
         file, places = TILES[tile]
         path = root / TILE_DIR / file

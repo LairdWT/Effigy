@@ -64,6 +64,7 @@ LOWER = {
         "texture_size": 1024,
     },
     "refine": {"texture_size": "keep", "tile": "lite"},
+    "redraw": {"window": 768},  # M61: smaller windows for the same picture
     # M46a: a model kept on the GPU because the budget seemed to hold it: offload it instead
     "canon": {"offload": True},
     "motion": {"offload": True},

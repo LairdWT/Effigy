@@ -3378,7 +3378,7 @@ above are the contract; each milestone's "As built" note lands here.
     unchanged, protect, alpha, params. (2) **GPU**: 1536 x 1024 with alpha, x2, protect mask: upscale 7.6 s; redraw 12
     windows at 10.3 s each, torch peak 9.3 GB, card 13.6 GB, seam_ratio 0.86, drift 3.6 (2026-10-16). (3) **GPU, owner's
     terminal**: the full C2 job, 8352 x 2400 at factor 4 (33408 x 9600), ~572 windows of 1024 at overlap 0.25
-    (44 x 13; ~1.7 h at 10 s), peak unchanged, RAM ~10 GB; `report.pass` all true.
+    (44 x 13; ~1.7 h at 10 s), peak unchanged, RAM an estimate until this run (float32 accumulator 3.8 GB at 321 MP, plus the picture, its x4 copy and the mask; the text encoder is dropped after encoding); output capped at 500 MP (`MAX_PX`); `report.pass` all true. (4) **GPU, done 2026-10-16**: `painting` LoRA on 1536 x 1024: window 768 = 6 windows, 3.6 s each, torch peak 8.4 GB (reserved 9.75, card 10.6), seam 0.78, drift 2.8; window 1024 with the LoRA peaked at 9.5 GB torch but the card reached 15.9 GB and a window took 105 s (shared-memory spill): with a `lora` use `window` 768 on a 16 GB card. LOWER suggests 768 after an OOM.
 
 ## 5. Bench procedure (reference laptop)
 
