@@ -1214,8 +1214,8 @@ test("Preparation states: a checked chain never says it stopped; an earlier step
   await expect(page).toHaveURL(/version=050_validate/);
   await expect(page.locator(".stages [aria-current=step]")).toHaveText("Finish");
   await page.goto("/#/asset/mock_prep?version=060_remesh");
-  await expect(panel).toContainText("Prepared up to Simplify; Unwrap and Check remain."); // imported: nothing to bake
-  await expect(panel).toContainText("unwrap → check");
+  await expect(panel).toContainText("Prepared up to Simplify; Unwrap, Bake and Check remain."); // M62: an upload with a glb bakes its own textures
+  await expect(panel).toContainText("unwrap → bake → check");
   await expect(panel.getByRole("button", { name: "Continue preparation" })).toBeVisible();
   await page.goto("/#/asset/mock_prep?version=070_clean");
   await expect(panel).toContainText("An earlier step; the newest is Simplified 080.");
