@@ -185,7 +185,9 @@ def write_glb(path, vertices, faces, uv=None) -> None:
     if uv is not None:
         gl = np.asarray(uv, np.float64).copy()
         gl[:, 1] = 1 - gl[:, 1]
-        m.visual = trimesh.visual.TextureVisuals(uv=gl)
+        m.visual = trimesh.visual.TextureVisuals(
+            uv=gl, material=trimesh.visual.material.PBRMaterial()
+        )
     m.export(path, file_type="glb")
 
 
