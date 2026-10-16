@@ -1,6 +1,7 @@
 # Effigy: End-to-End Workflow (prompt → production-ready asset)
 
-> Status: proposal, 2026-10-03. This describes the **user journey** the tool is built around:
+> This describes the **user journey** the tool is built around; [MANUAL.md](../MANUAL.md) is the reference
+> for what the app does today:
 > *"I prompt for the asset I need → it generates images → I choose the best → it becomes a 3D asset
 > → it's optimized (with Blender) until it's production-ready."* Model choices per step are
 > referenced from [PLAN.md](PLAN.md) and [`docs/research/`](research/). The whole flow must fit a
@@ -25,6 +26,9 @@ work.
   images** (style refs, a sketch, a photo of an object) and a **target** (Unity mobile, Unreal,
   Godot, VRChat, 3D print).
 - Or skip ①–③: drop your own image or turnaround sheet straight into ④.
+- Or bring a finished model (FBX, glTF, OBJ, USD, a zip): it joins at ⑥. It can be cleaned and simplified, its
+  own textures baked onto the simpler mesh, then rigged and animated. A skeleton that isn't one of Effigy's
+  templates is dropped and the model is rigged with Effigy's own.
 
 ## ② Brief (prompt enhancement)
 
@@ -80,9 +84,9 @@ On the chosen image:
 ## ⑤ 3D candidates
 
 - Generate **1–3 3D candidates** (different seeds, and optionally both weight sets: "Fast" =
-  TRELLIS.2, "Faithful" = Pixal3D; see research 09). If you've enabled the **experimental Hunyuan3D-2.1
-  engine**, it can join the comparison; its candidates carry a red "restricted outputs" badge, and
-  anything derived from them stays restricted (export asks for explicit confirmation; PLAN §6). Start with a fast low-res preview, then
+  TRELLIS.2, "Faithful" = Pixal3D; see research 09). A third, **experimental Hunyuan3D-2.1
+  engine** is designed but not built (PLAN §6): when it exists, its candidates will carry a red "restricted outputs" badge, and
+  anything derived from them stays restricted (export asks for explicit confirmation). Start with a fast low-res preview, then
   refine only the chosen one at full resolution.
 - Viewer comparison: turntable side by side, a silhouette overlay vs. the concept image, and
   quick stats (watertight? face count, thin-part warnings).
@@ -139,13 +143,28 @@ The asset can be opened in a **live, interactive Blender** at any version
   thickness).
 - **LODs** (e.g. 100/50/25/10%) and a collision mesh.
 
+## 2D pictures and pixel art
+
+The same library also makes pictures for 2D games ([MANUAL.md](../MANUAL.md) has every panel):
+
+- **Pictures from words**: wallpapers, backgrounds, portraits, icons and items, optionally in a pixel-art,
+  painting or children's-drawing style, cut out if wanted; seamless **tiles** and **parallax layers** (a
+  stage that scrolls).
+- **Upscale or redraw**: a picture 2× or 4× bigger, or redrawn at any size in overlapping windows, with an
+  optional mask of what to keep.
+- **Pixel art**: any picture or sheet reduced to its own pixel grid and one palette, then touched up in the
+  pixel editor, with frames, timings and tags.
+- **Animate a 2D character**: draw an animated 3D character from the side as pixel sprites and export a
+  Godot `SpriteFrames` scene or a Paper2D sheet
+  ([how-to](howto/animate-a-pixel-art-character.md)).
+
 ## Timing budget on the 16 GB reference card (targets to validate in Phase 0)
 
 | Stage | Target | Measured (2026-10-04, max power) |
 |---|---|---|
 | ② Brief | < 10 s | ~1 s (template, no model) |
 | ③ 4 candidates | < 60 s | 80–96 s incl. ~26 s model load (`docs/bench/m10.md`) |
-| ④ Edits / re-pose / extra views | < 30 s each | not yet (M16 bake-off) |
+| ④ Edits / re-pose / extra views | < 30 s each | not measured |
 | ⑤ 3D preview (512) / refine (1024) | < 30 s / < 3 min | Fast 1024_cascade: median 195 s, 98–705 s (`docs/bench/phase0.md`) |
 | ⑥ Production pass (prop: clean → remesh → uv → bake → validate) | < 5 min | ~45 s; whole chain incl. generate 258 s median |
 | ⑧ Export | < 30 s | 2–6 s per profile |

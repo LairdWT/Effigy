@@ -1,6 +1,8 @@
 # Handover: continuing Effigy on the reference laptop
 
-For a Claude Code session (and the owner) on the RTX 5080 laptop. The GPU bring-up is done: every
+> Maintainer's working notes; contributors start at [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+For a Claude Code session (and the maintainer) on the RTX 5080 laptop. The GPU bring-up is done: every
 generator, the chain, Blender, Claude and the exports have run here and their numbers are in
 `docs/bench/`. Phases 0 and 1 are closed, Phase 2 (characters) is closed, Phase 3 is under way.
 **Next session: start at section 2, "Next session".**
@@ -11,25 +13,27 @@ checklist, done, is `docs/archive/LAPTOP.md`.
 
 ---
 
-## 1. Where things stand (2026-10-13: the 2D roadmap through the pixel editor, then bigger GPUs: all merged)
+## 1. Where things stand (2026-10-16: M61 and M62 built, their PRs pending; the rest merged)
 
-- **M62 (branch `m62-import-bake`)**: `bake` of an imported model reads its own materials (no volume needed); chain checked on two imported models from the owner's game (`docs/bench/m62.md`).
+- **M62 (branch `m62-import-bake`, PR pending; contains M61)**: `bake` of an imported model reads its own materials (no volume needed); chain checked on two imported test models (`docs/bench/m62.md`). A skeleton that is not one of Effigy's templates is dropped and the model is rigged with Effigy's own.
+- **M61 (branch `m61-redraw`, PR pending)**: the 2D step `redraw` (upscale 2×/4× with Real-ESRGAN, or redraw at any size in overlapping windows with Z-Image-Turbo + Tile), in a picture's panel and the Tools menu; MCP `run_step redraw` and `import_file(asset_id=…)`.
+- **Open issue**: `clean` crashes on a 50k-triangle import (CuMesh `fill_holes`, CUDA error 9). Not diagnosed; a smaller import cleans.
 
-- **2026-10-13: the generic rig dropped** (`drop-generic-rig`; the owner): M59's `rig_skin {full: true}`, the Rig
+- **2026-10-13: the generic rig dropped** (`drop-generic-rig`; the maintainer): M59's `rig_skin {full: true}`, the Rig
   panel's "Something else", `_skintokens.rig`, `_glb.joints`, `_templates.GENERIC`, their tests and docs removed
-  (SkinTokens' training data with no bone-heat alternative). The owner's picks from the offered items: the held
+  (SkinTokens' training data with no bone-heat alternative). The maintainer's picks from the offered items: the held
   weapon as a separate prop on the hand bone (next); the Sprites warning, Flat by default and Animate this
   character as one chain dropped.
 - **2026-10-13: the hoarding findings 1, 2, 3, 7, 8** (`hoarding-fixes`, **merged**, a78b5f3; IMPLEMENTATION "The hoarding's findings").
-  - **8**: `close_in_blender` / `pull_from_blender` without a version no longer fail in Blender (checked live against the owner's Blender with MCP Pro: the old header's NameError, the new one's None, True and a path with a backslash and an umlaut).
+  - **8**: `close_in_blender` / `pull_from_blender` without a version no longer fail in Blender (checked live against the maintainer's Blender with MCP Pro: the old header's NameError, the new one's None, True and a path with a backslash and an umlaut).
   - **1**: detaper keeps the depth (no wedge).
   - **2**: validate's `size_drift_pct` against the size the brief's prompt gives.
   - **3, 7**: refine's views take their own prompt; guide notes.
   - **4** (`blender-start`, **merged**): Setup's "Start Blender when it is needed" and the user's own `blender.exe`;
-    Open in Blender (the agent's too) starts it with its add-on's server when none answers. Live with the owner's
-    Blender closed: started, server up, the model in the scene in 9.4 s. The option itself is off until the owner
+    Open in Blender (the agent's too) starts it with its add-on's server when none answers. Live with the maintainer's
+    Blender closed: started, server up, the model in the scene in 9.4 s. The option itself is off until the maintainer
     turns it on in Setup.
-  - **5**: the port stays 8000 (the owner).
+  - **5**: the port stays 8000 (the maintainer).
 - **2026-10-13: the cloud session's branch merged into main** (`ccr-3bd14478-pui9wd`, below): M59 generic rigs
   (since dropped), the CLI batch export, Redraw this view and 4K, the public-repo sweep. Its GPU checks are §2 item 6.
 - **2026-10-13: the agent's finding 19** (`loose-parts`, **merged**; IMPLEMENTATION "Finding 19 (the SR10 bottle
@@ -51,7 +55,7 @@ checklist, done, is `docs/archive/LAPTOP.md`.
   - **9**: straighten stands a leaning post on its shaft.
   - **10**: clean drops the rebuild's inner copy of a solid.
   - **11**: a headless `transform` step (stand up, turn, scale, place; textures kept; bake follows it).
-  - **Upright by default** (the owner): Prepare stands a generated model upright.
+  - **Upright by default** (the maintainer): Prepare stands a generated model upright.
     - The library survey: 27 of 78 levelled, every one right.
     - After the agent's retest: a post stands on its shaft first, and a floor propped up by a mirrored eye is found
       from the mesh's own bottom faces.
@@ -97,7 +101,7 @@ checklist, done, is `docs/archive/LAPTOP.md`.
   - **Checked live**:
     - A 4-frame hit spark drawn from nothing (`m57_hit_spark`) plays once in headless Godot at its 50–80 ms timings.
     - The viking's Walk re-timed without touching a pixel.
-  - **Next**: M46a–c (bigger GPUs, research 16). Owner-side: draw a hit spark and a barrel's three states by hand.
+  - **Next**: M46a–c (bigger GPUs, research 16). Maintainer-side: draw a hit spark and a barrel's three states by hand.
 - **2026-10-13: M56 the pixel editor, part 1** (merged with M57; IMPLEMENTATION "M56").
   - **What it does**: Edit the pixels on any pixel art or sprites version.
     - The tools: pencil (pixel-perfect), eraser, fills, line, rectangle, ellipse, colour pick, selection
@@ -106,25 +110,25 @@ checklist, done, is `docs/archive/LAPTOP.md`.
       only the changed frames).
   - **Checked**: a browser test compares the saved PNG with the original pixel for pixel. Live, the barrel's pixel
     art was edited through the app: exactly the 41 drawn pixels changed.
-  - **Next**: M57 (the frames strip, tags, durations, onion skin, play). Owner-side: draw a hit spark by hand.
+  - **Next**: M57 (the frames strip, tags, durations, onion skin, play). Maintainer-side: draw a hit spark by hand.
 
 - **2026-10-13: M55 parallax layers** (`m55`, merged into main 2026-10-13; `docs/bench/m55.md`).
   - **What it does**: a picture becomes far-to-near layers that scroll at their own speeds. It runs in two steps,
     `depth` then `layers`. The Godot `parallax.tscn` moves exactly at the layers' speeds, headless.
-  - **Depth model**: MoGe-3 ViT-g (MIT), the owner's "best quality that is commercially usable". DA3
+  - **Depth model**: MoGe-3 ViT-g (MIT), the maintainer's "best quality that is commercially usable". DA3
     Large/Giant are NC; DA3 Mono Large needs xformers. It runs in its own **`.venv-moge`**, because it needs a newer,
     pure-Triton FlexGEMM than TRELLIS.2's wheel. Setup's Parallax layers card installs it (5 GB).
   - **Layers**: bands are k-means on the disparity. What the nearer bands hide is filled from the layer's own colours,
     then redrawn by Z-Image at 0.8 in the picture's style.
   - **Through the app**: depth 19 s and 8.9 GB, layers 103 s and 7.7 GB, 0 check fails.
-  - **The owner's check**:
+  - **The maintainer's check**:
     - A car leaning across a cut was cut in two. Now the cuts follow the depth's edges (a watershed), so the car is
       whole.
     - The repaint drew more cars behind, until the ground was named empty.
     - The view's Show menu shows each layer alone.
-  - **Left open, skipped on purpose** (the owner: "a very specific error cause which we may skip"): a standing
+  - **Left open, skipped on purpose** (the maintainer: "a very specific error cause which we may skip"): a standing
     object's contact, the car's tyres, goes with the road. Object masks prompted at the cuts would fix it.
-  - **Also**: New asset's 2D kinds start with **Picture** (the description as it is), the owner's request.
+  - **Also**: New asset's 2D kinds start with **Picture** (the description as it is), the maintainer's request.
   - **After merging**: restart the app; users need Setup's Parallax layers card.
 
 - **2026-10-13: M54 tiles and props** (`m54`, merged into main 2026-10-13; `docs/bench/m54.md`).
@@ -134,12 +138,12 @@ checklist, done, is `docs/archive/LAPTOP.md`.
     - Pixel art in whole tiles: an eighth of the tile, the middle colour.
     - A `seamless` check, and a Godot `TileSet`. Godot 4.7.1 paints a `TileMapLayer` with it headless.
   - **`game-prop-2d`**: a 3D prop drawn as a 2D sprite, about 4 minutes from a picture.
-  - **The owner's request**: a Custom picture size, snapped to 64 between 256 and 2048. 2048 × 2048 fits:
+  - **The maintainer's request**: a Custom picture size, snapped to 64 between 256 and 2048. 2048 × 2048 fits:
     8.3 GB, 80 s warm.
   - **Found on the way**:
     - Diffusers' `from_pipe` casts to float32: the fp8 DiT went to 24 GB and ran out of memory.
     - A resident worker keeps the step code it started with: stop it after editing a step.
-  - **The owner's order (2026-10-13)**: finish the 2D roadmap (M55, M56/M57), then bigger GPUs (M46a–c).
+  - **The maintainer's order (2026-10-13)**: finish the 2D roadmap (M55, M56/M57), then bigger GPUs (M46a–c).
     `m46-gpu-report` (`tools/gpu_report.py`, research 16, the laptop measured) is merged too (2026-10-13).
   - After the merge: **restart the app** (`server/jobs.py` changed with m46).
 
@@ -147,48 +151,48 @@ checklist, done, is `docs/archive/LAPTOP.md`.
 
 ### Milestones
 
-**Phase 0 closed by the owner on 2026-10-04.**
+**Phase 0 closed by the maintainer on 2026-10-04.**
 
 
 | Milestone | Code | GPU / manual acceptance (laptop, 2026-10-04) |
 |---|---|---|
-| M0 scaffold, licence gate | done | ✅ local equivalent of CI green (pytest, ML pytest, ruff, UI build, Playwright on `main`); a manual `ci.yml` run is the owner's call (build minutes) |
+| M0 scaffold, licence gate | done | ✅ local equivalent of CI green (pytest, ML pytest, ruff, UI build, Playwright on `main`); a manual `ci.yml` run is the maintainer's call (build minutes) |
 | M1 sm_120 wheels (cumesh, flex_gemm, o_voxel) | done, locked in `wheels/` | ✅ `tools.smoke_m1`: torch 2.8.0+cu128, (12, 0), sm_120, cumesh ok. One CuMesh bug worked around (`fill_holes` centres, `steps/_mesh.py`) |
 | M2 generate: Fast (TRELLIS.2) + Faithful (Pixal3D) | done | ✅ both run, upright and scaled (`docs/bench/m2.md`, `phase0.md`). ⚠️ VRAM: torch peak ≤ 13.3 GB, whole GPU up to 15.5 GB (allocator cache) |
 | M3 bake from the volume + normal map | done | ✅ closest-point projection, normals outward; mean colour within 0.4 % of `hi.glb` |
 | M4 clean / remesh / uv (CuMesh) | done | ✅ 0 non-manifold edges after clean → remesh → uv (dwarf, barrel, Faithful anvil); weld seams, own small-part filter, outward rule, `make_manifold` |
 | M5 backend jobs, library, SSE | done | – |
-| M6 UI + viewer | done | ✅ owner used it all day; GPU readout + guided "Next" panel added. Open: library rework (§11) |
+| M6 UI + viewer | done | ✅ maintainer used it all day; GPU readout + guided "Next" panel added. Open: library rework (§11) |
 | M7 Blender headless ops + export | done | ✅ Blender ops + export tests on Windows Blender 5.2.2 (paths fixed) |
-| M8 Blender live link | done | ✅ open → move a vertex → pull → bake onto the pulled mesh → validate 0 fail (owner's Blender); free blender-mcp add-on supported, not yet run for real |
+| M8 Blender live link | done | ✅ open → move a vertex → pull → bake onto the pulled mesh → validate 0 fail (maintainer's Blender); free blender-mcp add-on supported, not yet run for real |
 | M9 MCP server + Ask Claude | done | ✅ preset "Make game-ready for Unity" on a pulled version → accepted `530_claude`, validate 0 fail (12 turns, $0.62); Claude couldn't view the viewport screenshots in that run |
-| M10 brief, concepts, prep, gates | done | ✅ 4 concepts in ~68 s warm (resident), 1024² kept by the owner over the < 60 s target (`docs/bench/m10.md`); background gate recalibrated |
-| M11 bench + golden set | done | ✅ 10/10 Fast and Faithful, A/B recorded, **default Faithful** (PLAN §3); rerun after the fixes 10/10, 0 non-manifold, chain 192 s; VRAM accepted by the owner as is (`docs/bench/phase0.md`) |
+| M10 brief, concepts, prep, gates | done | ✅ 4 concepts in ~68 s warm (resident), 1024² kept by the maintainer over the < 60 s target (`docs/bench/m10.md`); background gate recalibrated |
+| M11 bench + golden set | done | ✅ 10/10 Fast and Faithful, A/B recorded, **default Faithful** (PLAN §3); rerun after the fixes 10/10, 0 non-manifold, chain 192 s; VRAM accepted by the maintainer as is (`docs/bench/phase0.md`) |
 | M12 retexture (`trellis2` op `texture`) | done | ✅ pulled Blender mesh retextured at 1024: 38 s, 3.84 GB, UVs bit-identical (autograd leak fixed) |
-| M13 export breadth (LODs, collision, OBJ/STL/3MF, web) | done | ✅ Godot 4.7.1 and Unreal 5.8 imports (`docs/bench/m13.md`). Unity (nice-to-have): 6000.4.0f1 is installed but batch mode needs a signed-in Unity Hub ("No valid Unity Editor license"): manual check by the owner, export ready in `a_dwarf_blacksmith_with_hammer_2/560_export/unity/` |
+| M13 export breadth (LODs, collision, OBJ/STL/3MF, web) | done | ✅ Godot 4.7.1 and Unreal 5.8 imports (`docs/bench/m13.md`). Unity (nice-to-have): 6000.4.0f1 is installed but batch mode needs a signed-in Unity Hub ("No valid Unity Editor license"): manual check by the maintainer, export ready in `a_dwarf_blacksmith_with_hammer_2/560_export/unity/` |
 | M14 Models & Licences page | done | ✅ real downloads of every group |
-| M15 Windows portable zip | done, CI smoke green | ✅ owner's first start ~79 s (`docs/bench/install.md`); clean VM open |
+| M15 Windows portable zip | done, CI smoke green | ✅ maintainer's first start ~79 s (`docs/bench/install.md`); clean VM open |
 | M16 pose canonicalization | done | ✅ DWPose gate + FLUX.2-klein re-pose (`docs/bench/m16.md`); known blind spot: the gate can't count limbs (the A-posed knight has four arms) |
 | M18 quad remesh | done | ✅ 5 characters → pure quads, 0 non-manifold, p95 0.44–1.78 %, 4 s each (`docs/bench/m18.md`); UI: Topology select in the prepare form. Seen on the way: `clean` opens Faithful meshes further (mage 11k → 34k open edges: `make_manifold` drops faces), invisible in renders, the quad path closes them again |
 | M17 multi-view (Pixal3D-MV) | done | ✅ ground-truth 4-view dwarf turnaround → matches from all four sides; 10.98 GB peak (≤ 14.5), 128 s; height check 5 %; UI "Views in the picture" (`docs/bench/m17.md`) |
-| M19 rig fit | done (`m19-rig`) | ✅ 5 characters 52/52 joints inside the mesh, 9 s each, the dwarf facing −Z handled; marker editor in the Rig panel (Front view, labelled marker); shoulders refined for armoured characters; **accepted by the owner 2026-10-05** after trying the editor on the robot (`docs/bench/m19.md`) |
-| M20 skinning | done | ✅ two engines, Blender bone heat and SkinTokens (3.43 GB VRAM measured, its own `.venv-skin`), `auto` judged by `rig_qa`: 6 characters 0 unweighted, ≤ 4 influences; the robe and the one-handed prop fail their checks on both (`docs/bench/m20.md`); UI Skin it, engine shown, weights view; Rig is a stage in the top bar; **accepted by the owner 2026-10-05** (farmer `200_rig_skin` through the app: both engines ran, Blender picked, 6/6 checks) |
-| M21 animation | done, **accepted by the owner 2026-10-05**, merged | ✅ rigged exports with one skeleton per file (Unity/Unreal FBX, Godot GLB; Godot import checked headless); Mesh2Motion CC0 clips retargeted onto the rig by our own world-space transfer (per-bone frames: direction + twist reference; the Retarget extension carried the rest-pose offset: arms wrong, then hands garbled, both owner-reported, fixed), `anim` step, Animate stage, viewer playback, clips in the exports (`docs/bench/m21.md`), ground grid in the viewer; the Unity Humanoid import check is deferred by the owner |
+| M19 rig fit | done (`m19-rig`) | ✅ 5 characters 52/52 joints inside the mesh, 9 s each, the dwarf facing −Z handled; marker editor in the Rig panel (Front view, labelled marker); shoulders refined for armoured characters; **accepted by the maintainer 2026-10-05** after trying the editor on the robot (`docs/bench/m19.md`) |
+| M20 skinning | done | ✅ two engines, Blender bone heat and SkinTokens (3.43 GB VRAM measured, its own `.venv-skin`), `auto` judged by `rig_qa`: 6 characters 0 unweighted, ≤ 4 influences; the robe and the one-handed prop fail their checks on both (`docs/bench/m20.md`); UI Skin it, engine shown, weights view; Rig is a stage in the top bar; **accepted by the maintainer 2026-10-05** (farmer `200_rig_skin` through the app: both engines ran, Blender picked, 6/6 checks) |
+| M21 animation | done, **accepted by the maintainer 2026-10-05**, merged | ✅ rigged exports with one skeleton per file (Unity/Unreal FBX, Godot GLB; Godot import checked headless); Mesh2Motion CC0 clips retargeted onto the rig by our own world-space transfer (per-bone frames: direction + twist reference; the Retarget extension carried the rest-pose offset: arms wrong, then hands garbled, both maintainer-reported, fixed), `anim` step, Animate stage, viewer playback, clips in the exports (`docs/bench/m21.md`), ground grid in the viewer; the Unity Humanoid import check is deferred by the maintainer |
 | M22 characters bench | **accepted 2026-10-06** (`m22-results`) | ✅ 16 characters through `game-character` on 2026-10-06: **12 need no marker fix (75 %)**, 13 with the same-day skinning fix (bone heat retried on coarser proxies, chef re-run passes); the three others are torso-chain or head joints read as outside on a hollow/robed torso (`docs/bench/m22.md`, `m22_fits.jpg`) |
-| M40 Agent access over MCP (+ rename to Effigy) | **merged 2026-10-09** | ✅ a scripted agent session through the bridge started as Setup prints it: import the cat's OBJ zip, `look`, clean (running → `job_status` → done; an identical request the same job), validate, export into a folder (again: the same export reused into another folder, an existing folder refused); the animated nurse imported, `look` at four Jog frames, an `anim_edit` layer; `cancel_job`; previews 3 s a render; research 13 |
+| M40 Agent access over MCP (+ rename to Effigy) | **merged 2026-10-09** | ✅ a scripted agent session through the bridge started as Setup prints it: import the cat's OBJ zip, `look`, clean (running → `job_status` → done; an identical request the same job), validate, export into a folder (again: the same export reused into another folder, an existing folder refused); an animated test character imported, `look` at four Jog frames, an `anim_edit` layer; `cancel_job`; previews 3 s a render; research 13 |
 | M45 GPU and RAM safeguards | **merged 2026-10-10** | ✅ the cap (both allocators, a forced 1 GB budget → a clean oom in 17 s), Faithful under the cap, the GPU-busy and RAM refusals live (0.6 s), Fast → Faithful → Fast in fresh processes; seven card layouts in tests; full suites |
-| M41 More creature skeletons | **merged 2026-10-10** | ✅ per creature (docs/bench/m41a–e): sample + the owner's test mesh fitted, skinned, every clip baked and rendered; open: the test spider's touching legs and the test snake's fused snout fail one skin check each (mesh contacts) |
+| M41 More creature skeletons | **merged 2026-10-10** | ✅ per creature (docs/bench/m41a–e): sample + a test mesh fitted, skinned, every clip baked and rendered; open: the test spider's touching legs and the test snake's fused snout fail one skin check each (mesh contacts) |
 | M43a bake wins, M43b refine | **merged 2026-10-10** | ✅ m43a: 3 assets, seam delta 3.7→1.2 / 10.9→2.3 / 4.0→0.9, +1–3 s; m43b: pirate, farmer, chest, lantern refined with the lite Tile (2.5–4.5 min each, 12.4 GB), before/after sheets; the full Tile restarted the laptop and is out |
-| M42 Library rework, the rest | **merged 2026-10-09** | ✅ on a copy of six owner assets: first hovers 2.9–3.6 s, cached 0.5 s; tags + filter; a Godot batch of five (four copied in 11 s, the concepts-only lantern skipped), the second run all skipped "exists"; the dwarf's 480_bake vs 100_bake compared |
-| M44 Duplicate clips | **merged 2026-10-09** | ✅ on a copy of the nurse: "Walk limp" from Walk, exported for Godot with all five clips, rendered: the copy differs as edited, Walk unchanged |
-| M39 Import a model | **merged 2026-10-09** | ✅ the owner's files through the app: the nurse's Unity zip, Godot GLB and a Mixamo-style cm FBX animated (every joint over every frame within 1.5 mm, the GLB exact), the cat's FBX on the fox template, OBJ/glTF zips, STL, PLY static at 0.99 m; an FBX's guessed alpha no longer makes a see-through face |
-| M38 Animation tools | **merged 2026-10-09** | ✅ the nurse's video clip: 31 foot contacts found, the worst slide 2.78 → 1.32 cm (the rest out of the straight leg's reach), the bake equal to the preview, Blender renders with the locked foot still; IK on target |
-| M37 Animation editor | **merged 2026-10-09** | ✅ the cat keyed and saved through the app (bake = preview within 1.4e-8), re-opened with its key, exported for Godot/Unity/Unreal with the edit; the nurse's 14 s clip edits at once |
-| M30 Kimodo resident | done (`m30-motion-resident`), owner check open | ✅ the motion step stays loaded between prompts (first 30.7 s, then 3.7 s), evicted after 5 min idle; the app needs a restart |
-| M34 Motion from video | **accepted 2026-10-08** after the owner's own run on the nurse (`bench_faithful_nurse` `312_mocap`), merged with M32 | ✅ NVIDIA GEM-X in `.venv-gemx`, three modes, the cleanup, "Put this motion on the model" on the motion's page, a video preview with Start/End here; the dance clip in Best 105–132 s, 4.3 GB, foot slide 0.17 → 0.11 m/s with the lock; not run: the walk and sword-swing clips, a Godot/Unreal export of a video motion (`docs/bench/m34.md`) |
+| M42 Library rework, the rest | **merged 2026-10-09** | ✅ on a copy of six maintainer assets: first hovers 2.9–3.6 s, cached 0.5 s; tags + filter; a Godot batch of five (four copied in 11 s, the concepts-only lantern skipped), the second run all skipped "exists"; the dwarf's 480_bake vs 100_bake compared |
+| M44 Duplicate clips | **merged 2026-10-09** | ✅ on a copy of a test character: "Walk limp" from Walk, exported for Godot with all five clips, rendered: the copy differs as edited, Walk unchanged |
+| M39 Import a model | **merged 2026-10-09** | ✅ the maintainer's files through the app: a test Unity zip, Godot GLB and a Mixamo-style cm FBX animated (every joint over every frame within 1.5 mm, the GLB exact), the cat's FBX on the fox template, OBJ/glTF zips, STL, PLY static at 0.99 m; an FBX's guessed alpha no longer makes a see-through face |
+| M38 Animation tools | **merged 2026-10-09** | ✅ a test video clip: 31 foot contacts found, the worst slide 2.78 → 1.32 cm (the rest out of the straight leg's reach), the bake equal to the preview, Blender renders with the locked foot still; IK on target |
+| M37 Animation editor | **merged 2026-10-09** | ✅ the cat keyed and saved through the app (bake = preview within 1.4e-8), re-opened with its key, exported for Godot/Unity/Unreal with the edit; a 14 s test clip edits at once |
+| M30 Kimodo resident | done (`m30-motion-resident`), maintainer check open | ✅ the motion step stays loaded between prompts (first 30.7 s, then 3.7 s), evicted after 5 min idle; the app needs a restart |
+| M34 Motion from video | **accepted 2026-10-08** after the maintainer's own run on a test character, merged with M32 | ✅ NVIDIA GEM-X in `.venv-gemx`, three modes, the cleanup, "Put this motion on the model" on the motion's page, a video preview with Start/End here; the dance clip in Best 105–132 s, 4.3 GB, foot slide 0.17 → 0.11 m/s with the lock; not run: the walk and sword-swing clips, a Godot/Unreal export of a video motion (`docs/bench/m34.md`) |
 | M32 Rigid parts on the skeleton | **accepted, merged 2026-10-08** (with M34) | ✅ the viking's helmet rigid on Head (`527_parts` → `530_anim`): 0.00000 m off the Head bone's motion in Walk and the custom motion (1.6 cm without); Godot six skinned parts on one skeleton; Unreal combines skinned meshes unless Do Not Combine; `docs/bench/m32.md` |
 | M31b Parts in the game files | done, merged 2026-10-08 | ✅ the viking's parts renamed (`523_parts`) and exported (`524_export` Godot, `525_export` Unreal): Godot 4.7.1 five named meshes with a convex body each, Unreal 5.8 five static meshes with 4 LODs and a hull each; Unreal 5.8 turns Nanite on at import (untick it to use our LODs); `docs/bench/m31.md` |
-| M31 Parts | done, merged 2026-10-08; owner tried it 2026-10-07 on the viking (`521_parts` views, `522_parts` All parts) | ✅ GeoSAM2 in `.venv-parts` (`UV_PROJECT_ENVIRONMENT=.venv-parts uv sync --frozen --group parts`; model group `parts` on the Setup page); on the viking: views 12 s, a click 16–20 s, all parts 74–76 s, rig and skin unchanged on the split versions; up to 200k faces; the Parts tab; the app needs a restart (a new venv route) |
+| M31 Parts | done, merged 2026-10-08; maintainer tried it 2026-10-07 on the viking (`521_parts` views, `522_parts` All parts) | ✅ GeoSAM2 in `.venv-parts` (`UV_PROJECT_ENVIRONMENT=.venv-parts uv sync --frozen --group parts`; model group `parts` on the Setup page); on the viking: views 12 s, a click 16–20 s, all parts 74–76 s, rig and skin unchanged on the split versions; up to 200k faces; the Parts tab; the app needs a restart (a new venv route) |
 | M29 Setup page | **accepted 2026-10-07** (`m29-setup`, merged) | ✅ a plain-words summary, the feature cards in workflow order with a status dot and one button, gated-model steps as an expander in the card, Tools / Credits for your game / Advanced sections; Playwright 15/15 |
 | M28 library browser | **accepted 2026-10-07** (`m28-library`, merged) | ✅ grid toolbar (search, sort, filter incl. archived, count), Archive on the cards, History with folded intermediate steps, a star and a label per version, "Starred only"; backend fields `archived` / `starred` / `label`; Playwright 14/14 |
 | M27 one tab per step | **accepted 2026-10-07** (merged via `m26-motion`) | ✅ twelve upper-right tabs in workflow order, Face/Rig/Skin/Animate marked optional, per-step buttons on Clean/Simplify/Unwrap/Bake; Playwright 11/11 |
@@ -196,11 +200,11 @@ checklist, done, is `docs/archive/LAPTOP.md`.
 | M25 UX pass | **accepted 2026-10-06** (`m25-ux`, merged) | ✅ 30 panel texts rewritten for newcomers and set larger; "Where it sits" for every joint and marker (tooltip, line, "How to place joints" rules); Playwright 10/10 |
 | M24 faces, round two | **accepted 2026-10-06** (`m24-faces2`, merged) | ✅ Real-ESRGAN 4× upscale of the image before the projection (model group `texture`, BSD-3), a zero-model local colour match that takes the large-scale shading from the bake and the detail from the image; Marigold-IID tried and dropped (too flat); eight characters, 8–9 s each (`docs/bench/m24.md`, `m24_faces.jpg`) |
 | M23 faces from the image | **accepted 2026-10-06** (`m23-faces`, merged) | ✅ step `project`: the conditioning image projected onto the head where Pixal3D's camera sees it (silhouette match 0.92–0.96 on eight bench characters, 6–8 s), colour-matched to the albedo, a gate for misaligned images; "Face from image" in the UI; `docs/bench/m23.md`, `m23_faces.jpg` |
-| M22b skeleton editor | **accepted 2026-10-06** (`m22b-editor`) | ✅ joints and markers pickable and movable with a gizmo (joints also rotatable: red ring = twist, other rings swing the subtree), multiselect and Select chain, live preview, undo/redo, Reset all, symmetry, depth cues (dim behind the surface, plumb line, X-ray, X/Y/Z fields), joints the inside check flags drawn red, Save → `rig_fit` overrides; the twist reaches the retarget (viking: auto `260_anim` palm-in, flipped edit `290_anim` palm-out; the owner's own edits `380`–`410`); Playwright 9/9 |
+| M22b skeleton editor | **accepted 2026-10-06** (`m22b-editor`) | ✅ joints and markers pickable and movable with a gizmo (joints also rotatable: red ring = twist, other rings swing the subtree), multiselect and Select chain, live preview, undo/redo, Reset all, symmetry, depth cues (dim behind the surface, plumb line, X-ray, X/Y/Z fields), joints the inside check flags drawn red, Save → `rig_fit` overrides; the twist reaches the retarget (viking: auto `260_anim` palm-in, flipped edit `290_anim` palm-out; the maintainer's own edits `380`–`410`); Playwright 9/9 |
 | M50 Pictures (2D) | **merged 2026-10-12** | ✅ Z-Image op `image`, three style LoRAs (peft), a cut-out: 29 s a 1920 × 1088 picture warm, 8.3 GB torch peak (`docs/bench/m50.md`) |
 | M51 Pixelize | **merged 2026-10-12** (the other session's `2d-pixelize` + `2d-lab-palette`) | ✅ grid found or set, one palette (or PICO-8) over every frame, CIEDE2000, dither, outline, an exact recolour |
 | M52 Sprites | **merged 2026-10-12** | ✅ the viking's 5 clips as 126 frames in 3.5 s; the 21-move brawler set as 382 frames in 7 s, pixel art in ~21 s (`docs/bench/m52.md`) |
-| M53 Godot 2D, Paper2D | **merged 2026-10-12** | ✅ Godot 4.7.1 imports and plays the sheet headless (`docs/bench/engine-import.md`); Paper2D needs the UE editor (the owner's check) |
+| M53 Godot 2D, Paper2D | **merged 2026-10-12** | ✅ Godot 4.7.1 imports and plays the sheet headless (`docs/bench/engine-import.md`); Paper2D needs the UE editor (the maintainer's check) |
 | M57 Pixel editor 2 | **merged 2026-10-13** | ✅ frames, timings, tags, play, onion skin, Draw it yourself; a hand-drawn spark plays once in Godot; the viking's Walk re-timed pixel-exact |
 | M56 Pixel editor 1 | **merged 2026-10-13** | ✅ tools, palette lock, undo, Save → `pixelize` op `edit`; a line saved pixel-exact (browser test and live on the barrel) |
 | M55 Parallax layers | **merged 2026-10-13** | ✅ the street background → 4 layers (speeds 0.05–1), Godot `Parallax2D` moves each at its speed headless (`docs/bench/m55.md`) |
@@ -209,19 +213,19 @@ checklist, done, is `docs/archive/LAPTOP.md`.
 
 ## 2. What to do here, in order
 
-### Next session (after 2026-10-13)
+### Next session (after 2026-10-16)
 
 Done and recorded elsewhere: the 2D roadmap (M54–M57) and the bigger GPUs (M46a–c: IMPLEMENTATION's M46 sections,
 `docs/bench/m46.md`, research 16; what is left there is the users' GPU reports for the 24/32 GB thresholds), the
 agent's hoarding findings 1–22 (4 built as Setup's Start Blender; 5 decided: the port stays 8000).
 
-0. **M61 `redraw`** (upscale / redraw at any size, branch `m61-redraw`, not merged): built and smoke-tested 2026-10-16;
-   the owner runs the full 33408 x 9600 job (IMPLEMENTATION M61 acceptance 3).
-1. **M60 The held weapon as a separate prop on the hand bone** (the owner's pick, 2026-10-13: the standing-pose redraw
+0. **Merge M61 and M62** (PRs pending): M61 was smoke-tested 2026-10-16; the full 33408 x 9600 redraw job (IMPLEMENTATION M61
+   acceptance 3) is the maintainer's to run. Then the `clean` crash above.
+1. **M60 The held weapon as a separate prop on the hand bone** (the maintainer's pick, 2026-10-13: the standing-pose redraw
    empties the hands). The other offered items (a Sprites warning without animations, Flat by default, Animate this
-   character as one chain) were dropped by the owner. **Not started: design first** (an Expert design pass was begun
-   2026-10-14 and stopped by the owner before it reported; nothing written).
-   - **The owner's decisions (2026-10-13)**: the weapon stays its **own prop with an attach point** (not baked into
+   character as one chain) were dropped by the maintainer. **Not started: design first** (an Expert design pass was begun
+   2026-10-14 and stopped by the maintainer before it reported; nothing written).
+   - **The maintainer's decisions (2026-10-13)**: the weapon stays its **own prop with an attach point** (not baked into
      the character mesh): swappable and droppable in the game. Its model can come from **all three**: a crop of the
      original picture, any prop asset in the library, a text description.
    - **Research facts** (read-only, 2026-10-13):
@@ -242,7 +246,7 @@ agent's hoarding findings 1–22 (4 built as Setup's Start Blender; 5 decided: t
        editor (exact numbers in UE's frame: cm, Z-up, after the FBX bone-axis conversion) or a UE Python script.
    - **To design**: where the attachment lives (a new step/version on the character, its §3.2 row), the transform
      convention (bone-local, rest pose), the default grip/orientation/scale, the panel (reuse the existing gizmo and
-     controls: the owner wants one interface, no one-off controls), the viewer showing the prop following the animation, the export per profile
+     controls: the maintainer wants one interface, no one-off controls), the viewer showing the prop following the animation, the export per profile
      (prop as its own file + `attachments.json`; Godot `.tscn`; Unreal socket numbers), headless checks in Godot 4.7.1
      (and UE 5.8 if feasible). Out of scope at first: two-handed weapons, sheaths, shields.
 2. **GPU checks of the cloud session's work** (merged 2026-10-13), one at a time: "Redraw this view" on the pirate's
@@ -252,7 +256,7 @@ agent's hoarding findings 1–22 (4 built as Setup's Start Blender; 5 decided: t
    mesh; `joint_loops` still flags necks, heads, shoulders or hips on 10 of 16 bench rigs (tune its window, or limit
    it to limb bends). A flaky Playwright test: one full run of three on 2026-10-13 had one `toBeVisible` failure the
    next two did not repeat (not identified yet: run with `--repeat-each` to catch it).
-4. **Owner-side**: Unreal's Paper2D import in the editor; NVDA and a real 200 % zoom; the female viking redone through
+4. **Maintainer-side**: Unreal's Paper2D import in the editor; NVDA and a real 200 % zoom; the female viking redone through
    Animate this character (her `_2` asset is the cardboard one); turn on Setup's Start Blender if wanted; the agent's
    retest of the 2026-10-13 fixes on a new asset.
 
@@ -305,7 +309,7 @@ Only one app may run at a time (both use port 8000 unless one is moved in Setup,
 checkout's app with `.\run.bat` (or `uv run uvicorn server.app:app --port 8000` after the first run).
 
 MCP: Claude Code started in the repo reads `.mcp.json` (the `effigy` server with relative paths, M40); any
-other agent gets its config from Setup → "Connect an agent". For Blender MCP Pro the owner sets
+other agent gets its config from Setup → "Connect an agent". For Blender MCP Pro the maintainer sets
 `EFFIGY_BLENDER_MCP_PRO_DIR` and `BLENDER_MCP_PRO_LICENSE` (SETUP.md step 9). Never read, log or commit the
 licence key.
 
@@ -332,7 +336,7 @@ Done: every generator, the chain, Blender and the exports ran on the laptop (`do
 
 Approved and installed (PLAN §6: "Built with DINOv3"); the pre-approval notes are in the archive.
 
-## 8. Decisions already made (don't reopen without the owner)
+## 8. Decisions already made (don't reopen without the maintainer)
 
 - **Licences**: one commercial-clean profile; check `docs/PLAN.md` §6 and add a `licenses.yaml` row before
   any new model or dependency. No nvdiffrast/nvdiffrec, no RMBG-2.0 (BiRefNet instead), no xformers /
@@ -360,7 +364,7 @@ Approved and installed (PLAN §6: "Built with DINOv3"); the pre-approval notes a
 | Collision hull simplification | `steps/export.py` | an engine refuses a big hull |
 | Concepts streamed as they finish | `steps/concepts.py` | waiting ~30 s hurts |
 | UV overlap / texel-density targets in validate | `steps/validate.py` | a target needs them |
-| A Retexture button in the UI | `ui/src/main.tsx` | the owner asks (today: Run a step → `trellis2` → preset `retexture`) |
+| A Retexture button in the UI | `ui/src/main.tsx` | the maintainer asks (today: Run a step → `trellis2` → preset `retexture`) |
 | Per-step VRAM budgets instead of evicting the resident worker | `server/jobs.py` | it over-evicts |
 | Character face budget above 15k, or a region-wise two-pass decimation (hands and head dense) | `server/presets.py`, `steps/remesh.py` | version 2, or a character whose fingers must read (`docs/bench/m23.md` M23b) |
 | A closing of the voxel volume before the surface rebuild (hair strands → a smooth hood) | `steps/clean.py` | version 2, or hair that must be seamless; a finer rebuild made holes, experiment first |
@@ -374,35 +378,13 @@ Approved and installed (PLAN §6: "Built with DINOv3"); the pre-approval notes a
 - Per fix: the smallest change at the root cause, a CPU test where one can catch it, `PATCHES.md` row for
   any engine patch, the milestone's "As built" note in `docs/IMPLEMENTATION.md` updated.
 - Commit messages: what and why, then **Verified** (exact commands/results) and **Not run**.
-- Push milestone branches off `main`; no CI trigger, no PR, no merge into `main` unless the owner asks.
+- Push milestone branches off `main`; no CI trigger, no PR, no merge into `main` unless the maintainer asks.
 - Never commit model weights, `library/`, `models/`, `blender/`, `gltfpack/`, `.venv*`, `.env`, `dist/`,
   credentials, or absolute paths; no model identifiers in repo files.
 
 ## 11. After bring-up: the roadmap
 
-Phases 0–2 are closed; what is open is §2 above and PLAN §7. The pre-bring-up roadmap and the owner's requests of 2026-10-04 (all built: Kimodo, the library rework) are in [archive/handover-history.md](archive/handover-history.md).
-
-## 11b. A fresh clone of the Effigy repo: what lives outside it (owner, 2026-10-10)
-
-The repo (`SifuInTheShell/Effigy`, 632 tracked files) holds the code, the docs and the pinned lock; everything
-heavy lives beside it in the checkout folder and is git-ignored. From a fresh clone (`SETUP.md`: `git clone
-https://github.com/SifuInTheShell/Effigy.git Effigy`, then `run.bat`), carry these over from
-the old checkout, or point the new clone at them:
-
-| what | where it is today | in the new clone |
-|---|---|---|
-| the models (132 GB, `tools/models_manifest.json`) | the old checkout's `models\` | Setup's "where the models go" → pick that folder (nothing re-downloads: the manifest check passes), or set the user variable `EFFIGY_MODELS` to it; `settings.json` (git-ignored) remembers the choice |
-| the library (23 GB, 110 assets incl. the five `test_*` creatures and `effigy_logo`) | the old checkout's `library\` | set `EFFIGY_LIBRARY` to it, or move the folder into the clone as `library\` (the default is `library` beside the code) |
-| the Python environments (`.venv`, `.venv-ml`, `.venv-skin`, `.venv-parts`, `.venv-kimodo`, `.venv-gemx`) and `python\` | under the checkout | `run.bat` makes `.venv`, `.venv-ml`, `.venv-skin` (`uv sync --frozen`, our own sm_120 wheels from the lock); Setup's feature cards make the rest; nothing to copy |
-| Blender 5.2.2 (`blender\`, ~400 MB) and gltfpack | under the checkout | `run.bat` installs both again (`server.blender_install`, `server.gltfpack_install`), or copy the two folders |
-| `settings.json` | git-ignored, in the checkout | the first run opens Setup; the models folder and the presets are chosen again (or copy the file) |
-| the Hugging Face token (DINOv3 and other gated weights) | huggingface_hub's own store in the user profile | unchanged; the owner keeps a plain-text copy outside every repo |
-| user variables | `EFFIGY_BLENDER_MCP_PRO_DIR`, the HF token's store | unchanged |
-| agents | `.mcp.json` in the repo (relative paths: Claude Code finds the `effigy` server in the new clone); Claude Desktop / Codex / Cursor registrations hold the OLD path | re-add them once from Setup → "Connect an agent" |
-| Claude Code's memory for this project | `%USERPROFILE%\.claude\projects\<the old checkout path, with dashes>\memory` (keyed by the checkout path) | tell Claude the old path in the first session from the new clone: it copies the memory folder to the new project's folder; otherwise it starts without it |
-| untracked working files | `docs/continue.md`, the owner's video clip in the checkout root, `.claude/worktrees/*` | stay in the old folder (never committed) |
-
-The old checkout keeps working as it is; `origin` points at Effigy in both.
+Phases 0–2 are closed; what is open is §2 above and PLAN §7. The pre-bring-up roadmap and the maintainer's requests of 2026-10-04 (all built: Kimodo, the library rework) are in [archive/handover-history.md](archive/handover-history.md).
 
 ## 12. Gotchas met so far
 

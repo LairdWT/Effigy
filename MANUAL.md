@@ -310,8 +310,8 @@ A freshly generated model shows small holes and loose bits, and has far more tri
 - **Simplify** brings it down to the **Triangle budget** (default 10,000).
 - **Unwrap** lays out its UVs.
 - **Bake** paints the textures at **Texture size** **1K** or **2K**: base colour, roughness, metallic, a normal map
-  and ambient occlusion, from the generated model's colour volume. An imported model has no such volume, so it skips
-  the bake and keeps its own textures.
+  and ambient occlusion, from the generated model's colour volume. An imported model has no such volume, so the bake paints its own
+  materials and textures onto the simplified mesh instead.
 - **Check** runs the game-readiness checks (see [section 7](#7-checking-and-exporting-a-3d-model)).
 
 **Height in metres** scales it to its real size (empty keeps it). Under **Advanced**:
@@ -520,7 +520,8 @@ the import did (turned it round to face forward, parts left out, textures not fo
 
 An imported model starts at **Prepare**. **Check the model** runs the checks; **Simplify geometry** makes a lighter
 copy with its materials baked into one texture set (the Bake step is offered when the model has materials); skin and
-animation are not kept.
+animation are not kept. From there it goes on like a generated one: rig, animate, export. A skeleton that is not
+one of this app's is dropped, and the model is rigged with this app's own.
 
 ### An animation for one of your characters
 
@@ -617,11 +618,11 @@ side). The check measures whether the edges meet (1.10 or less is seamless). Exp
 ### Upscale or redraw a picture
 
 On a picture, **Upscale or redraw** (a disclosure in the panel) makes it bigger or draws it again. **Make it bigger**
-enlarges it 2× or 4× a side (Real-ESRGAN, Setup card **Face detail**). **Draw it again** repaints it from itself in
+enlarges it 2× or 4× a side (Real-ESRGAN; needs the Setup card **Face detail**). **Draw it again** repaints it from itself in
 overlapping windows, so any size works: give a description (there is no negative prompt), a strength (0.2 to 1: how far
 it is redrawn), optionally a style, a bigger size first, and a **mask**, a grey picture in the same asset (white stays,
 black is redrawn); **Add the mask** uploads one. The panel says how many windows it will take (about 10 seconds each).
-The new version shows how far it moved from the picture and whether the windows meet. Needs **Texture detail**.
+The new version shows how far it moved from the picture and whether the windows meet. **Draw it again** needs the Setup card **Texture detail**.
 
 ### Parallax layers
 
