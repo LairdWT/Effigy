@@ -64,6 +64,7 @@ LOWER = {
         "texture_size": 1024,
     },
     "refine": {"texture_size": "keep", "tile": "lite"},
+    "redraw": {"window": 768},  # M61: smaller windows for the same picture
     # M46a: a model kept on the GPU because the budget seemed to hold it: offload it instead
     "canon": {"offload": True},
     "motion": {"offload": True},
@@ -79,6 +80,9 @@ VRAM_GB = {
     # m43b.md: the lite Tile 12.2 reserved, the full one 15.57 (it restarted the laptop before the cap; M46c: its own
     # download group, offered where it fits)
     "refine": ("tile", "lite", {"lite": 12.3, "full": 15.6}),
+    # M61: op redraw is refine's lite Tile at 1024 px windows (12.3, whatever the picture's size); op upscale one
+    # Real-ESRGAN window (1536 x 1024 x2: torch peak 9.3 GB redraw, card 13.6 GB; upscale ~2 est.)
+    "redraw": ("op", "redraw", {"redraw": 12.3, "upscale": 2.0}),
     "concepts": 8.5,  # m10.md: Z-Image fp8, resident 8.42; m50.md: op image 8.29 at 1920 x 1088, 8.44 with a style
     "canon": 9.2,  # m16.md: FLUX.2-klein 9.23, offloaded; whole on the GPU from a budget of 17 GB (M46a)
     "prep": 3.3,  # phase0.md: every step but trellis2 ≤ 3.3 whole-GPU

@@ -169,6 +169,16 @@ owner remove it). The result lists the absolute paths. Export the **checked** ve
   nearer, what the nearer bands hide drawn in; the farthest is opaque), `layers.json` (`scroll_scale` per layer: the
   share of the camera's move it follows), `bands.png`. `export` `godot-2d` writes `parallax.tscn` (one Parallax2D per
   layer). A background picture (`category: "background"`, 2048 x 768) is the usual input.
+- Upscale or redraw a picture (M61, any size): `run_step(asset, <a picture>, "redraw", {"op": "upscale",
+  "factor": 4})` (Real-ESRGAN, 2 or 4), or `{"op": "redraw", "prompt": ..., "strength": 0.35, "factor": 4,
+  "seed": 1}`: upscaled first, then drawn again in overlapping 1024 px windows that fade into each other (about
+  10 s a window: an 8352 x 2400 picture at 4x is 572 windows, near 2 hours, run nothing else meanwhile). The
+  prompt is used as given (no negative prompt); `lora` as in concepts; `strength` 0.2-1 is how far it may wander.
+  Alpha is kept. A protect mask (glass, mist, water the model would invent in): `import_file(<mask.png>,
+  asset_id=<this asset>)` adds it as a version beside the picture, then `"protect": "<its version>"` (white = keep
+  the picture, black = redraw). Outputs `image.png` (full size), `preview.png` (2048 px, what `look` shows) and
+  `report.json`: `drift` (0-255, the result shrunk back vs the input), `drift_max` and `per_window` (find the
+  windows that changed too much), `seam_ratio` (about 1 = no seam), `pass`.
 - A prop for a 2D game, end to end (the chain `game-prop-2d` in `tools/bench.py`): prep, `trellis2`, clean, remesh,
   uv, bake, then `sprites` `{"yaws": [90], "height_px": 64}` on the bake and `pixelize` `{"scale": 1, "colors": 15,
   "outline": "darkest"}`.

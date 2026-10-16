@@ -91,6 +91,7 @@ def test_the_machine_check_marks_what_never_fits(monkeypatch):
             "need_gb": 15.6,
             "group": "refine-full",
         },
+        {"step": "redraw", "param": "op", "value": "redraw", "need_gb": 12.3},  # M61
     ]
     assert "trellis2 faithful (13.3 GB)" in gpu["detail"] and "use Fast" in gpu["detail"]
     assert "faithful-hd" not in gpu["detail"]  # for bigger cards: listed for the menu, no warning
@@ -191,13 +192,21 @@ LAYOUTS = [
             "canon",
             "lite",  # refine's Tiles
             "full",
+            "redraw",
             "depth",
             "layers",
         }  # M55: MoGe-3 9.0, its inpaint 7.8
         | HQ_HD,
         6.76,
     ),
-    ("RTX 3060 12 GB desktop", 12288, 800, "warn", {"faithful", "lite", "full"} | HQ_HD, 10.42),
+    (
+        "RTX 3060 12 GB desktop",
+        12288,
+        800,
+        "warn",
+        {"faithful", "lite", "full", "redraw"} | HQ_HD,
+        10.42,
+    ),
     # M46b/c: the HD preset and the full Tile are for bigger cards: listed, no warning
     ("RTX 5080 Laptop 16 GB (reference)", 16303, 470, "ok", {"faithful-hd", "full"}, 14.66),
     (

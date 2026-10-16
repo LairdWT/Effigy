@@ -511,6 +511,182 @@ function Files(props: { asset: string; version: Meta; files: [string, string][] 
   );
 }
 
+// steps/redraw.py: MAX_PX, the window and its overlap, and the windows' time on the reference card
+const REDRAW = { maxPx: 500e6, window: 1024, loraWindow: 768, overlap: 0.25, seconds: 10 };
+const windows = (n: number, win: number, ov: number) => (n <= win ? 1 : Math.ceil((n - win) / (win - ov)) + 1);
+/** The picture's size in px: a generated one's, a redrawn one's; null when the version does not say. */
+const sizeOf = (v: Meta): [number, number] | null => {
+  const s = (v.metrics as Record<string, unknown>).size;
+  const [w, h] = Array.isArray(s) ? s.map(Number) : [Number(v.params.width), Number(v.params.height)];
+  return w > 0 && h > 0 ? [w, h] : null;
+};
+
+/** Upscale or redraw the shown version's picture (step redraw, M61): bigger, or drawn again from itself in windows, with a
+ * mask that keeps parts as they are. */
+export function RedrawForm(props: { asset: string; version: Meta; versions: Meta[]; picked: string; chain: Chain; missing: (group: string) => boolean }) {
+  const v = props.version;
+  const [op, setOp] = useState("upscale");
+  const [factor, setFactor] = useState("4");
+  const [prompt, setPrompt] = useState("");
+  const [strength, setStrength] = useState("0.35");
+  const [seed, setSeed] = useState("");
+  const [style, setStyle] = useState("");
+  const [protect, setProtect] = useState("");
+  const [mask, setMask] = useState<Meta[]>([]); // masks added here: the asset's versions do not list them yet
+  const [file, setFile] = useState<File | null>(null);
+  const [inputKey, setInputKey] = useState(0);
+  const [err, setErr] = useState("");
+  const [busy, run] = useBusy();
+  const redraw = op === "redraw";
+  const f = Number(factor);
+  const need = redraw && props.missing("refine") ? ["refine", "Texture detail", "the Tile control net"] : f > 1 && props.missing("texture") ? ["texture", "Face detail", "the upscaler (Real-ESRGAN)"] : null;
+  const keys = pictureKeys(v);
+  const key = keys.length ? (v.outputs[props.picked] ? props.picked : keys[0]) : undefined;
+  const siblings = [...props.versions, ...mask].filter((x) => x.version !== v.version && (x.outputs.image || pictureKeys(x).length) && x.step !== "brief");
+  const size = sizeOf(v);
+  const win = style ? REDRAW.loraWindow : REDRAW.window;
+  const [w, h] = size ? [size[0] * f, size[1] * f] : [0, 0];
+  const count = redraw && size ? windows(w, win, win * REDRAW.overlap) * windows(h, win, win * REDRAW.overlap) : 0;
+  const tooBig = w * h > REDRAW.maxPx;
+  const strong = Number(strength) >= 0.2 && Number(strength) <= 1;
+  const ok = (!redraw || (!!prompt.trim() && strong)) && (seed === "" || Number.isInteger(Number(seed))) && !tooBig;
+  const params = {
+    op,
+    ...(key ? { key } : {}),
+    factor: f,
+    ...(redraw ? { prompt: prompt.trim(), strength: Number(strength), ...(seed !== "" ? { seed: Number(seed) } : {}), ...(style ? { lora: style } : {}), ...(protect ? { protect } : {}) } : {}),
+  };
+  const add = () =>
+    run(async () => {
+      try {
+        const up = await api.upload(props.asset, file!);
+        setMask((m) => [...m, up]);
+        setProtect(up.version);
+        setFile(null);
+        setInputKey((k) => k + 1);
+        setErr("");
+      } catch (e) {
+        setErr(String((e as Error).message ?? e));
+      }
+    });
+  if (need)
+    return (
+      <>
+        <p className="note warn">
+          {redraw ? "Redrawing" : "Upscaling"} needs {need[2]}.
+        </p>
+        <a className="button" href={setupAt(need[0])}>
+          Set up {need[1]}
+        </a>
+      </>
+    );
+  return (
+    <div className="stack">
+      <label>
+        What to do
+        <select value={op} onChange={(e) => (setOp(e.target.value), setFactor(e.target.value === "redraw" ? "1" : "4"))}>
+          <option value="upscale">Make it bigger (upscale)</option>
+          <option value="redraw">Draw it again (redraw)</option>
+        </select>
+      </label>
+      <label>
+        {redraw ? "Bigger first" : "Size"}
+        <select value={factor} onChange={(e) => setFactor(e.target.value)}>
+          {(redraw ? [1, 2, 4] : [2, 4]).map((n) => (
+            <option key={n} value={n}>
+              {n === 1 ? "As it is" : `${n}× a side`}
+            </option>
+          ))}
+        </select>
+      </label>
+      {redraw && (
+        <>
+          <label>
+            Description
+            <textarea rows={3} value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+          </label>
+          <label>
+            Strength{" "}
+            <input type="range" aria-label="Redraw strength" min={0.2} max={1} step={0.05} value={strength} onChange={(e) => setStrength(e.target.value)} /> {Number(strength).toFixed(2)}
+          </label>
+          <label>
+            Seed (empty: any)
+            <input type="number" value={seed} onChange={(e) => setSeed(e.target.value)} />
+          </label>
+          <label>
+            Style
+            <select value={style} onChange={(e) => setStyle(e.target.value)}>
+              {STYLES.map(([id, title]) => (
+                <option key={id} value={id} disabled={!!id && props.missing("styles")}>
+                  {title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Keep as it is (a mask)
+            <select value={protect} onChange={(e) => setProtect(e.target.value)}>
+              <option value="">Nothing: draw it all</option>
+              {siblings.map((x) => (
+                <option key={x.version} value={x.version}>
+                  {x.version}
+                </option>
+              ))}
+            </select>
+          </label>
+          <p className="muted">A mask is a grey picture in this asset: white stays as it is, black is drawn again, grey in between. Add one:</p>
+          <input key={inputKey} type="file" aria-label="Mask picture" accept="image/*" aria-invalid={!!err} onChange={(e) => (setErr(""), setFile(e.target.files?.[0] ?? null))} />
+          {err && (
+            <p className="error" role="alert">
+              {err}
+            </p>
+          )}
+          <button disabled={busy || !file} onClick={add}>
+            Add the mask
+          </button>
+        </>
+      )}
+      <p className={tooBig ? "note warn" : "muted"}>
+        {tooBig
+          ? `${w} × ${h} px is more than the ${REDRAW.maxPx / 1e6} MP the step makes: a smaller size.`
+          : size
+            ? `${w} × ${h} px.${count ? ` About ${count} window${count > 1 ? "s" : ""}, ${REDRAW.seconds} seconds each: ${Math.max(1, Math.round((count * REDRAW.seconds) / 60))} min.` : ""}`
+            : redraw
+              ? `Drawn in windows of ${win} px, about ${REDRAW.seconds} seconds each.`
+              : "The picture's size is not known here."}
+        {redraw && " There is no negative prompt: the model runs without one."}
+      </p>
+      <button className="primary" disabled={busy || !ok} onClick={() => run(() => props.chain(props.asset, v.version, [["redraw", params]]))}>
+        {busy ? "Starting…" : redraw ? "Redraw the picture" : "Make it bigger"}
+      </button>
+    </div>
+  );
+}
+
+/** A redraw version: its size and how close it stayed (steps/redraw.py thresholds in its report). */
+function RedrawInfo(props: { asset: string; version: Meta }) {
+  const v = props.version;
+  const m = v.metrics as Record<string, number | number[] | Record<string, boolean>>;
+  const pass = (m.pass ?? {}) as Record<string, boolean>;
+  const bad = Object.keys(pass).filter((k) => !pass[k]);
+  const num = (k: string) => (typeof m[k] === "number" ? (m[k] as number).toFixed(2) : "?");
+  const windowed = m.seam_ratio !== undefined;
+  return (
+    <>
+      <p>
+        {Array.isArray(m.size) ? m.size.join(" × ") : "?"} px, from {Array.isArray(m.input_size) ? m.input_size.join(" × ") : "?"}
+        {windowed ? `, drawn in ${m.windows} windows` : ""}.
+      </p>
+      <p className={bad.length ? "note warn" : "muted"}>
+        {bad.length ? `It moved far from the picture (${bad.join(", ")}): ` : "It stayed close to the picture: "}
+        {num("drift")} grey levels on average
+        {windowed ? `, ${num("drift_max")} in the worst window, seam ${num("seam_ratio")} (1 is none)` : ""}.{bad.length ? " A lower strength stays closer." : ""}
+      </p>
+      <Files asset={props.asset} version={v} files={[["image", "The picture (PNG)"], ["report", "Report (JSON)"]]} />
+    </>
+  );
+}
+
 /** The panel of a 2D asset's version: its main action first, as Actions does for a 3D one. */
 export function Actions2D(props: {
   asset: string;
@@ -546,6 +722,7 @@ export function Actions2D(props: {
   const stage = category === "background" || category === "wallpaper";
   const layerable =
     !!(v.outputs.image || pictureKeys(v).length) && !v.outputs.tile && !["pixelize", "sprites", "depth", "layers"].includes(v.step);
+  const redrawable = layerable || v.step === "redraw";
   const layersFrom = <LayersForm asset={props.asset} version={v} picked={props.picked} chain={props.chain} missing={props.missing} primary={stage} />;
   const more = brief && (
     <>
@@ -598,6 +775,12 @@ export function Actions2D(props: {
           {layersFrom}
         </section>
       )}
+      {v.step === "redraw" && (
+        <section className="stack">
+          <h3>{v.params.op === "upscale" ? "Upscaled picture" : "Redrawn picture"}</h3>
+          <RedrawInfo asset={props.asset} version={v} />
+        </section>
+      )}
       {v.step === "pixelize" && (
         <section className="stack">
           <h3>Pixel art</h3>
@@ -624,6 +807,12 @@ export function Actions2D(props: {
         </section>
       )}
       {v.step !== "pixelize" && animate && <AnimateIt {...props} />}
+      {redrawable && (
+        <details id="redraw">
+          <summary>Upscale or redraw</summary>
+          <RedrawForm asset={props.asset} version={v} versions={props.versions} picked={props.picked} chain={props.chain} missing={props.missing} />
+        </details>
+      )}
       {layerable && !stage && (
         <details id="layers">
           <summary>Parallax layers</summary>

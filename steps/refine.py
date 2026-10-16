@@ -300,7 +300,7 @@ class _Tile:
         from steps.concepts import MODEL, REVISION
 
         if not torch.cuda.is_available():
-            raise StepError("failed", "refine needs a CUDA GPU")
+            raise StepError("failed", "this step needs a CUDA GPU")
         root = Path(os.environ.get("EFFIGY_MODELS", Path(__file__).resolve().parents[1] / "models"))
         file, places = TILES[tile]
         path = root / TILE_DIR / file
@@ -359,19 +359,20 @@ class _Tile:
     def __call__(
         self, ctrl: np.ndarray, emb, strength: float, scale: float, seed: int
     ) -> np.ndarray:
-        """ctrl [VIEW, VIEW, 3] uint8 → the generated view, uint8. strength < 1: img2img, the 8-step schedule
+        """ctrl [h, w, 3] uint8 (h, w multiples of 16) → the generated picture, uint8. strength < 1: img2img, the 8-step schedule
         entered at step round(8·(1−s)) with the render's latent noised to that σ."""
         from diffusers.pipelines.z_image import pipeline_z_image_controlnet as P
 
         torch, pipe = self.torch, self.pipe
         img = Image.fromarray(ctrl)
+        h, w = ctrl.shape[:2]
         n, latents, sigmas = 8, None, None
         if strength < 1.0:
             k = round(n * (1 - strength))
             sigmas = P.get_default_z_image_sigmas(n)[k:]
             cfg = pipe.scheduler.config
             mu = P.calculate_shift(
-                (VIEW // 16) ** 2,
+                (h // 16) * (w // 16),
                 cfg.get("base_image_seq_len", 256),
                 cfg.get("max_image_seq_len", 4096),
                 cfg.get("base_shift", 0.5),
@@ -382,7 +383,7 @@ class _Tile:
                 pipe.scheduler.sigmas[0]
             )  # the same shifted schedule the pipeline sets again
             with torch.inference_mode():
-                x = pipe.image_processor.preprocess(img, height=VIEW, width=VIEW).to(
+                x = pipe.image_processor.preprocess(img, height=h, width=w).to(
                     "cuda", pipe.vae.dtype
                 )
                 x0 = pipe.vae.encode(x).latent_dist.mode()
@@ -392,8 +393,8 @@ class _Tile:
             latents = sig * noise + (1 - sig) * x0.float()
         out = pipe(
             prompt_embeds=[emb],
-            height=VIEW,
-            width=VIEW,
+            height=h,
+            width=w,
             num_inference_steps=n if sigmas is None else len(sigmas),
             sigmas=sigmas,
             guidance_scale=0.0,  # Turbo is distilled without CFG

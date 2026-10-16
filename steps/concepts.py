@@ -93,6 +93,20 @@ def _pipeline():
     return _PIPE[0]
 
 
+def style_file(name: str) -> str:
+    """The downloaded LoRA file of a 2D style (STYLES); StepError when Setup has not fetched it."""
+    from huggingface_hub import hf_hub_download
+    from huggingface_hub.errors import LocalEntryNotFoundError
+
+    repo, revision, file, _ = STYLES[name]
+    try:
+        return hf_hub_download(repo, file, revision=revision, local_files_only=True)
+    except LocalEntryNotFoundError:
+        raise StepError(
+            "missing_input", f"the {name} style is not installed: Setup, 2D styles"
+        ) from None
+
+
 def _image_params(in_dir, params) -> dict:
     brief = {}
     if in_dir and (Path(in_dir) / "brief.yaml").is_file():
@@ -211,15 +225,7 @@ def _image(in_dir, out: Path, params, tile: bool = False) -> dict:
     try:
         if style:
             progress(0.03, f"style: {p['lora']}")
-            from huggingface_hub import hf_hub_download
-            from huggingface_hub.errors import LocalEntryNotFoundError
-
-            try:
-                path = hf_hub_download(style[0], style[2], revision=style[1], local_files_only=True)
-            except LocalEntryNotFoundError:
-                raise StepError(
-                    "missing_input", f"the {p['lora']} style is not installed: Setup, 2D styles"
-                ) from None
+            path = style_file(p["lora"])
             loaded = True  # before: a load that fails halfway leaves layers to take out
             pipe.load_lora_weights(path, adapter_name=p["lora"])
             pipe.set_adapters([p["lora"]], [float(p["lora_scale"])])
