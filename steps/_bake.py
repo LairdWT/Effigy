@@ -209,13 +209,15 @@ def bake_source(src, face, w, nrm, mask, ss: int = 1):
     materials, roughness/metallic = factor × the metallicRoughness texture's G/B. One material at a time (VRAM).
     Returns (RGBA, ORM with R = 0, covered) as bake_volume does, and the source's normal at each texel [T,3]
     (bent by its normal map where it has one) turned to the side of `nrm`.
-    Ceilings (not read): vertex colours, emissive, source AO, KHR_texture_transform, TEXCOORD_1, wrap modes.
+    Ceilings (not read): vertex colours, emissive, source AO, KHR_texture_transform, TEXCOORD_1, wrap modes;
+    BLEND is baked as MASK at 0.5 (alphaCutoff ignored); trimesh keeps baseColorFactor as uint8 (±1/255);
+    each material's textures are converted to a float32 tensor whole (a few hundred MB for several 4K maps).
     # ponytail: the closest point can lie on the wrong side of a thin or doubled part; the upgrade is a ray along
     # -n within a band, the closest point as the fallback.
     """
     dev, n_tex = w.device, len(face)
     corners = src.f[face]
-    mix = lambda a: (a[corners] * w[..., None]).sum(1)
+    mix = lambda a, i=slice(None): (a[corners[i]] * w[i][..., None]).sum(1)
     uv, gn = mix(src.uv) % 1, torch.nn.functional.normalize(mix(src.n), dim=1)
     flip = torch.where((gn * nrm).sum(1, keepdim=True) < 0, -1.0, 1.0)
     out = {
@@ -252,9 +254,9 @@ def bake_source(src, face, w, nrm, mask, ss: int = 1):
         out["r"][i] = (g(getattr(mat, "roughnessFactor", None)) * mr[:, 1])[:, None]
         out["m"][i] = (g(getattr(mat, "metallicFactor", None)) * mr[:, 2])[:, None]
         if (tex := getattr(mat, "normalTexture", None)) is not None:
-            t = torch.nn.functional.normalize(mix(src.tan)[i], dim=1)
+            t = torch.nn.functional.normalize(mix(src.tan, i), dim=1)
             t = torch.nn.functional.normalize(t - (t * gn[i]).sum(1, keepdim=True) * gn[i], dim=1)
-            b = torch.cross(gn[i], t, dim=1) * mix(src.sign[:, None])[i].sign()
+            b = torch.cross(gn[i], t, dim=1) * mix(src.sign[:, None], i).sign()
             d = sample(tex, q)[:, :3] * 2 - 1
             nrm_out[i] = torch.nn.functional.normalize(
                 d[:, :1] * t + d[:, 1:2] * b + d[:, 2:] * gn[i], dim=1

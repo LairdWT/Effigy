@@ -1,4 +1,4 @@
-"""Re-bake (IMPLEMENTATION.md M3): full PBR + a normal map for any UV-mapped version, from the volume.
+"""Re-bake (IMPLEMENTATION.md M3): full PBR + a normal map for any UV-mapped version, from the volume (M62: or, for an import, its own materials).
 
 params: {texture_size: 2048, normal_map: true, supersample: 2, ao: true, detaper: false}
 `detaper` (2026-10-12): a flat prop's perspective taper undone after the sampling (the texture is read on the
@@ -26,13 +26,15 @@ from steps._common import StepError, library_to_trellis, load_ovoxel, main, prog
 from steps._mesh import detaper, textured, uv_overlap
 
 
-def find_source(version_dir: Path, hit, root: bool = False) -> tuple[Path, np.ndarray, dict]:
+def find_source(
+    version_dir: Path, hit, what: str = "no ovoxel.npz up the chain of"
+) -> tuple[Path, np.ndarray, dict]:
     """The nearest version (self first) where hit(dir, meta), its meta, and the 4×4 taking its frame to this
-    version's, composed from the chain's recorded transforms. root: the chain's root when none hits."""
+    version's, composed from the chain's recorded transforms. `what` words the missing_input when none hits."""
     transforms, d = [], version_dir
     while True:
         meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
-        if hit(d, meta) or (root and not meta["parent"]):
+        if hit(d, meta):
             m = np.eye(4)
             for t in reversed(transforms):  # transforms recorded later in the chain apply last
                 m = t @ m
@@ -40,7 +42,7 @@ def find_source(version_dir: Path, hit, root: bool = False) -> tuple[Path, np.nd
         if t := meta.get("metrics", {}).get("transform"):
             transforms.append(np.asarray(t, float))
         if not meta["parent"]:
-            raise StepError("missing_input", f"no ovoxel.npz up the chain of {version_dir.name}")
+            raise StepError("missing_input", f"{what} {version_dir.name}")
         d = d.parent / meta["parent"]
 
 
@@ -64,7 +66,7 @@ def load_source(d: Path, meta: dict, m: np.ndarray, dev):
 
     parts = trimesh.load(d / _main_glb(meta), force="scene", process=False).dump()
     mats = [getattr(g.visual, "material", None) for g in parts]
-    if all(x is None for x in mats):
+    if all(x is None for x in mats) or not _main_glb(meta):
         raise StepError("missing_input", f"nothing to bake from: {d.name} has no materials")
     v, f, uv, n, fmat, off = [], [], [], [], [], 0
     for k, g in enumerate(parts):
@@ -82,7 +84,7 @@ def load_source(d: Path, meta: dict, m: np.ndarray, dev):
     n = n @ np.linalg.inv(m[:3, :3])
     t = lambda a, dt=torch.float32: torch.tensor(a, dtype=dt, device=dev)
     s = type("Source", (), {})()
-    s.mats = [x or trimesh.visual.material.PBRMaterial() for x in mats]
+    s.mats = [x or trimesh.visual.material.PBRMaterial(metallicFactor=0.0) for x in mats]
     s.fmat, s.uv = t(fmat, torch.long), t(uv)
     s.v, s.f, s.n = t(v), t(f, torch.long), torch.nn.functional.normalize(t(n), dim=1)
     s.tan, s.sign = vertex_frames(s.v, s.f, s.uv, s.n)
@@ -154,17 +156,27 @@ def run(op, in_dir, out_dir, params):
     dev = "cuda" if torch.cuda.is_available() else "cpu"
     try:
         vol_dir, frame = find_volume(src)
-        vol, source = load_ovoxel(vol_dir / "ovoxel.npz"), None
     except (
         StepError
     ):  # no generator volume up the chain: an import, its own materials are the colour
+        vol_dir = None
+    if vol_dir:
+        vol, source = load_ovoxel(vol_dir / "ovoxel.npz"), None
+    else:
         vol = None
+        # an import_model version is a source even without textures (factor-only colours): it also fixes the frame,
+        # which the raw upload before it does not share (import scales and grounds the model)
         d, sm, smeta = find_source(
-            src, lambda d, m: (g := _main_glb(m)) is not None and textured(d / g), root=True
+            src,
+            lambda d, m: (
+                m.get("step") == "import_model"
+                or ((g := _main_glb(m)) is not None and textured(d / g))
+            ),
+            "nothing to bake from: no generator volume or imported model up the chain of",
         )
         if d == src:  # the bake's own UVs are the texture's: they must be a clean atlas
             u = np.asarray(mesh.visual.uv)
-            if u.min() < 0 or u.max() > 1 or uv_overlap(u, mesh.faces) > 0.01:
+            if u.min() < -1e-4 or u.max() > 1 + 1e-4 or uv_overlap(u, mesh.faces) > 0.01:
                 raise StepError("missing_input", "the model's UVs overlap or tile: run uv first")
         source = load_source(d, smeta, sm, dev)
         vol_dir, frame = d, np.eye(4)
@@ -334,10 +346,20 @@ class _Hi:
         dev = "cuda" if torch.cuda.is_available() else "cpu"
         self.v, self.f, self.n = (x.to(dev) for x in (v, f, n))
         self.bvh = None
-        if dev == "cuda" and len(f) > 8:
+        if dev == "cuda":
             import cumesh
 
-            self.bvh = cumesh.cuBVH(self.v, self.f)
+            if (
+                len(f) <= 8
+            ):  # cuBVH needs more: pad with far, tiny triangles that are never the closest
+                far = self.v.new_tensor(
+                    [[1e6, 1e6, 1e6], [1e6 + 1e-3, 1e6, 1e6], [1e6, 1e6 + 1e-3, 1e6]]
+                )
+                v = torch.cat([self.v, far])
+                f = torch.cat([self.f, (self.f.new_tensor([0, 1, 2]) + len(self.v)).expand(9, 3)])
+                self.bvh = cumesh.cuBVH(v, f)
+            else:
+                self.bvh = cumesh.cuBVH(self.v, self.f)
 
 
 def _load_ply(path: Path):
@@ -359,13 +381,13 @@ def _closest(hi: _Hi, pts):
     if hi.bvh is not None:
         _, face, w = hi.bvh.unsigned_distance(pts, return_uvw=True)
         return face.long(), w
-    # ponytail: approximate (nearest of 100k+ sampled surface points, then the barycentrics of the point on that
-    # face), tests/CPU only; the GPU path is exact
+    # ponytail: approximate (nearest of up to 2M sampled surface points, then the barycentrics of the point on that
+    # face), CPU runs only (no CUDA); the GPU path is exact. Upgrade: a brute-force triangle distance in torch.
     import trimesh
     from scipy.spatial import cKDTree
 
     m = trimesh.Trimesh(hi.v.cpu().numpy(), hi.f.cpu().numpy(), process=False)
-    s, fi = trimesh.sample.sample_surface(m, max(100_000, 4 * len(pts)), seed=0)
+    s, fi = trimesh.sample.sample_surface(m, min(max(100_000, 4 * len(pts)), 2_000_000), seed=0)
     q = pts.cpu().numpy()
     face = fi[cKDTree(s).query(q)[1]]
     w = trimesh.triangles.points_to_barycentric(m.triangles[face], q).clip(0)

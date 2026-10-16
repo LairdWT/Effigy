@@ -87,6 +87,8 @@ test("prepState: completed by a later check, active by the running job's input, 
   const bare = [m("010_upload", "upload", null, { model: "source/a.stl" }), { ...m("020_import_model", "import_model", "010_upload", GLB), metrics: { materials: 0 } }];
   const clean = m("030_clean", "clean", "020_import_model", GLB);
   expect(prepState([...bare, clean], clean).remaining).toEqual(["simplify", "unwrap", "check"]);
+  const glbUp = [m("010_upload", "upload", null, { model: "source/a.glb" }), bare[1]]; // a .glb upload whose import found no materials
+  expect(prepState([...glbUp, clean], clean).remaining).toEqual(["simplify", "unwrap", "check"]);
   const textured = { ...bare[1], metrics: { materials: 2 } };
   expect(prepState([bare[0], textured, clean], clean).remaining).toEqual(["simplify", "unwrap", "bake", "check"]);
 });

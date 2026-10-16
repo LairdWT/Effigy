@@ -28,10 +28,11 @@ export const actsAs = (m: Meta) => (m.step !== "import_model" ? m.step : m.outpu
 export const generated = (versions: Meta[], m: Meta) => ancestors(versions, m).some((a) => "ovoxel" in a.outputs);
 
 // M62: a bake needs a colour source up the chain: the generator's volume, an import with materials, or an uploaded glb
-export const bakeable = (versions: Meta[], m: Meta) =>
-  ancestors(versions, m).some(
-    (a) => "ovoxel" in a.outputs || (a.step === "import_model" && Number(a.metrics?.materials) > 0) || (a.step === "upload" && Object.values(a.outputs).some((f) => f.endsWith(".glb"))),
-  );
+export const bakeable = (versions: Meta[], m: Meta) => {
+  const line = ancestors(versions, m);
+  const imp = line.find((a) => a.step === "import_model"); // the nearest import decides: it knows whether there are materials
+  return line.some((a) => "ovoxel" in a.outputs) || (imp ? Number(imp.metrics?.materials) > 0 : line.some((a) => a.step === "upload" && Object.values(a.outputs).some((f) => f.endsWith(".glb"))));
+};
 
 // game-ready preparation, in order, with the friendly name of each operation
 export const RECIPE: [string, string][] = [
