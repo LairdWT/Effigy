@@ -1,7 +1,7 @@
-# Setting up Effigy on your Windows laptop
+# Setting up Effigy on a Windows PC or laptop
 
-A step-by-step guide from a fresh Windows 11 machine to your first generated 3D asset. Written for the
-reference laptop (RTX 5080 Laptop, 16 GB VRAM, 32 GB RAM); any 16 GB NVIDIA RTX card works the same way.
+A step-by-step guide from a fresh Windows 11 machine to your first generated 3D asset. Written for a Windows 11
+PC or laptop with a 16 GB NVIDIA RTX card (the reference machine is an RTX 5080 Laptop, 32 GB RAM).
 
 | You need | Roughly |
 |---|---|

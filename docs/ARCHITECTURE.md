@@ -1,6 +1,7 @@
 # Effigy: System Architecture
 
-> Status: proposal, 2026-10-03, ponytail-reviewed (`.claude/skills/ponytail/SKILL.md`).
+> Status: the design the code follows (written 2026-10-03, kept current); the build state is in
+> [IMPLEMENTATION.md](IMPLEMENTATION.md) §4.
 > **Owner decisions:**
 > - our own **React + three.js** interface (not Gradio)
 > - **full interactive Blender**, live-linked to the tool
@@ -31,7 +32,7 @@
  └───────────────▲───────────────────────────────▲─────────────────────┘
                  │ fetch (JSON)                  │ EventSource (SSE: progress, logs, Claude events)
  ┌───────────────┴───────────────────────────────┴─────────────────────┐
- │ server.py (FastAPI, no torch): serves ui/dist + /api + /events      │
+ │ server/ (FastAPI, no torch): serves ui/dist + /api + /events        │
  │ global GPU lock · library folders · spawns subprocesses             │
  └──┬─────────────────────────┬────────────────────────┬───────────────┘
     │ subprocess per step     │ localhost TCP (JSON)   │ subprocess: user's own `claude` CLI
@@ -84,9 +85,9 @@
 - **Rig marker placement** (Phase 2) is done in the three.js viewer: click on the mesh → raycast →
   draggable markers.
 
-## 4. Backend (`server.py`)
+## 4. Backend (the `server/` package)
 
-- FastAPI, one file to start with. Endpoints: `GET /api/assets`, `GET /api/assets/{id}`,
+- FastAPI (`server/app.py` and its siblings). Endpoints: `GET /api/assets`, `GET /api/assets/{id}`,
   `POST /api/assets/{id}/steps/{name}`, `POST /api/jobs/{id}/cancel`, `GET /events` (SSE via
   **sse-starlette**, BSD-3: heartbeats for long silent ML steps + disconnect detection),
   `POST /api/blender/{open|pull}`, `GET /api/agent/setup`. Static: `library/` mounted as
@@ -113,7 +114,7 @@
 - **The TRELLIS.2 engine** (`engine/trellis2/`) = vendored upstream `microsoft/TRELLIS.2` and
   `TencentARC/Pixal3D` + a patch set, in this order of provenance: **localmesh-engine** (Apache-2.0,
   NOTICE kept: `uvraster.py` pure-torch UV rasterizer + `leurre_nvdiffrast.py` decoy so the stock
-  `o_voxel` imports, `sdpa_backend.py` for sm_120, BiRefNet swap, staged/meta-device loading, the
+  `o_voxel` (the colour volume TRELLIS.2 generates, kept so any later mesh can be re-baked) imports, `sdpa_backend.py` for sm_120, BiRefNet swap, staged/meta-device loading, the
   DINOv3/Transformers-5 fix), upstream **PR #173** (keep UVs), **PR #185** (o-voxel C++ fixes), the
   int64 `svox2vert` fix, and the SPZ fork's chunked-decode commits + `EXPLICIT_GEMM` fallback.
   **No nvdiffrast, no nvdiffrec, no xformers, no flash-attn.**

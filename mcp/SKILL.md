@@ -58,9 +58,9 @@ UV seams, and a hole fill or a cut on the unwelded mesh caps the seam loops too.
 
 **Generate** (picture to 3D): `trellis2` on a prep version, `{"weights": "fast"|"faithful", "seed", "texture_size"}`
 or a preset's name, `{"preset": "faithful"}` (describe_steps lists them; your own keys override the preset's);
-`faithful` follows the picture closest and is slower. `{"preset": "best"}` is the best this card runs (M46b, the
+`faithful` follows the picture closest and is slower. `{"preset": "best"}` is the best this card runs (the
 app's default): `faithful-hd` (1536, 4K) on a 24 GB card, `faithful-hq` (20 steps, 4K) on 16 GB. Texture detail
-(`refine`) takes the full Tile by itself where it is installed and fits (M46c); `{"tile": "lite"}` forces the light
+(`refine`) takes the full Tile by itself where it is installed and fits; `{"tile": "lite"}` forces the light
 one. Without `op` it generates; retexture an existing mesh
 with `{"op": "texture"}`.
 
@@ -76,7 +76,7 @@ long side onto X, the broad side facing +Z; a thin panel is only turned) -> `rem
 at any budget: `"close": 0.012` (metres) shuts the slits first; grooves narrower than it smooth out, the normal
 map keeps them; without `close` a generated prop that comes back over 5 % folded through itself is remeshed again
 with its length / 150, `metrics.closed`; `"close": 0` never) -> `uv` -> `bake`
-(`{"texture_size": 2048, "normal_map": true}`: PBR + normal map from the generator's volume, or, for an imported model (M62), from its own
+(`{"texture_size": 2048, "normal_map": true}`: PBR + normal map from the generator's volume, or, for an imported model, from its own
 materials and textures (recipe: `import_file` -> `clean` -> `remesh` -> `uv` -> `bake` -> `rig_fit` -> `rig_skin` ->
 `anim` -> `export`; a foreign skeleton is dropped, ours is fitted; no materials at all: `missing_input`); a flat prop from a picture in perspective has one end shorter: `"detaper": true` squares it
 after the texture, the tall end kept; straighten it in clean first, `metrics.detapered` null means nothing was done) -> optional `project` (`{"region": "head"|"front"}`, sharper face from the picture) ->
@@ -145,17 +145,17 @@ owner remove it). The result lists the absolute paths. Export the **checked** ve
 - Do not start a second GPU step while a job is running; do not poll faster than `job_status(wait_s=40)`.
 - Do not look for delete tools or edit files in the library folder: add a new version instead.
 
-## 2D: pictures and pixel art (research 15; the 2D track is being built, M50–M58)
+## 2D: pictures and pixel art
 
 - A 2D asset holds pictures, not models: `create_asset(name, kind="2d")`, or `import_file(path, kind="2d")`
   (the picture is only uploaded: no cut-out, no 3D).
-- Pictures from words (M50): `run_step(asset, null, "brief", {"prompt": ..., "category": "wallpaper"})` (or
+- Pictures from words: `run_step(asset, null, "brief", {"prompt": ..., "category": "wallpaper"})` (or
   `picture` (the prompt as it is, nothing added), `background`, `portrait`, `icon`, `item`, `tile`), then `run_step(asset, <brief>, "concepts", {"op": "image", "width":
   1920, "height": 1088, "count": 4})`: sizes are multiples of 64 from 256 to 2048; `"lora": "pixel"` (or
   `painting`, `drawing`; Setup's 2D styles) gives the look, `"cutout": true` a transparent background (an item or
   a sprite). Outputs `image_<k>.png` and `image.png` (= the first); about 30 s a 1920 × 1088 picture warm.
   `pixelize` takes one of them with `"key": "image_2"`.
-- A seamless tile (M54: a wall, a floor): `brief` with `"category": "tile"`, then `concepts` `{"op": "tile",
+- A seamless tile (a wall, a floor): `brief` with `"category": "tile"`, then `concepts` `{"op": "tile",
   "size": 512}` (256 to 1024, square; `"lora": "pixel"` for a pixel-style one): the picture's edges are drawn again
   so they continue each other. Outputs `tile.png` (also the `image` pixelize reads), `preview.png` (2 × 2) and
   `report.json`: `seam_ratio` 1.1 or less means the edges meet (`seam_ratio_before` was the raw picture's); above,
@@ -163,13 +163,13 @@ owner remove it). The result lists the absolute paths. Export the **checked** ve
   tile's (a 512 tile: 8, 16, 32, 64, 128 or 256); `scale: "auto"` picks the nearest that does. `validate` checks
   the seams (`seamless`); `export` `godot-2d` writes `<asset>.png` + `<asset>.tres`, a TileSet a TileMapLayer paints
   with (`unreal-2d`: the texture; its Tile Set is made in the editor).
-- Parallax layers (M55: a stage that scrolls): `run_step(asset, <a picture>, "depth", {})` (MoGe-3, about 30 s;
+- Parallax layers (a stage that scrolls): `run_step(asset, <a picture>, "depth", {})` (MoGe-3, about 30 s;
   Setup's Parallax layers), then `run_step(asset, <the depth>, "layers", {"count": 4})` (2-5; `"subject": true` puts
   the picture's figure in a layer of its own). Outputs `layer_<k>.png` far to near (each holds its band and everything
   nearer, what the nearer bands hide drawn in; the farthest is opaque), `layers.json` (`scroll_scale` per layer: the
   share of the camera's move it follows), `bands.png`. `export` `godot-2d` writes `parallax.tscn` (one Parallax2D per
   layer). A background picture (`category: "background"`, 2048 x 768) is the usual input.
-- Upscale or redraw a picture (M61, any size): `run_step(asset, <a picture>, "redraw", {"op": "upscale",
+- Upscale or redraw a picture (any size): `run_step(asset, <a picture>, "redraw", {"op": "upscale",
   "factor": 4})` (Real-ESRGAN, 2 or 4), or `{"op": "redraw", "prompt": ..., "strength": 0.35, "factor": 4,
   "seed": 1}`: upscaled first, then drawn again in overlapping 1024 px windows that fade into each other (about
   10 s a window: an 8352 x 2400 picture at 4x is 572 windows, near 2 hours, run nothing else meanwhile). The
@@ -192,17 +192,17 @@ owner remove it). The result lists the absolute paths. Export the **checked** ve
   again with `height_px`. A recolour of pixel art: `pixelize` on the pixelize version with `{"scale": 1,
   "palette": "input", "palette_map": {...}}` (its own palette: nothing re-quantised).
 - A version with frames in (a sheet, an earlier pixelize) keeps its tags and durations.
-- Pixels by hand (M56): the app's pixel editor saves `pixelize` `{"op": "edit", "frames": {"<frame name>": "<base64
+- Pixels by hand: the app's pixel editor saves `pixelize` `{"op": "edit", "frames": {"<frame name>": "<base64
   PNG>"}}` on a sheet version, only the frames that changed (the names are `sheet.json`'s `filename`s). Each keeps its
   cell size, and every opaque pixel is one of the version's `palette.gpl` colours, or the edit is refused. Optional
   `durations` `{"<name>": ms}`.
-- Frames and animations (M57), same op:
+- Frames and animations, same op:
   - `"order": [names]` adds, deletes or reorders frames. A new name is a blank frame unless its pixels are sent.
   - `"tags": [{"name", "from", "to", "direction": "forward", "repeat": "0"}]`, indices into the order; `repeat`
     `"1"` plays once. Send them again with a new order.
   - With no parent (`run_step(asset, None, "pixelize", {"op": "edit", "size": [32, 32], "order": ["frame_1",
     ...], "palette": "pico-8"})`) it makes a blank sheet to draw on. Leave out `palette` for any colour.
-- Sprites of a 3D character (M52): `run_step(asset, <an anim version>, "sprites", {"height_px": 104, "yaws":
+- Sprites of a 3D character: `run_step(asset, <an anim version>, "sprites", {"height_px": 104, "yaws":
   [90]})` (every clip by default, or `"clips": [...]`; yaw 90 faces right, 270 left, 0 front, 180 back; `fps` 12;
   `"shading": "flat"` for the texture unlit) renders each clip in place, in whole pixels, transparent, in seconds; a
   later run on the asset keeps the first run's scale. Then `pixelize` with `{"scale": 1, "colors": 15, "outline":
@@ -227,7 +227,7 @@ owner remove it). The result lists the absolute paths. Export the **checked** ve
   in the stomach." · "A person grabs someone in front and throws them over the right shoulder." · "A person throws a
   backward elbow strike with the right arm, then turns back to a fighting stance." Attacks, hits and falls play once
   in the sheet's tags; a clip that never moves is named in the anim's `clips.json` (`still`).
-- Into the game (M53): `validate` on a sheet version gives the 2D checklist; `export(asset, <sheet version>,
+- Into the game: `validate` on a sheet version gives the 2D checklist; `export(asset, <sheet version>,
   "godot-2d")` writes a SpriteFrames `.tres` and an AnimatedSprite2D `.tscn` (drop it into a scene; README.txt has the
   pixel-perfect settings), `"unreal-2d"` a Paper2D `.paper2dsprites`. A move that does not end where it began plays
   once. Parallax layers, tiles and the in-app editor follow.
