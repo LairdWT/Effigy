@@ -129,6 +129,7 @@
       <h4>Import and export</h4>
       <ul>
         <li>In: FBX, glTF/GLB, OBJ, USD, STL, PLY or a zip of them; a known skeleton and its clips are kept</li>
+        <li>Bring your own model: clean it, bake its textures onto the simpler mesh, rig and animate it</li>
         <li>Animations made elsewhere (FBX, GLB, BVH on a Mixamo, Unreal or Kimodo skeleton) onto your characters</li>
         <li>Out: Godot, Unreal (LODs, UCX collision), Unity (LODs), web and AR (GLB + USDZ), OBJ, print (STL, 3MF); sprite sheets for Godot 2D and Unreal Paper2D</li>
         <li>Batch-export a whole selection into a folder</li>
@@ -157,6 +158,7 @@
       <h4>2D pictures and pixel art</h4>
       <ul>
         <li>Wallpapers, game backgrounds, portraits, icons and items from a sentence, any size up to 2048 px, optionally in a pixel-art, painting or children's-drawing style and cut out</li>
+        <li>Upscale a picture 2× or 4×, or redraw it at any size, with an optional mask of what to keep</li>
         <li>Pixel art from any picture or sheet: the picture's own pixel grid found, one palette (or PICO-8) over every frame, ordered dither, a 1-pixel outline, palette swaps for variants</li>
         <li>A pixel editor for any sheet, or a blank one: pixel-perfect pencil, fills, shapes, selection, mirror, the palette's colours only; frames, timings, tags, onion skin and play</li>
       </ul>
@@ -237,7 +239,7 @@ document under [`docs/bench/`](docs/bench/).
 ## What's under the hood
 
 Every model, tool and dataset is listed in [`licenses.yaml`](licenses.yaml) and shown on the app's Licences
-page. All of them allow commercial use of what they produce; two carry an attribution the export writes into
+page. All of them allow commercial use of what they produce; three carry an attribution (DINOv3, Llama 3, and a courtesy credit for the CC0 Mesh2Motion clips) that the export writes into
 `CREDITS.txt`. You choose what to download: props only, characters, characters with motion, or everything
 (60 to 141 GB).
 
@@ -249,8 +251,8 @@ page. All of them allow commercial use of what they produce; two carry an attrib
 | 3D, *Fast* | TRELLIS.2-4B, TRELLIS-image-large | MIT |
 | 3D, *Faithful* | Pixal3D (+ NAF); DINOv3 | MIT (Apache-2.0); DINOv3 licence, "Built with DINOv3" |
 | Mesh kernels | TRELLIS.2's CuMesh, flex_gemm, o_voxel, built for sm_89 and sm_120 (`wheels/`) | MIT |
-| Face from the image | Real-ESRGAN (4× upscale) + our projection | BSD-3-Clause |
-| Texture detail | Z-Image-Turbo + Fun-ControlNet-Union 2.1 (Tile) | Apache-2.0 |
+| Face from the image | Real-ESRGAN (4× upscale; also picture upscale) + our projection | BSD-3-Clause |
+| Texture detail | Z-Image-Turbo + Fun-ControlNet-Union 2.1 (Tile; also picture redraw) | Apache-2.0 |
 | Parts | GeoSAM2 | Apache-2.0 |
 | Skinning | SkinTokens; or Blender's bone heat | MIT; GPL (separate process) |
 | Animation clips | Mesh2Motion packs | CC0 |
@@ -284,7 +286,7 @@ The `effigy` MCP server (`mcp/effigy_server.py`) gives any MCP client the whole 
 
 | Browse | Make | Finish | Blender |
 |---|---|---|---|
-| `list_assets`, `get_asset`, `get_version`, `describe_steps`, `look` (rendered previews the agent can see), `read_file`, `fit_check` | `create_asset`, `import_file`, `run_step`, `job_status`, `cancel_job` | `validate`, `export` | `open_in_blender`, `pull_from_blender` |
+| `list_assets`, `get_asset`, `get_version`, `describe_steps`, `look` (rendered previews the agent can see), `read_file`, `fit_check` | `create_asset`, `import_file`, `run_step`, `job_status`, `cancel_job` | `validate`, `export` | `open_in_blender`, `pull_from_blender`, `close_in_blender` |
 
 Setup → **Connect an agent** prints the configuration for Claude Code, Claude Desktop, Codex, Cursor and
 Gemini CLI, with absolute paths: use that, not the repo's `.mcp.json`, which is relative and serves only a
@@ -349,7 +351,7 @@ Environment variables (never committed): `EFFIGY_MODELS` and `EFFIGY_LIBRARY` mo
 `BLENDER_MCP_PRO_LICENSE` are for the live link through Blender MCP Pro (the free `blender-mcp` add-on works
 too).
 
-How the project is run: one milestone per branch and PR, acceptance checks in the PR, the numbers recorded in
+How the project is run: one milestone per branch and PR (the list is in `docs/IMPLEMENTATION.md` §4), acceptance checks in the PR, the numbers recorded in
 `docs/bench/`; contributors start at [CONTRIBUTING.md](CONTRIBUTING.md). Contracts between steps (file names, frames, units, `meta.json`) are frozen in
 [docs/IMPLEMENTATION.md §3](docs/IMPLEMENTATION.md); coding agents start there. CI workflows run on request
 only.
@@ -360,6 +362,7 @@ only.
 |---|---|
 | [SETUP.md](SETUP.md) | from a fresh Windows machine to the first asset |
 | [MANUAL.md](MANUAL.md) | the user manual: every page, panel and tool of the app |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | how the project is run and how to send a change |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | the user journey, prompt to export |
 | [docs/howto/](docs/howto/) | step-by-step guides, such as animating a pixel-art character for a 2D game |
 | [docs/PLAN.md](docs/PLAN.md) | why it exists, the decisions, the licence policy, the roadmap |

@@ -11,7 +11,7 @@ Effigy is a small project with firm rules. Reading them first saves a review rou
   row in `licenses.yaml` with `tests/test_licenses.py` passing. A dependency that fails that check is not a
   dependency we can take, however good it is.
 - Open an issue first for anything beyond a fix, so the scope is agreed before the work.
-- Code is written the lazy way (`.claude/skills/ponytail/SKILL.md`): the smallest change that works, the
+- Code is written the lazy way (`.claude/skills/ponytail/SKILL.md`, the project's coding-style rules): the smallest change that works, the
   standard library and the installed dependencies before a new one, no abstraction for a single use, and a
   `# ponytail:` comment where a corner is cut on purpose, naming its ceiling.
 
