@@ -25,6 +25,7 @@ def test_rrdbnet_has_the_published_shape_and_upscales_four_times():
 
 
 def test_upscale_tiles_cover_the_image(monkeypatch):
+    torch.manual_seed(0)  # an unseeded random net now and then gave a near-flat picture (std <= 1)
     net = _sr.RRDBNet(nb=1).eval()
     rgb = (np.random.default_rng(0).random((40, 56, 3)) * 255).astype(np.uint8)
     out = _sr.upscale(net, rgb, tile=24, pad=4)

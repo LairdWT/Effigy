@@ -1172,6 +1172,7 @@ test("Tasks: five per 3D asset on one line, a task opens its newest checkpoint o
   await page.locator(".tools > summary").click();
   await page.screenshot({ path: "test-results/tasks-tools-menu.png", clip: { x: 640, y: 0, width: 640, height: 360 } });
   await expect(page.locator(".tools li", { hasText: "Face from image" })).toContainText("available");
+  await expect(page.locator(".tools li", { hasText: "Upscale or redraw" })).toContainText("2D pictures only");
   await expect(page.locator(".tools li", { hasText: "Parts" })).toContainText("available");
   await page.locator(".tools").getByRole("button", { name: "Face from image" }).click();
   await expect(page.locator("#tools")).toHaveAttribute("open", "");
@@ -2810,6 +2811,9 @@ test("Animate this character is offered for a character picture, not for a wallp
   await page.locator(".tools > summary").click();
   await expect(page.locator(".tools li", { hasText: "Texture detail" })).toHaveText(/3D models only$/);
   await expect(page.locator(".tools li", { hasText: "Sprites for 2D" })).toContainText("in a 3D character: Animate this character");
+  // M61: the 2D tool opens its section of the panel
+  await expect(page.locator(".tools li", { hasText: "Upscale or redraw" })).toContainText("available");  await page.locator(".tools").getByRole("button", { name: "Upscale or redraw" }).click();
+  await expect(page.locator("#redraw")).toHaveAttribute("open", "");
 });
 
 test("A redrawn character's cut-out offers Redraw again: the same picture, the same look, another seed", async ({ page }) => {

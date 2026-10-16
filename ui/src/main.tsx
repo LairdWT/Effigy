@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { api, fileUrl, waitJob, type Asset, type BlenderSetup, type PortInfo, type TrashEntry, type CopyResult, type Check, type Drive, type Env, type FitQuality, type Folder, type HfStatus, type JobStatus, type Licence, type Meta, type Model, type AgentSetup, type Preset, type Presets, type Storage, type StorageItem } from "./api";
 import { AnimEditor } from "./anim/Editor";
-import { Actions2D, PictureForm, SpritesForm, animatable } from "./pixel/Panels";
+import { Actions2D, PictureForm, SpritesForm, animatable, redrawable } from "./pixel/Panels";
 import { EditorCanvas, EditorPanel, usePixelEditor } from "./pixel/Editor";
 import { PixelView, is2D, isSheet } from "./pixel/View";
 import { DrawForm } from "./pixel/Panels";
@@ -1768,6 +1768,7 @@ function Workspace(props: {
                 ["detail", "Texture detail", detail, "refine", "refine", "at Prepare, once textured"],
                 ["parts", "Parts", parts, "parts", "parts", "at Prepare"],
                 ["sprites", "Sprites for 2D", spritesFrom(versions, v), "sprites", null, "at Prepare (one still frame) or after Character (animated)"],
+                ["redraw", "Upscale or redraw", kind === "2d" && redrawable(v), "redraw", null, "on a picture (not pixel art, sprites, a tile or layers)"],
                 ["blender", "Edit in Blender", hasGlb(v), null, null, "from Generate on, once there is a 3D model"],
                 ["advanced", "Advanced: run any step", true, null, null, ""],
               ] as [string, string, boolean, string | null, string | null, string][]
@@ -1777,8 +1778,10 @@ function Workspace(props: {
                   {name}
                 </button>
                 <span className="muted">
-                  {kind === "2d" && id !== "advanced" ? (
+                  {kind === "2d" && id !== "advanced" && id !== "redraw" ? (
                     id === "sprites" ? "in a 3D character: Animate this character" : "3D models only"
+                  ) : kind !== "2d" && id === "redraw" ? (
+                    "2D pictures only"
                   ) : (
                     <>
                       {!on ? where : step && newest((x) => x.step === step) ? "has a checkpoint" : "available"}
