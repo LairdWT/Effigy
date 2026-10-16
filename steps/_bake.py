@@ -138,6 +138,12 @@ def box_filter(img, w, ss: int):
     return blocks(img.astype(np.float32) * n[..., None]) / np.maximum(cnt, 1)[..., None], cnt > 0
 
 
+def _fill(img, w, ss: int):
+    """box-filter to the output size, then push-pull the gutters: (uint8 image, covered mask)"""
+    img, covered = box_filter(img, w, ss)
+    return fill_gutters((img + 0.5).clip(0, 255).astype(np.uint8), covered), covered
+
+
 def bake_volume(
     face_id,
     bary,
@@ -173,9 +179,7 @@ def bake_volume(
         a, b = layout[name]
         return tex[..., a:b]
 
-    def fill(img, w):  # box-filter to the output size, then push-pull the gutters
-        img, covered = box_filter(img, w, ss)
-        return fill_gutters((img + 0.5).clip(0, 255).astype(np.uint8), covered), covered
+    fill = lambda img, w: _fill(img, w, ss)
 
     # a texel whose sample found no volume (alpha ~0: a pit the clean rebuild left between hair strands,
     # the empty gap of a double shell) takes its colour from its neighbours like a gutter would,
@@ -187,6 +191,88 @@ def bake_volume(
     alpha, covered = fill(chan("alpha"), m)
     mr, _ = fill(np.concatenate([zero, chan("roughness"), chan("metallic")], -1), filled)
     return np.concatenate([color, alpha], -1), mr, covered
+
+
+def _srgb(c, to_linear: bool):
+    if to_linear:
+        return torch.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+    c = c.clamp(0, 1)
+    return torch.where(c <= 0.0031308, c * 12.92, 1.055 * c ** (1 / 2.4) - 0.055)
+
+
+def bake_source(src, face, w, nrm, mask, ss: int = 1):
+    """Textures for the covered texels of `mask` [S,S] from a model's own materials (M62), no volume.
+
+    `face` [T] and `w` [T,3] are each texel's closest point on `src` (arrays v, f, uv, n, tan, sign, fmat, mats: the
+    source mesh in this mesh's frame, glTF UVs, a material index per face, trimesh PBRMaterials); `nrm` [T,3] the
+    low mesh's normals at the texels. Base colour = sRGB(linear(texture) × factor), alpha only from MASK/BLEND
+    materials, roughness/metallic = factor × the metallicRoughness texture's G/B. One material at a time (VRAM).
+    Returns (RGBA, ORM with R = 0, covered) as bake_volume does, and the source's normal at each texel [T,3]
+    (bent by its normal map where it has one) turned to the side of `nrm`.
+    Ceilings (not read): vertex colours, emissive, source AO, KHR_texture_transform, TEXCOORD_1, wrap modes;
+    BLEND is baked as MASK at 0.5 (alphaCutoff ignored); trimesh keeps baseColorFactor as uint8 (±1/255);
+    each material's textures are converted to a float32 tensor whole (a few hundred MB for several 4K maps).
+    # ponytail: the closest point can lie on the wrong side of a thin or doubled part; the upgrade is a ray along
+    # -n within a band, the closest point as the fallback.
+    """
+    dev, n_tex = w.device, len(face)
+    corners = src.f[face]
+    mix = lambda a, i=slice(None): (a[corners[i]] * w[i][..., None]).sum(1)
+    uv, gn = mix(src.uv) % 1, torch.nn.functional.normalize(mix(src.n), dim=1)
+    flip = torch.where((gn * nrm).sum(1, keepdim=True) < 0, -1.0, 1.0)
+    out = {
+        k: torch.ones(n_tex, c, device=dev) for k, c in (("rgb", 3), ("a", 1), ("r", 1), ("m", 1))
+    }
+    nrm_out = gn.clone()
+
+    def sample(img, q):  # bilinear at uv q [K,2]; image rows run down, like glTF's v
+        t = torch.from_numpy(np.asarray(img.convert("RGBA"), np.float32) / 255).permute(2, 0, 1)[
+            None
+        ]
+        grid = (q * 2 - 1)[None, :, None, :]
+        return torch.nn.functional.grid_sample(
+            t.to(dev), grid, padding_mode="border", align_corners=False
+        )[0, :, :, 0].T
+
+    for k, mat in enumerate(src.mats):
+        i = torch.nonzero(src.fmat[face] == k).squeeze(1)
+        if not len(i):
+            continue
+        q, g = uv[i], lambda x, d=1.0: d if x is None else x
+        factor = torch.tensor(
+            np.asarray(g(getattr(mat, "baseColorFactor", None), [255] * 4), np.float32) / 255,
+            device=dev,
+        )
+        tex = getattr(mat, "baseColorTexture", None)
+        c = sample(tex, q) if tex is not None else torch.ones(len(i), 4, device=dev)
+        lin = _srgb(c[:, :3], True) * factor[:3]
+        out["rgb"][i] = _srgb(lin, False)
+        if getattr(mat, "alphaMode", None) in ("MASK", "BLEND"):
+            out["a"][i] = (c[:, 3] * factor[3])[:, None]
+        tex = getattr(mat, "metallicRoughnessTexture", None)
+        mr = sample(tex, q) if tex is not None else torch.ones(len(i), 4, device=dev)
+        out["r"][i] = (g(getattr(mat, "roughnessFactor", None)) * mr[:, 1])[:, None]
+        out["m"][i] = (g(getattr(mat, "metallicFactor", None)) * mr[:, 2])[:, None]
+        if (tex := getattr(mat, "normalTexture", None)) is not None:
+            t = torch.nn.functional.normalize(mix(src.tan, i), dim=1)
+            t = torch.nn.functional.normalize(t - (t * gn[i]).sum(1, keepdim=True) * gn[i], dim=1)
+            b = torch.cross(gn[i], t, dim=1) * mix(src.sign[:, None], i).sign()
+            d = sample(tex, q)[:, :3] * 2 - 1
+            nrm_out[i] = torch.nn.functional.normalize(
+                d[:, :1] * t + d[:, 1:2] * b + d[:, 2:] * gn[i], dim=1
+            )
+
+    def image(x):
+        img = torch.zeros(*mask.shape, x.shape[1], device=dev)
+        img[mask] = x
+        return (img.clamp(0, 1) * 255 + 0.5).byte().cpu().numpy()
+
+    m = mask.cpu().numpy()
+    rgb, a, rough, metal = (image(out[k]) for k in ("rgb", "a", "r", "m"))
+    color, _ = _fill(rgb, m, ss)
+    alpha, covered = _fill(a, m, ss)
+    mr, _ = _fill(np.concatenate([np.zeros_like(rough), rough, metal], -1), m, ss)
+    return np.concatenate([color, alpha], -1), mr, covered, nrm_out * flip
 
 
 def ao_texels(bvh, p, n, voxel: float, reach: float, rays: int = 32, chunk: int = 1 << 16):
@@ -363,9 +449,11 @@ def write_glb(
     normal_map=None,
     transform=None,
     occlusion=False,
+    alpha_mode=None,
 ):
     """Static textured GLB (trimesh). transform: 4×4 applied to positions/normals (e.g. TRELLIS → library).
-    occlusion: declare metal_rough's R channel as the glTF occlusionTexture (ORM packing)."""
+    occlusion: declare metal_rough's R channel as the glTF occlusionTexture (ORM packing).
+    alpha_mode: the material's glTF alphaMode ("MASK": cut-out at 0.5), None for trimesh's default."""
     import trimesh
     from PIL import Image
 
@@ -385,6 +473,8 @@ def write_glb(
         normalTexture=None if normal_map is None else Image.fromarray(normal_map, "RGB"),
         metallicFactor=1.0,
         roughnessFactor=1.0,
+        alphaMode=alpha_mode,
+        alphaCutoff=0.5 if alpha_mode == "MASK" else None,
     )
     uv_trimesh = np.asarray(uv, np.float64).copy()
     uv_trimesh[:, 1] = (

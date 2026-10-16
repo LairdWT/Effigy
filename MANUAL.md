@@ -518,9 +518,9 @@ the import did (turned it round to face forward, parts left out, textures not fo
 (made in centimetres or inches) gets a one-click scale fix: **Centimetres**, **Millimetres**, **Inches**, **×100**,
 **×1000**.
 
-An imported model starts at **Prepare**. **Check the model** runs the checks; **Simplify geometry (untextured
-copy)** makes a lighter copy without textures, skin or animation (to keep the materials, edit it in Blender
-instead).
+An imported model starts at **Prepare**. **Check the model** runs the checks; **Simplify geometry** makes a lighter
+copy with its materials baked into one texture set (the Bake step is offered when the model has materials); skin and
+animation are not kept.
 
 ### An animation for one of your characters
 

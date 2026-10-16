@@ -27,6 +27,7 @@ import {
   TASKS_2D,
   TASKS_3D,
   ancestors,
+  bakeable,
   generated,
   hasGlb,
   hasImage,
@@ -2500,11 +2501,10 @@ function Actions(props: {
         {stage === 2 && character}
         {imported && (
           <details>
-            <summary>Simplify geometry (untextured copy)</summary>
+            <summary>Simplify geometry (copy)</summary>
             <div className="stack">
               <p className="muted">
-                A simpler copy without textures; skins and animation are not kept either. The original stays in History. To keep the materials, edit the
-                model in Blender instead.
+                A simpler copy, its materials baked into one texture set; skins and animation are not kept. The original stays in History.
               </p>
               <PrepareForm {...props} from="" button="Simplify geometry" />
             </div>
@@ -2776,7 +2776,7 @@ function PrepareForm(props: { asset: string; version: Meta; versions: Meta[]; ch
   const [busy, run] = useBusy();
   const v = props.version;
   const todo = (props.only ? RECIPE.filter(([s]) => s === props.only) : RECIPE.slice(RECIPE.findIndex(([s]) => s === props.from) + 1)).filter(
-    ([s]) => s !== "bake" || generated(props.versions, v),
+    ([s]) => s !== "bake" || bakeable(props.versions, v),
   ); // `only`: just that one step, on this version
   const has = (s: string) => todo.some(([t]) => t === s);
   const prior = budgetOf(ancestors(props.versions, v));
