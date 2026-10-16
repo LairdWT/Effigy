@@ -13,6 +13,8 @@ checklist, done, is `docs/archive/LAPTOP.md`.
 
 ## 1. Where things stand (2026-10-13: the 2D roadmap through the pixel editor, then bigger GPUs: all merged)
 
+- **M62 (branch `m62-import-bake`)**: `bake` of an imported model reads its own materials (no volume needed); GPU chain check on the Heist models still to record in `docs/bench/m62.md`.
+
 - **2026-10-13: the generic rig dropped** (`drop-generic-rig`; the owner): M59's `rig_skin {full: true}`, the Rig
   panel's "Something else", `_skintokens.rig`, `_glb.joints`, `_templates.GENERIC`, their tests and docs removed
   (SkinTokens' training data with no bone-heat alternative). The owner's picks from the offered items: the held

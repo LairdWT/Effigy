@@ -76,8 +76,9 @@ long side onto X, the broad side facing +Z; a thin panel is only turned) -> `rem
 at any budget: `"close": 0.012` (metres) shuts the slits first; grooves narrower than it smooth out, the normal
 map keeps them; without `close` a generated prop that comes back over 5 % folded through itself is remeshed again
 with its length / 150, `metrics.closed`; `"close": 0` never) -> `uv` -> `bake`
-(`{"texture_size": 2048, "normal_map": true}`: PBR + normal map from the generator's volume; only for
-generated meshes; a flat prop from a picture in perspective has one end shorter: `"detaper": true` squares it
+(`{"texture_size": 2048, "normal_map": true}`: PBR + normal map from the generator's volume, or, for an imported model (M62), from its own
+materials and textures (recipe: `import_file` -> `clean` -> `remesh` -> `uv` -> `bake` -> `rig_fit` -> `rig_skin` ->
+`anim` -> `export`; a foreign skeleton is dropped, ours is fitted; no materials at all: `missing_input`); a flat prop from a picture in perspective has one end shorter: `"detaper": true` squares it
 after the texture, the tall end kept; straighten it in clean first, `metrics.detapered` null means nothing was done) -> optional `project` (`{"region": "head"|"front"}`, sharper face from the picture) ->
 optional `refine` (`{"strength": 1}`, 4–5 min: the texture's fine detail redrawn from close-up views; the side
 the picture never showed is where a bake is weakest; a model wider than tall gets no view from above, which
