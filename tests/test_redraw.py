@@ -149,6 +149,16 @@ def test_params_are_checked():
     assert redraw._params("redraw", {"prompt": "x"})["strength"] == 0.35
 
 
+def test_a_lora_keeps_the_window_small_on_a_16_gb_card(monkeypatch):
+    monkeypatch.setattr(redraw, "budget_gb", lambda: 15.6)
+    assert redraw._params("redraw", {"prompt": "x"})["window"] == 1024
+    assert redraw._params("redraw", {"prompt": "x", "lora": "painting"})["window"] == 768
+    with pytest.raises(StepError):
+        redraw._params("redraw", {"prompt": "x", "lora": "painting", "window": 1024})
+    monkeypatch.setattr(redraw, "budget_gb", lambda: 24.0)
+    assert redraw._params("redraw", {"prompt": "x", "lora": "painting"})["window"] == 1024
+
+
 def test_a_window_the_mask_covers_wholly_is_never_drawn(monkeypatch, tmp_path):
     calls = []
 

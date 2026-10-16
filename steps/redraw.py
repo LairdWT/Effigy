@@ -8,7 +8,9 @@ op redraw: params {prompt (required, used exactly as given; Z-Image-Turbo runs w
   negative prompt), strength: 0.2-1 (default 0.35, how far the picture is drawn again; img2img from the picture
   itself), scale: 0.5-1 (default 0.85, the Tile control net's weight), factor: 1 | 2 | 4 (default 1: upscale first,
   then redraw at that size), seed, lora ("pixel" | "painting" | "drawing", concepts' styles) + lora_scale (0, 2],
-  window: 256-1024, a multiple of 64 (default 1024; with a lora use 768 on a 16 GB card: 1024 spilled to shared memory, 105 s a window), overlap: 0-0.5 of a window (default 0.25), protect: the name
+  window: 256-1024, a multiple of 64 (default 1024; with a lora at most and by default 768 unless the GPU budget is
+  17 GB or more: 1024 spilled the 16 GB card to shared memory, 105 s a window), overlap: 0-0.5 of a window (default
+  0.25), protect: the name
   of a sibling version of this asset whose `image` is a greyscale mask (white = keep the picture, black = redraw
   fully, grey in between; resized to the output; a window the mask covers wholly is not drawn at all), key}.
   The picture is cut into overlapping windows (the last row and column shifted inward), each drawn from itself (its
@@ -43,7 +45,7 @@ import torch
 from PIL import Image, ImageFilter
 
 from steps import _sr, concepts
-from steps._common import StepError, main, progress
+from steps._common import StepError, budget_gb, main, progress
 
 # a 4x upscale of a wide picture passes PIL's default 179 MP limit (8352 x 2400 x 4 = 321 MP): raised, not lifted
 # (PIL refuses past twice this). ponytail: MAX_PX is the output size the RAM holds (float32 accumulator, 12 B/px, ~6 GB
@@ -54,6 +56,13 @@ Image.MAX_IMAGE_PIXELS = 600_000_000
 DRIFT_PASS, WINDOW_DRIFT_PASS, SEAM_PASS = 12.0, 25.0, 1.25
 GREY = 127  # what a see-through area is drawn on
 PREVIEW = 2048
+# a style LoRA at a 1024 window filled the 16 GB card (15.9 GB, spilled to shared memory: 105 s a window, 2026-10-16);
+# 768 peaked at 10.6. A budget of LORA_ROOM_GB or more (a bigger card, M46a) keeps 1024.
+LORA_WINDOW, LORA_ROOM_GB = 768, 17.0
+
+
+def _roomy(params: dict) -> bool:
+    return not params.get("lora") or (budget_gb() or 0) >= LORA_ROOM_GB
 
 
 def _params(op: str, params: dict) -> dict:
@@ -70,7 +79,7 @@ def _params(op: str, params: dict) -> dict:
         "seed": params.get("seed", random.randrange(2**31)),
         "lora": params.get("lora"),
         "lora_scale": params.get("lora_scale", 1.0),
-        "window": params.get("window", 1024),
+        "window": params.get("window", 1024 if _roomy(params) else LORA_WINDOW),
         "overlap": params.get("overlap", 0.25),
         "protect": params.get("protect"),
     }
@@ -90,7 +99,7 @@ def _params(op: str, params: dict) -> dict:
         and num(p["lora_scale"])
         and 0 < p["lora_scale"] <= 2
         and isinstance(p["window"], int)
-        and 256 <= p["window"] <= 1024
+        and 256 <= p["window"] <= (1024 if _roomy(params) else LORA_WINDOW)
         and p["window"] % 64 == 0
         and num(p["overlap"])
         and 0 <= p["overlap"] <= 0.5
