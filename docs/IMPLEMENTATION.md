@@ -3371,7 +3371,9 @@ above are the contract; each milestone's "As built" note lands here.
     on the CPU (`Blend`, `plan`, `u8`; was hard-cut tiles accumulated on the GPU, 3.8 GB at 321 MP); `refine._Tile`
     takes any h x w (multiples of 16); `concepts.style_file` shared. `Image.MAX_IMAGE_PIXELS = None` in the step only:
     thumbnails and Look read `preview.png` (2048 px). UI: labels only; the 2D track shows it as a Picture version.
-    `presets.VRAM_GB["redraw"]`. Protect is a post-blend (ceiling in `_mix`).
+    `presets.VRAM_GB["redraw"]`. Protect is a post-blend (ceiling in `_mix`). MCP: `run_step`/`describe_steps` take
+    it as they find it; `import_file(asset_id=…)` uploads a file as a new version of an existing asset (the protect
+    mask), nothing run; `mcp/SKILL.md` (effigy://guide) has the how-to.
   - **Acceptance**: (1) `tests/test_redraw.py` (CPU): plan covers the axis, a constant/identical blend comes back
     unchanged, protect, alpha, params. (2) **GPU**: 1536 x 1024 with alpha, x2, protect mask: upscale 7.6 s; redraw 12
     windows at 10.3 s each, torch peak 9.3 GB, card 13.6 GB, seam_ratio 0.86, drift 3.6 (2026-10-16). (3) **GPU, owner's

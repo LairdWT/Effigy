@@ -443,6 +443,7 @@ def import_file(
     still: bool = False,
     kind: str = "",
     library_file: str = "",
+    asset_id: str = "",
     wait_s: float = 40,
     ctx: Context = None,
 ) -> dict:
@@ -452,7 +453,9 @@ def import_file(
     runs prep (the cut-out for 3D) unless kind="2d" (a wallpaper, tile or sprite picture: only uploaded,
     into a 2D asset); a video only uploads (run mocap yourself). Instead of `path`, library_file
     "<asset_id>/<version>/<file>" takes a picture already in the library: a 2D character's picture into a
-    new 3D asset to animate (the app's Animate this character). Returns {asset_id, upload, ...} like run_step."""
+    new 3D asset to animate (the app's Animate this character). With asset_id the file is only uploaded,
+    as a new version of that existing asset (e.g. redraw's `protect` mask beside its picture), nothing runs.
+    Returns {asset_id, upload, ...} like run_step."""
     source = None
     if library_file:  # a picture of another asset, through the API: the agent needs no library path
         src, version, file = (library_file.split("/", 2) + ["", ""])[:3]
@@ -478,8 +481,12 @@ def import_file(
         )
     if size > 2**30:
         raise ToolError(f"too_large: {size >> 20} MB, uploads are limited to 1024 MB")
-    body = {"name": name or p.stem} | ({"kind": kind} if kind else {})
-    asset_id = api("POST", "/api/assets", body)["id"]
+    into = asset_id
+    if into:
+        api("GET", f"/api/assets/{_q(into)}")  # not_found before streaming the file
+    else:
+        body = {"name": name or p.stem} | ({"kind": kind} if kind else {})
+        asset_id = api("POST", "/api/assets", body)["id"]
     # a file streams from disk with a Content-Length, never read whole; a library picture is in memory already
     with io.BytesIO(data) if library_file else p.open("rb") as f:
         req = urllib.request.Request(
@@ -488,16 +495,20 @@ def import_file(
             {"content-length": str(size), "content-type": "application/octet-stream"},
             method="PUT",
         )
+        stays = "" if into else f", the empty asset {asset_id} stays"
         try:
             with urllib.request.urlopen(req, timeout=600) as r:
                 upload = json.load(r)["version"]
         except urllib.error.HTTPError as e:
-            raise ToolError(f"{_err(e)}, the empty asset {asset_id} stays") from None
+            raise ToolError(f"{_err(e)}{stays}") from None
         except (urllib.error.URLError, OSError) as e:
-            raise ToolError(
-                f"upload_failed: {e}, the empty asset {asset_id} stays; is run.bat running?"
-            ) from None
+            raise ToolError(f"upload_failed: {e}{stays}; is run.bat running?") from None
     head = {"asset_id": asset_id, "upload": upload}
+    if into:
+        return head | {
+            "status": "uploaded",
+            "note": f"a new version {upload} of {asset_id}, nothing ran",
+        }
     if ext in VIDEOS:
         return head | {
             "status": "uploaded",
