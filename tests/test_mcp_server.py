@@ -282,6 +282,28 @@ def test_import_file_takes_a_picture_from_the_library(live):
     assert [f.read_bytes() for f in upload.glob("*.png")] == [picture]
 
 
+def test_import_file_into_an_existing_asset(live, tmp_path):
+    """redraw's protect mask: a picture uploaded beside the asset's own as a new version, nothing run on it."""
+    api, _ = live
+    two = library.create_asset("background", kind="2d")["id"]
+    before = len(library.list_assets())
+    mask = tmp_path / "mask.png"
+    mask.write_bytes(b"not really a png")
+
+    async def go():
+        async with session(api) as s:
+            bad = await call(s, "import_file", path=str(mask), asset_id="nope")
+            _, first = await call(s, "import_file", path=str(mask), asset_id=two)
+            _, second = await call(s, "import_file", path=str(mask), asset_id=two)
+            return bad[0], first, second
+
+    bad, first, second = anyio.run(go)
+    assert bad.is_error
+    assert first["asset_id"] == second["asset_id"] == two
+    assert first["status"] == "uploaded" and first["upload"] != second["upload"]
+    assert len(library.list_assets()) == before
+
+
 def test_an_agent_sees_the_versions_named_as_the_app_names_them():
     """The version labels the MCP server gives get_asset are the UI's (ui/src/workflow.ts STEPS): a step the UI names
     and the server does not would show an agent its raw name (transform, 2026-10-13, was one)."""

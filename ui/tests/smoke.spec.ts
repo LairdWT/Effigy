@@ -1172,6 +1172,7 @@ test("Tasks: five per 3D asset on one line, a task opens its newest checkpoint o
   await page.locator(".tools > summary").click();
   await page.screenshot({ path: "test-results/tasks-tools-menu.png", clip: { x: 640, y: 0, width: 640, height: 360 } });
   await expect(page.locator(".tools li", { hasText: "Face from image" })).toContainText("available");
+  await expect(page.locator(".tools li", { hasText: "Upscale or redraw" })).toContainText("2D pictures only");
   await expect(page.locator(".tools li", { hasText: "Parts" })).toContainText("available");
   await page.locator(".tools").getByRole("button", { name: "Face from image" }).click();
   await expect(page.locator("#tools")).toHaveAttribute("open", "");
@@ -2810,6 +2811,9 @@ test("Animate this character is offered for a character picture, not for a wallp
   await page.locator(".tools > summary").click();
   await expect(page.locator(".tools li", { hasText: "Texture detail" })).toHaveText(/3D models only$/);
   await expect(page.locator(".tools li", { hasText: "Sprites for 2D" })).toContainText("in a 3D character: Animate this character");
+  // M61: the 2D tool opens its section of the panel
+  await expect(page.locator(".tools li", { hasText: "Upscale or redraw" })).toContainText("available");  await page.locator(".tools").getByRole("button", { name: "Upscale or redraw" }).click();
+  await expect(page.locator("#redraw")).toHaveAttribute("open", "");
 });
 
 test("A redrawn character's cut-out offers Redraw again: the same picture, the same look, another seed", async ({ page }) => {
@@ -3219,4 +3223,41 @@ test("Generate: a character's cut-out can stand in an A-pose first; an object's 
   await page.goto("/#/asset/mock_crate?version=030_prep");
   await expect(page.getByRole("button", { name: "Generate 3D" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Put it in a standing pose" })).toHaveCount(0);
+});
+
+const redrawAsset = async (page: Page, id: string) => {
+  await models2d(page, true);
+  const posted = await mockAsset(
+    page,
+    id,
+    [
+      { version: "010_upload", step: "upload", parent: null, outputs: { image: "image.png" } },
+      { version: "020_upload", step: "upload", parent: null, outputs: { image: "mask.png" } },
+      { version: "030_concepts", step: "concepts", parent: null, params: { op: "image", width: 2048, height: 768 }, outputs: { image_0: "image_0.png", image: "image.png" } },
+    ],
+    { kind: "2d" },
+  );
+  await page.goto(`/#/asset/${id}?version=030_concepts`);
+  await page.locator("#redraw > summary").click();
+  return { posted, form: page.locator("#redraw") };
+};
+
+test("A 2D picture can be upscaled: the size and the factor (M61)", async ({ page }) => {
+  const { posted, form } = await redrawAsset(page, "mock_up2d_m61");
+  await expect(form).toContainText("8192 × 3072 px"); // 4× a side
+  await form.getByRole("button", { name: "Make it bigger" }).click();
+  await expect.poll(() => posted.length).toBe(1);
+  expect(posted[0]).toEqual(["redraw", { op: "upscale", key: "image_0", factor: 4 }]);
+});
+
+test("A 2D picture can be redrawn with a mask kept as it is (M61)", async ({ page }) => {
+  const { posted, form } = await redrawAsset(page, "mock_rd2d_m61");
+  await form.getByLabel("What to do").selectOption("redraw");
+  await expect(form.getByRole("button", { name: "Redraw the picture" })).toBeDisabled(); // a description is needed
+  await form.getByLabel("Description").fill("a painted mural");
+  await form.getByLabel("Keep as it is (a mask)").selectOption("020_upload");
+  await expect(form).toContainText("3 windows"); // 2048 × 768 in windows of 1024, 256 overlapping
+  await form.getByRole("button", { name: "Redraw the picture" }).click();
+  await expect.poll(() => posted.length).toBe(1);
+  expect(posted[0]).toEqual(["redraw", { op: "redraw", key: "image_0", factor: 1, prompt: "a painted mural", strength: 0.35, protect: "020_upload" }]);
 });

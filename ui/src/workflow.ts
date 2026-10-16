@@ -143,6 +143,7 @@ const STEPS: Record<string, string> = {
   import_motion: "Animation from a file",
   parts: "Parts",
   pixelize: "Pixel art",
+  redraw: "Redrawn picture",
   sprites: "Sprites",
 };
 
@@ -159,6 +160,7 @@ export function label(m: Meta): string {
   }
   if (m.step === "validate") return m.metrics?.fail ? `Checks: ${m.metrics.fail} failed` : "Checks";
   if (m.step === "concepts" && m.params?.op === "image") return "Pictures";
+  if (m.step === "redraw" && m.params?.op === "upscale") return "Upscaled picture";
   if (m.step === "pixelize" && m.params?.palette_map) return "Recoloured pixel art";
   if (m.provenance === "blender_pull") return STEPS.blender;
   if (m.provenance === "claude_run") return STEPS.claude;
