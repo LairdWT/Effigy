@@ -3220,3 +3220,28 @@ test("Generate: a character's cut-out can stand in an A-pose first; an object's 
   await expect(page.getByRole("button", { name: "Generate 3D" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Put it in a standing pose" })).toHaveCount(0);
 });
+
+test("M62: an import with materials offers the bake in its Prepare panel, like a generated model", async ({ page }) => {
+  const shots = process.env.M62_SHOTS; // optional: a folder for the two screenshots compared by hand
+  const imp = await mockAsset(page, "mock_m62", [
+    { version: "010_upload", step: "upload", parent: null, params: { name: "hero.glb" }, outputs: { model: "source/hero.glb" } },
+    { version: "020_import_model", step: "import_model", parent: "010_upload", params: {}, outputs: { mesh: "mesh.glb" }, metrics: { materials: 2, textures: 2, triangles: 1200, skeleton: null, clips: [] } },
+  ]);
+  await page.goto("/#/asset/mock_m62?version=020_import_model");
+  await page.getByText("Simplify geometry (copy)").click();
+  await expect(page.getByLabel("Texture size")).toBeVisible();
+  await expect(page.locator(".panel")).toContainText("materials baked into one texture set");
+  if (shots) await page.screenshot({ path: `${shots}/prepare-imported.png`, animations: "disabled" });
+  await page.getByRole("button", { name: "Simplify geometry" }).click();
+  await expect.poll(() => imp.map(([s]) => s)).toContain("bake");
+  if (shots) {
+    await mockAsset(page, "mock_m62g", [
+      { version: "010_prep", step: "prep", parent: null, outputs: { image: "image.png" } },
+      { version: "020_trellis2", step: "trellis2", parent: "010_prep", outputs: { mesh: "hi.glb", ovoxel: "ovoxel.npz" } },
+      { version: "030_clean", step: "clean", parent: "020_trellis2", outputs: { mesh: "mesh.glb" } },
+    ]);
+    await page.goto("/#/asset/mock_m62g?version=030_clean");
+    await page.getByLabel("Texture size").waitFor({ timeout: 3000 }).catch(() => {});
+    await page.screenshot({ path: `${shots}/prepare-generated.png`, animations: "disabled" });
+  }
+});
