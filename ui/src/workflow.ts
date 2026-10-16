@@ -27,6 +27,13 @@ export const actsAs = (m: Meta) => (m.step !== "import_model" ? m.step : m.outpu
 // volume lineage (the generator's ovoxel.npz): only then can textures be baked; imported meshes have none
 export const generated = (versions: Meta[], m: Meta) => ancestors(versions, m).some((a) => "ovoxel" in a.outputs);
 
+// M62: a bake needs a colour source up the chain: the generator's volume, an import with materials, or an uploaded glb
+export const bakeable = (versions: Meta[], m: Meta) => {
+  const line = ancestors(versions, m);
+  const imp = line.find((a) => a.step === "import_model"); // the nearest import decides: it knows whether there are materials
+  return line.some((a) => "ovoxel" in a.outputs) || (imp ? Number(imp.metrics?.materials) > 0 : line.some((a) => a.step === "upload" && Object.values(a.outputs).some((f) => f.endsWith(".glb"))));
+};
+
 // game-ready preparation, in order, with the friendly name of each operation
 export const RECIPE: [string, string][] = [
   ["clean", "clean"],
@@ -75,12 +82,12 @@ export function taskOf(versions: Meta[], m: Meta, kind?: string): number {
 
 export type PrepState = { state: "completed" | "active" | "interrupted" | "historical"; next?: Meta; remaining: string[] };
 /** UX-07: what a clean/simplify/unwrap/bake checkpoint is, from its descendants on this branch and the running job's
- * input version; `remaining` names the recipe steps after it (the bake only for a generated model). */
+ * input version; `remaining` names the recipe steps after it (the bake only with a colour source). */
 export function prepState(versions: Meta[], v: Meta, running?: string | null): PrepState {
   const below = versions.filter((x) => x !== v && ancestors(versions, x).includes(v));
   const checked = below.filter((x) => x.step === "validate").at(-1);
   const remaining = RECIPE.slice(RECIPE.findIndex(([s]) => s === v.step) + 1)
-    .filter(([s]) => s !== "bake" || generated(versions, v))
+    .filter(([s]) => s !== "bake" || bakeable(versions, v))
     .map(([, name]) => name);
   if (checked) return { state: "completed", next: checked, remaining: [] };
   if (running && (running === v.version || below.some((x) => x.version === running))) return { state: "active", remaining };

@@ -81,7 +81,14 @@ test("prepState: completed by a later check, active by the running job's input, 
   expect(prepState(vs, at("070_remesh"), "080_uv")).toMatchObject({ state: "active" }); // the job runs on its descendant
   expect(prepState(vs, at("070_remesh"))).toMatchObject({ state: "historical", next: at("080_uv") });
   expect(prepState(vs, at("070_remesh"), "040_uv")).toMatchObject({ state: "historical" }); // a job on another branch is not this one's
-  // an imported model bakes nothing: the remaining steps skip it
+  // M62: an uploaded glb bakes its own textures; an import without materials has none to bake
   const imp = [m("010_upload", "upload", null, GLB), m("020_clean", "clean", "010_upload", GLB)];
-  expect(prepState(imp, imp[1])).toMatchObject({ state: "interrupted", remaining: ["simplify", "unwrap", "check"] });
+  expect(prepState(imp, imp[1])).toMatchObject({ state: "interrupted", remaining: ["simplify", "unwrap", "bake", "check"] });
+  const bare = [m("010_upload", "upload", null, { model: "source/a.stl" }), { ...m("020_import_model", "import_model", "010_upload", GLB), metrics: { materials: 0 } }];
+  const clean = m("030_clean", "clean", "020_import_model", GLB);
+  expect(prepState([...bare, clean], clean).remaining).toEqual(["simplify", "unwrap", "check"]);
+  const glbUp = [m("010_upload", "upload", null, { model: "source/a.glb" }), bare[1]]; // a .glb upload whose import found no materials
+  expect(prepState([...glbUp, clean], clean).remaining).toEqual(["simplify", "unwrap", "check"]);
+  const textured = { ...bare[1], metrics: { materials: 2 } };
+  expect(prepState([bare[0], textured, clean], clean).remaining).toEqual(["simplify", "unwrap", "bake", "check"]);
 });

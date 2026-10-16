@@ -186,6 +186,7 @@ def write_textured(out: Path, mesh, mat, rgba: np.ndarray, extra: dict) -> dict:
         mesh.vertex_normals,
         normal,
         occlusion=occlusion,
+        alpha_mode=getattr(mat, "alphaMode", None),
     )
     Image.fromarray(rgba, "RGBA").save(out / "basecolor.png")
     Image.fromarray(mr, "RGB").save(out / "orm.png")
