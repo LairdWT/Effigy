@@ -687,6 +687,13 @@ function RedrawInfo(props: { asset: string; version: Meta }) {
   );
 }
 
+/** A picture that is not pixel art, sprites, a tile or layers already (M55: it can become parallax layers). */
+const isLayerable = (v: Meta) =>
+  !!(v.outputs.image || pictureKeys(v).length) && !v.outputs.tile && !["pixelize", "sprites", "depth", "layers"].includes(v.step);
+
+/** The pictures Upscale or redraw (M61) is offered on: the panel's section and the Tools menu ask the same. */
+export const redrawable = (v: Meta) => isLayerable(v) || v.step === "redraw";
+
 /** The panel of a 2D asset's version: its main action first, as Actions does for a 3D one. */
 export function Actions2D(props: {
   asset: string;
@@ -720,9 +727,7 @@ export function Actions2D(props: {
   // M55: a picture that is not pixel art, sprites, a tile or layers already can become parallax layers; a stage first
   const category = ancestors(props.versions, v).find((a) => a.step === "brief")?.params?.category;
   const stage = category === "background" || category === "wallpaper";
-  const layerable =
-    !!(v.outputs.image || pictureKeys(v).length) && !v.outputs.tile && !["pixelize", "sprites", "depth", "layers"].includes(v.step);
-  const redrawable = layerable || v.step === "redraw";
+  const layerable = isLayerable(v);
   const layersFrom = <LayersForm asset={props.asset} version={v} picked={props.picked} chain={props.chain} missing={props.missing} primary={stage} />;
   const more = brief && (
     <>
@@ -807,7 +812,7 @@ export function Actions2D(props: {
         </section>
       )}
       {v.step !== "pixelize" && animate && <AnimateIt {...props} />}
-      {redrawable && (
+      {redrawable(v) && (
         <details id="redraw">
           <summary>Upscale or redraw</summary>
           <RedrawForm asset={props.asset} version={v} versions={props.versions} picked={props.picked} chain={props.chain} missing={props.missing} />
