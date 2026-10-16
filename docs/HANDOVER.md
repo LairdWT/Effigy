@@ -213,6 +213,8 @@ Done and recorded elsewhere: the 2D roadmap (M54–M57) and the bigger GPUs (M46
 `docs/bench/m46.md`, research 16; what is left there is the users' GPU reports for the 24/32 GB thresholds), the
 agent's hoarding findings 1–22 (4 built as Setup's Start Blender; 5 decided: the port stays 8000).
 
+0. **M61 `redraw`** (upscale / redraw at any size, branch `m61-redraw`, not merged): built and smoke-tested 2026-10-16;
+   the owner runs the full 33408 x 9600 job (IMPLEMENTATION M61 acceptance 3).
 1. **M60 The held weapon as a separate prop on the hand bone** (the owner's pick, 2026-10-13: the standing-pose redraw
    empties the hands). The other offered items (a Sprites warning without animations, Flat by default, Animate this
    character as one chain) were dropped by the owner. **Not started: design first** (an Expert design pass was begun

@@ -130,6 +130,7 @@ STEP_LABELS = {
     "import_motion": "Animation from a file",
     "parts": "Parts",
     "pixelize": "Pixel art",
+    "redraw": "Redrawn picture",
     "sprites": "Sprites",
 }
 PROFILES = {
@@ -503,7 +504,8 @@ def import_file(
             "note": "a video has no step yet: run_step mocap on it",
         }
     if kind == "2d" and ext in PICTURES:
-        return head | {"status": "uploaded", "note": "a 2D picture: run_step pixelize on it"}
+        note = "a 2D picture: run_step pixelize on it, or redraw (op upscale | redraw) to enlarge or redraw it"
+        return head | {"status": "uploaded", "note": note}
     step, params = ("prep", {}) if ext in PICTURES else ("import_model", {"rig": not still})
     # a flat picture (a 2D asset's) makes a cardboard model: the redraw comes first
     if source and source.get("kind") == "2d" and ext in PICTURES:
