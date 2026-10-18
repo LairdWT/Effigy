@@ -640,19 +640,19 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
 
   return (
     <div className="stack anim-editor">
+      <label>
+        Clip
+        <select aria-label="Clip to edit" value={clip} onChange={(e) => (setClip(e.target.value), setSel([]), setFound(null))}>
+          {[...Object.keys(ready.clips), ...Object.keys(layers).filter((c) => layers[c].from)].map((c) => (
+            <option key={c} value={c}>
+              {c}
+              {layers[c]?.from ? ` (copy of ${layers[c].from})` : ""}
+              {hasEdits(layers[c]) ? " (edited)" : ""}
+            </option>
+          ))}
+        </select>
+      </label>
       <div className="row">
-        <label>
-          Clip{" "}
-          <select aria-label="Clip to edit" value={clip} onChange={(e) => (setClip(e.target.value), setSel([]), setFound(null))}>
-            {[...Object.keys(ready.clips), ...Object.keys(layers).filter((c) => layers[c].from)].map((c) => (
-              <option key={c} value={c}>
-                {c}
-                {layers[c]?.from ? ` (copy of ${layers[c].from})` : ""}
-                {hasEdits(layers[c]) ? " (edited)" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
         <button className="small" onClick={duplicate}>
           Duplicate
         </button>
@@ -666,14 +666,14 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
             </button>
           </>
         )}
-        <div role="group" aria-label="Compare" className="row">
-          <button aria-pressed={!original} onClick={() => setOriginal(false)}>
-            Edited
-          </button>
-          <button aria-pressed={original} onClick={() => setOriginal(true)}>
-            Original
-          </button>
-        </div>
+      </div>
+      <div role="group" aria-label="Compare" className="row">
+        <button aria-pressed={!original} onClick={() => setOriginal(false)}>
+          Edited
+        </button>
+        <button aria-pressed={original} onClick={() => setOriginal(true)}>
+          Original
+        </button>
       </div>
       <details>
         <summary>Help</summary>
@@ -701,7 +701,8 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
         <li>A key fades in and out over its falloff, so the motion around it stays smooth. Keys are diamonds; drag them in time, or switch the timeline to Curves.</li>
         <li>Keys: Space plays, ←/→ a frame, I keys the bone as it is, X deletes the selected keys, R rotates, G grabs (moves the hips, IK-drags the rest), Ctrl+Z undoes; Ctrl+wheel zooms the timeline.</li>
         <li>Timeline: Keys shows where each bone is keyed; Curves, with a bone selected, draws its turn over the clip as lines whose points you drag.</li>
-        <li>Without a mouse: Keys as a list (below the Save button) selects a key, moves it a frame at a time, and in Curves edits its values.</li>
+        <li>Clip tools work on the whole clip: Trim keeps the frames from first to last, Loop match blends the last frames into the first so the clip loops without a jump, Ground lifts or lowers it.</li>
+        <li>Without a mouse: Keys as a list (under Clip tools) selects a key, moves it a frame at a time, and in Curves edits its values.</li>
         <li>Show: Motion path draws the selected bone's track over the clip; Onion skin shows the model a few frames before (blue) and after (green).</li>
         </ul>
       </details>
@@ -709,7 +710,7 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
         <h4>Bone {bone ? `· ${bone}` : ""}</h4>
         {!bone && <p className="muted">No bone selected.</p>}
         {bone && (
-          <div role="group" aria-label="Gizmo" className="row">
+          <div role="group" aria-label="Gizmo" className="modes">
             <button aria-pressed={gizmo === "rotate"} onClick={() => setMode("rotate")}>
               Rotate
             </button>
@@ -1066,8 +1067,10 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
       <details>
         <summary>Clip tools</summary>
         <div className="stack">
-          <div className="row" role="group" aria-label="Trim">
+          <div className="fields">
+          <label>
             Trim
+            <span className="row" role="group" aria-label="Trim">
             {[0, 1].map((i) => (
               <input
                 key={`t${i}${trim[i]}`}
@@ -1083,9 +1086,11 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
                 }}
               />
             ))}
-          </div>
+            </span>
+          </label>
           <label>
-            Speed{" "}
+            Speed
+            <span className="row">
             <input
               type="number"
               step="0.05"
@@ -1101,9 +1106,11 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
               }}
             />
             ×
+            </span>
           </label>
-          <label>
-            Loop match{" "}
+          <label title="The last frames blend into the first, so the clip loops without a jump">
+            Loop match
+            <span className="row">
             <input
               type="number"
               min={0}
@@ -1115,12 +1122,13 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
                 const x = num(e.target.value, 0, trim[1] - trim[0]);
                 if (x !== null && Math.round(x) !== (layer.loop ?? 0)) commit((l) => ({ ...l, loop: Math.round(x) || undefined }));
               }}
-            />{" "}
-            frames (the end blends into the start)
+            />
+            frames
+            </span>
           </label>
-          <div className="row">
-            <label>
-              Ground{" "}
+          <label>
+            Ground
+            <span className="row">
               <input
                 type="number"
                 step="0.005"
@@ -1132,10 +1140,13 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
                   const x = num(e.target.value, -10, 10);
                   if (x !== null && x !== (layer.ground ?? 0)) commit((l) => ({ ...l, ground: x || undefined }));
                 }}
-              />{" "}
+              />
               m
-            </label>
-            <button onClick={snap}>Snap to ground</button>
+            </span>
+          </label>
+          <button style={{ gridColumn: 2, justifySelf: "start" }} onClick={snap}>
+            Snap to ground
+          </button>
           </div>
           <label className="check">
             <input type="checkbox" checked={!!layer.in_place} onChange={(e) => commit((l) => ({ ...l, in_place: e.target.checked || undefined }))} />
@@ -1152,6 +1163,7 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
           </fieldset>
         </div>
       </details>
+      <KeyList rows={keyRows} selected={sel} curves={curves} onSelect={onSelectKeys} onSeek={seekBase} onMove={moveKeys} onCurve={onCurve} />
       <div className="row">
         <button disabled={busy || !hist.h?.past.length} onClick={hist.undo}>
           Undo
@@ -1183,7 +1195,6 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
         {dirty && <span className="muted">Unsaved changes</span>}
       </div>
       {edited.length > 0 && <p className="muted">Edited: {edited.join(", ")}. The original animation stays as it is.</p>}
-      <KeyList rows={keyRows} selected={sel} curves={curves} onSelect={onSelectKeys} onSeek={seekBase} onMove={moveKeys} onCurve={onCurve} />
       {document.getElementById("timeline-slot") &&
         createPortal(
           <EditorTimeline

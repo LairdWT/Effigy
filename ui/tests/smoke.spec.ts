@@ -275,7 +275,7 @@ test("Animation: the time bar steps a clip; the editor keys a bone, retimes the 
   await expect(page.getByRole("spinbutton", { name: "X degrees" })).toHaveValue("30.0");
   await expect(page.getByRole("combobox", { name: "Clip to edit" }).locator("option", { hasText: "Walk (edited)" })).toHaveCount(1);
   // half speed: twice as long; Undo: as it was
-  await page.getByText("Clip tools").click();
+  await page.getByText("Clip tools", { exact: true }).click();
   await page.getByRole("spinbutton", { name: "Speed" }).fill("0.5");
   await page.getByRole("spinbutton", { name: "Speed" }).blur();
   await expect.poll(() => page.evaluate(() => (window as any).__viewer.duration())).toBeCloseTo(2, 3);
@@ -327,7 +327,7 @@ test("Animation editor: duplicate, rename, edit and save a copy (from), delete i
   answer = "Walk limp";
   await page.locator(".anim-editor").getByRole("button", { name: "Rename", exact: true }).click();
   await expect(sel).toHaveValue("Walk limp");
-  await page.getByText("Clip tools").click();
+  await page.getByText("Clip tools", { exact: true }).click();
   await page.getByRole("spinbutton", { name: "Speed" }).fill("0.5");
   await page.getByRole("spinbutton", { name: "Speed" }).blur();
   await page.getByRole("button", { name: "Save as a new version" }).click();
@@ -2095,7 +2095,7 @@ test("Unsaved edits are guarded: Close, a link and a version switch ask first; a
   await page.waitForFunction(() => (window as any).__viewer?.loaded === true);
   await page.getByRole("combobox", { name: "Animation" }).selectOption({ label: "Play: Walk" });
   await page.getByRole("button", { name: "Edit animation" }).click();
-  await page.getByText("Clip tools").click();
+  await page.getByText("Clip tools", { exact: true }).click();
   await page.getByRole("spinbutton", { name: "Speed" }).fill("0.5");
   await page.getByRole("spinbutton", { name: "Speed" }).blur();
   await expect(page.getByText("Unsaved changes")).toBeVisible();
@@ -2220,7 +2220,7 @@ test("A result that arrives during an unsaved edit is offered, not opened over t
   await page.locator("aside.panel").getByRole("button", { name: "Check model" }).click(); // a job on this version
   await page.getByRole("combobox", { name: "Animation" }).selectOption({ label: "Play: Walk" });
   await page.getByRole("button", { name: "Edit animation" }).click();
-  await page.getByText("Clip tools").click();
+  await page.getByText("Clip tools", { exact: true }).click();
   await page.getByRole("spinbutton", { name: "Speed" }).fill("0.5");
   await page.getByRole("spinbutton", { name: "Speed" }).blur();
   await expect(page.getByText("Unsaved changes")).toBeVisible();
