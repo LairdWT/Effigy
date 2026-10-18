@@ -679,8 +679,24 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
         <summary>Help</summary>
         <ul className="muted">
         <li>Click a joint in the view (or a bone in the timeline) to select it, then turn it with the rings: that keys it at this frame.</li>
-        <li>Move shifts the hips with arrows; IK drag pulls a hand or foot, the arm or leg bending to follow (Chain: how many bones above it bend; Page Up/Down).</li>
-        <li>IK target holds a hand or foot on a target you key over time (yellow box): drag the box, the bones above it bend to reach it; drag the diamond to swing the knee or elbow. Weight blends the clip (0) and the target (1). Space: the target stays put in the world, or rides on a bone (a hand on the hips).</li>
+        <li>Move shifts the hips with arrows.</li>
+        <li>
+          IK drag and IK target both bend an arm or a leg so the hand or foot reaches a place (Chain: how many bones above it bend, 2 for an arm or a leg; Page Up/Down). They differ in what they leave
+          behind:
+        </li>
+        <li>
+          IK drag poses this one frame: drag the hand or foot and the bones above it turn to follow; each of them gets an ordinary turn key here, as if you had turned them one by one. Nothing stays
+          attached: on other frames the hand goes where the clip takes it. Use it to fix a pose at a moment (a punch that falls short, an elbow too low).
+        </li>
+        <li>
+          IK target pins the hand or foot to a target (yellow box) that the IK reaches on every frame it covers. Select the bone, press IK target, then drag the box or press Pin it here (I): that
+          makes the bone's IK control with a key at this frame. Go to another frame and drag again (or Key it here) for a second key; between keys the target glides from one to the next, past the
+          first and last key it lets go over the falloff. Use it to hold a foot on the ground, a hand on a wall or a weapon on the other hand while the body moves.
+        </li>
+        <li>
+          On an IK control: the diamond (Pole) swings the knee or elbow around the line to the target, as Swivel does in degrees; Weight blends the clip (0 %) and the target (100 %) at each key;
+          Space keeps the target still in the world, or carries it on a bone (a hand resting on the hips moves with the hips). Remove IK control drops it and all its keys; Ctrl+Z brings it back.
+        </li>
         <li>The skeleton is drawn as Blender draws an armature: the selected bone blue, the bones an IK control bends yellow, a key at this frame orange; dashed lines join a bone to a parent it does not touch. Click a joint or a bone.</li>
         <li>A key fades in and out over its falloff, so the motion around it stays smooth. Keys are diamonds; drag them in time, or switch the timeline to Curves.</li>
         <li>Keys: Space plays, ←/→ a frame, I keys the bone as it is, X deletes the selected keys, R rotates, G grabs (moves the hips, IK-drags the rest), Ctrl+Z undoes; Ctrl+wheel zooms the timeline.</li>
@@ -700,10 +716,10 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
             <button aria-pressed={gizmo === "move"} disabled={!canMove(bone)} title={canMove(bone) ? "" : "This bone does not move in the clip"} onClick={() => setMode("move")}>
               Move
             </button>
-            <button aria-pressed={gizmo === "ik"} disabled={!chain(bone)} title={chain(bone) ? "" : "Needs two turning bones above it"} onClick={() => setMode("ik")}>
+            <button aria-pressed={gizmo === "ik"} disabled={!chain(bone)} title={chain(bone) ? "Pose this frame: drag the hand or foot, the bones above it get turn keys here" : "Needs two turning bones above it"} onClick={() => setMode("ik")}>
               IK drag
             </button>
-            <button aria-pressed={gizmo === "target"} disabled={!chain(bone)} title={chain(bone) ? "" : "Needs two turning bones above it"} onClick={() => (setMode("target"), setHandle("target"))}>
+            <button aria-pressed={gizmo === "target"} disabled={!chain(bone)} title={chain(bone) ? "Pin the hand or foot to a target held over frames (an IK control)" : "Needs two turning bones above it"} onClick={() => (setMode("target"), setHandle("target"))}>
               IK target
             </button>
           </div>
@@ -741,7 +757,8 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
         )}
         {bone && gizmo === "target" && !ctl && (
           <p className="muted">
-            Drag the yellow box in the view: the bone gets an IK control keyed at frame {frame}, its {reach} bones above bending to reach.{" "}
+            No IK control on this bone. Drag the yellow box in the view: the bone gets one keyed at frame {frame}, its {reach} bones above bending to reach it on every frame it covers (to pose
+            just this frame, use IK drag).{" "}
             <button className="small" onClick={insertKey} disabled={original}>
               Pin it here (I)
             </button>

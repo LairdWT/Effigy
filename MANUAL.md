@@ -461,7 +461,12 @@ The animated model plays its clips from the view's **Animation** menu. A clip wh
   or elbow, the **Weight** (0 %: the animation as it was, 100 %: on the target) and a **Falloff** over which the
   weight fades before the first key and after the last. **Space**: **World** keeps the target still while the body
   moves; a bone (the hips, the chest) carries it along. **IK controls** lists them; each has a row of its own in the
-  timeline.
+  timeline. To make one, select the bone, press **IK target**, then drag the box or press **Pin it here** (**I**);
+  **Remove IK control** drops it with all its keys (**Ctrl+Z** brings it back).
+- **IK drag or IK target?** IK drag poses one frame: the bones above get ordinary turn keys there and nothing stays
+  attached, so on other frames the hand goes where the clip takes it (a punch that falls short). IK target holds the
+  hand or foot on its target on every frame the control covers, the IK solving each frame (a foot planted while the
+  body moves, a weapon in both hands).
 - **Foot locks**: **Find foot contacts** finds where a foot should stand still; **Lock … here** keeps it planted
   from one frame to another, with a blend in and out.
 - **Clip tools**: **Trim** (first and last frame), **Speed**, **Loop match** (the end blends into the start),
