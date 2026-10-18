@@ -303,7 +303,7 @@ export function AnimEditor(props: { asset: string; version: Meta; viewer: Viewer
     const c = layer.ik?.find((x) => x.bone === n);
     const here = c?.keys.find((x) => x.f === f);
     const now = c && ikAt(c.keys, f);
-    const p = k.p ?? here?.p ?? now?.p ?? atIn(n, c?.space) ?? [0, 0, 0];
+    const p = k.p ?? here?.p ?? now?.p ?? (solved && atIn(n, c?.space, pose(solved.bones, f))) ?? [0, 0, 0];
     const swivel = k.swivel ?? here?.swivel ?? now?.swivel ?? 0;
     commit((l) => setIk(l, c ?? { bone: n, chain: Math.min(chainN, Math.max(above(n), 2)) }, { f, p: r5(p), swivel: Math.round(swivel * 100) / 100, w: here?.w ?? 1, falloff: here?.falloff ?? FALLOFF }));
     setBone(n);
