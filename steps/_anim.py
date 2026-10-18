@@ -128,6 +128,14 @@ def _fk(path, rot, pos, off, f):
     return Ws, ps
 
 
+def _between(u, v):
+    """The shortest turn taking unit u to unit v (opposite: a half turn about u x X, else u x Y)."""
+    d = u @ v
+    if 1 + d < 1e-8:
+        return _turn(_axis(np.cross(u, _EX), np.cross(u, _EY)), math.pi)
+    return _unit(np.append(np.cross(u, v), 1 + d))
+
+
 def _two_bone(pw, WU, WL, WB, a, b, c, P):
     """U, L and B's new local turns putting B at P, B keeping its world turn (§3.2 3b); None: nothing to solve."""
     l1, l2 = np.linalg.norm(b - a), np.linalg.norm(c - b)
@@ -141,11 +149,7 @@ def _two_bone(pw, WU, WL, WB, a, b, c, P):
     th = math.acos(np.clip(u @ v / (l1 * l2), -1, 1))
     th2 = math.acos(np.clip((l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2), -1, 1))
     K = _turn(k, th2 - th)
-    e, g = _unit(_qrot(K, v) + b - a), _unit(P - a)
-    if 1 + e @ g < 1e-8:  # opposite: a half turn about any perpendicular
-        H = _turn(_axis(np.cross(e, _EX), np.cross(e, _EY)), math.pi)
-    else:
-        H = _unit(np.append(np.cross(e, g), 1 + e @ g))
+    H = _between(_unit(_qrot(K, v) + b - a), _unit(P - a))
     nU, nL = qmul(H, WU), qmul(H, qmul(K, WL))
     return [_unit(qmul(_qinv(pw), nU)), _unit(qmul(_qinv(nU), nL)), _unit(qmul(_qinv(nL), WB))]
 
@@ -166,14 +170,6 @@ def _lock(rot, pos, off, par, lk, F):
         if r is not None:
             for n, q in zip(chain[-3:], r, strict=True):
                 rot[n][f] = q
-
-
-def _between(u, v):
-    """The shortest turn taking unit u to unit v (opposite: a half turn about u x X, else u x Y)."""
-    d = u @ v
-    if 1 + d < 1e-8:
-        return _turn(_axis(np.cross(u, _EX), np.cross(u, _EY)), math.pi)
-    return _unit(np.append(np.cross(u, v), 1 + d))
 
 
 def _chain(pw, W, p, P, swivel):

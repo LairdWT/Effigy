@@ -171,7 +171,7 @@ def _ik(clip, v, bones, F):
             if not isinstance(b, str) or b not in bones or _anim.ROT not in bones[b]:
                 _bad(clip, f"ik: {c['bone']!r} and the {n} bones above it must rotate")
             b = bones[b]["parent"]
-        if "space" in c and c["space"] not in bones:
+        if "space" in c and (not isinstance(c["space"], str) or c["space"] not in bones):
             _bad(clip, f"ik space: no bone {c['space']!r}")
         ks = c["keys"]
         if not isinstance(ks, list) or not ks:
@@ -200,6 +200,8 @@ def _ik(clip, v, bones, F):
             )
         if len({k["f"] for k in out}) != len(out):
             _bad(clip, f"two IK keys of {c['bone']!r} on one frame")
+        if any(r["bone"] == c["bone"] for r in res):
+            _bad(clip, f"two IK controls on {c['bone']!r}")
         res.append(
             {
                 "bone": c["bone"],

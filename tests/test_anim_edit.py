@@ -486,6 +486,7 @@ def test_ik_validation():
         {**ok, "chain": 1},
         {**ok, "chain": 2.0},
         {**ok, "space": "Nope"},
+        {**ok, "space": []},
         {**ok, "keys": []},
         {**ok, "keys": [key, key]},
         {**ok, "keys": [{**key, "f": 10}]},
@@ -500,8 +501,9 @@ def test_ik_validation():
         with pytest.raises(StepError) as e:
             anim_edit.validate("c", {"ik": [bad]}, base)
         assert e.value.code == "bad_params"
-    with pytest.raises(StepError):
-        anim_edit.validate("c", {"ik": [ok] * 65}, base)
+    for bad in ([ok] * 65, [ok, ok]):  # at most 64; one per bone
+        with pytest.raises(StepError):
+            anim_edit.validate("c", {"ik": bad}, base)
 
 
 def test_sample_clip_gives_the_still_bones_an_offset(tmp_path):
