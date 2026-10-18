@@ -115,6 +115,10 @@ to the base `anim` (edits never compound), baked into that clip; other clips sta
   (walk in place).
 - `smooth: {bone: sigma_frames}` Gaussian smoothing of a jittery bone.
 - `feet: [{"bone": "LeftFoot", "from": 4, "to": 11, "blend": 3}]` locks a foot to the ground over those frames.
+- `ik: [{"bone": "LeftHand", "chain": 2, "space": "Hips", "keys": [{"f": 10, "p": [x, y, z], "swivel": 0, "w": 1,
+  "falloff": 4}]}]` an IK control: the hand reaches `p` (metres, skeleton space, or in the `space` bone's frame so it
+  rides on that bone), the 2 bones above it bending; `swivel` degrees swings the elbow/knee, `w` 0–1 the weight;
+  `chain` 3+ (a spine, a tail) solves by FABRIK.
 
 Check with `look(asset, version, clip="Walk")` (four frames of the clip).
 
