@@ -11,6 +11,11 @@ export type Lock = { bone: string; from: number; to: number; blend: number }; //
 export type Clip = { fps: number; frames: number; bones: Track[] };
 export type Key = { f: number; q: Q; falloff: number };
 export type Offset = { f: number; v: V3; falloff: number };
+// M63: an IK control: `bone` reaches its keyed target, the `chain` bones above it turning; `p` in skeleton space, or in
+// the `space` bone's frame (the target then moves with that bone); `swivel` turns the knee/elbow about the chain's
+// root–tip line (degrees); `w` the weight (0: the clip as it is, 1: on the target)
+export type IkKey = { f: number; p: V3; swivel: number; w: number; falloff: number };
+export type Ik = { bone: string; chain: number; space?: string; keys: IkKey[] };
 export type Layer = {
   keys?: Record<string, Key[]>;
   offsets?: Record<string, Offset[]>;
@@ -21,6 +26,7 @@ export type Layer = {
   in_place?: boolean;
   smooth?: Record<string, number>;
   feet?: Lock[];
+  ik?: Ik[];
   from?: string; // M44: a copy of this base clip (the layer names no base clip of its own)
 };
 
@@ -170,6 +176,94 @@ export function twoBone(Wpar: Q, WU: Q, WL: Q, WB: Q, a: V3, b: V3, c: V3, P: V3
   const WL2 = mul(mul(H, K), WL);
   return [norm(mul(conj(Wpar), WU2)), norm(mul(conj(WU2), WL2)), norm(mul(conj(WL2), WB))];
 }
+/** M63: a chain's new local turns putting its last bone at P: W and p the world turns and positions of the chain's bones,
+ * its top first, the reaching bone last (which keeps its world turn), Wpar the top's parent's world turn. The chain first
+ * turns about its root–tip line by `swivel` degrees (the knee or elbow points elsewhere); two bones by the two-bone solve,
+ * more by FABRIK (16 rounds); null: nothing to solve. */
+export function ikChain(Wpar: Q, W: Q[], p: V3[], P: V3, swivel: number): Q[] | null {
+  const n = W.length - 1;
+  W = [...W];
+  p = [...p];
+  const ax = sub3(p[n], p[0]);
+  if (swivel !== 0 && len3(ax) > 1e-12) {
+    const R = about(unit3(ax), (swivel * Math.PI) / 180);
+    for (let i = 0; i < n; i++) {
+      W[i] = norm(mul(R, W[i]));
+      if (i > 0) p[i] = add3(p[0], turn(R, sub3(p[i], p[0])));
+    }
+  }
+  if (n === 2) return twoBone(Wpar, W[0], W[1], W[2], p[0], p[1], p[2], P);
+  const L = p.slice(0, n).map((x, i) => len3(sub3(p[i + 1], x)));
+  if (L.some((l) => l < 1e-12) || len3(sub3(P, p[0])) < 1e-12) return null;
+  const along = (from: V3, to: V3, l: number): V3 => {
+    const u = unit3(sub3(to, from));
+    return [from[0] + u[0] * l, from[1] + u[1] * l, from[2] + u[2] * l];
+  };
+  const q = p.map((x) => [...x] as V3); // ponytail: a fixed 16 rounds, an early stop if long chains get slow
+  for (let r = 0; r < 16; r++) {
+    q[n] = [...P];
+    for (let i = n - 1; i >= 0; i--) q[i] = along(q[i + 1], q[i], L[i]);
+    q[0] = [...p[0]];
+    for (let i = 1; i <= n; i++) q[i] = along(q[i - 1], q[i], L[i - 1]);
+  }
+  const out: Q[] = [];
+  let up = Wpar;
+  let cur = W[0]; // bone i's world turn under its parent's new one
+  for (let i = 0; i < n; i++) {
+    const t = turn(conj(W[i]), sub3(p[i + 1], p[i])); // the next joint in bone i's own frame
+    const Wn = norm(mul(between(unit3(turn(cur, t)), unit3(sub3(q[i + 1], q[i]))), cur));
+    out.push(norm(mul(conj(up), Wn)));
+    cur = mul(Wn, mul(conj(W[i]), W[i + 1]));
+    up = Wn;
+  }
+  out.push(norm(mul(conj(up), W[n])));
+  return out;
+}
+/** M63: an IK control's target at base frame f: between two keys its position, swivel and weight smoothstep-lerped;
+ * before the first and after the last the key's held, its weight fading out over its falloff; null: no IK at f. */
+export function ikAt(keys: IkKey[], f: number): { p: V3; swivel: number; w: number } | null {
+  const k = [...keys].sort((a, b) => a.f - b.f);
+  const fade = (key: IkKey, d: number) => {
+    const w = d === 0 ? key.w : key.falloff > 0 && d < key.falloff ? key.w * smoothstep(1 - d / key.falloff) : 0;
+    return w > 0 ? { p: key.p, swivel: key.swivel, w } : null;
+  };
+  if (f <= k[0].f) return fade(k[0], k[0].f - f);
+  const last = k[k.length - 1];
+  if (f >= last.f) return fade(last, f - last.f);
+  const i = k.findIndex((key, j) => key.f <= f && f <= k[j + 1].f);
+  const t = smoothstep((f - k[i].f) / (k[i + 1].f - k[i].f));
+  const w = k[i].w + (k[i + 1].w - k[i].w) * t;
+  return w > 0 ? { p: lerp(k[i].p, k[i + 1].p, t), swivel: k[i].swivel + (k[i + 1].swivel - k[i].swivel) * t, w } : null;
+}
+/** M63: a bone and the `n` bones above it, the top first. */
+export const chainOf = (bones: Track[], bone: string, n: number): string[] => {
+  const by = new Map(bones.map((b) => [b.name, b]));
+  const out = [bone];
+  while (out.length <= n) out.unshift(by.get(out[0])!.parent!);
+  return out;
+};
+/** Step 3c: one IK control on dense bones (in place). */
+function solveIk(bones: Track[], c: Ik, F: number) {
+  const by = new Map(bones.map((b) => [b.name, b]));
+  const chain = chainOf(bones, c.bone, c.chain);
+  const top = by.get(chain[0])!;
+  for (let f = 0; f < F; f++) {
+    const at = ikAt(c.keys, f);
+    if (!at) continue;
+    const ps = pose(bones, f);
+    const s = c.space ? ps.get(c.space) : undefined;
+    const T = s ? add3(s.p, turn(s.W, at.p)) : at.p;
+    const Wpar = top.parent && ps.has(top.parent) ? ps.get(top.parent)!.W : I;
+    const r = ikChain(
+      Wpar,
+      chain.map((n) => ps.get(n)!.W),
+      chain.map((n) => ps.get(n)!.p),
+      lerp(ps.get(c.bone)!.p, T, at.w),
+      at.swivel * at.w,
+    );
+    if (r) chain.forEach((n, i) => (by.get(n)!.rotation![f] = r[i]));
+  }
+}
 /** M38 Find foot contacts: each foot's still stretches (slower than 15 % of the body's height a second, at most half its
  * height range, 2 % of the body's height at least, above its lowest; 3 frames or more), a lock each with a blend of 3. */
 export function contacts(clip: Clip, feet: string[]): Lock[] {
@@ -239,6 +333,7 @@ export function evaluate(base: Clip, layer: Layer): Clip {
       });
   }
   for (const l of layer.feet ?? []) lock(bones, l, base.frames);
+  for (const c of layer.ik ?? []) solveIk(bones, c, base.frames);
   const [i0, i1] = layer.trim ?? [0, base.frames - 1];
   bones = bones.map((b) => ({ ...b, rotation: b.rotation?.slice(i0, i1 + 1), translation: b.translation?.slice(i0, i1 + 1) }));
   const G = i1 - i0 + 1;

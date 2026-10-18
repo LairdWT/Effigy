@@ -56,6 +56,7 @@ def validate(clip: str, layer, base: dict) -> dict:
         "in_place",
         "smooth",
         "feet",
+        "ik",
         "from",
     }:
         _bad(clip, f"unknown layer fields {sorted(unknown)}")
@@ -112,6 +113,7 @@ def validate(clip: str, layer, base: dict) -> dict:
             _bad(clip, f"trim must be [in, out] integers with 0 <= in < out <= {F - 1}")
         out["trim"], G = t, t[1] - t[0] + 1
     out["feet"] = _feet(clip, layer.get("feet", []), bones, F)
+    out["ik"] = _ik(clip, layer.get("ik", []), bones, F)
     out["speed"] = _num(clip, "speed", layer.get("speed", 1), 0.1, 10)
     if math.floor((G - 1) / out["speed"] + 0.5) + 1 < 2:
         _bad(clip, "trim and speed leave a single frame")
@@ -145,6 +147,67 @@ def _feet(clip, v, bones, F):
         if w["from"] > w["to"]:
             _bad(clip, "feet: from must not exceed to")
         res.append({"bone": lk["bone"], **w})
+    return res
+
+
+def _ik(clip, v, bones, F):
+    """M63 IK controls: {bone, chain, space?, keys: [{f, p, swivel?, w?, falloff?}]}, cleaned with the defaults."""
+    if not isinstance(v, list) or len(v) > 64:
+        _bad(clip, "ik must be a list of at most 64 controls")
+    res = []
+    for c in v:
+        if not isinstance(c, dict) or not {"bone", "chain", "keys"} <= set(c) <= {
+            "bone",
+            "chain",
+            "space",
+            "keys",
+        }:
+            _bad(clip, "an IK control is {bone, chain, space?, keys}")
+        n = c["chain"]
+        if isinstance(n, bool) or not isinstance(n, int) or not 2 <= n <= 8:
+            _bad(clip, "ik chain must be an integer in [2, 8]")
+        b = c["bone"]
+        for _ in range(n + 1):  # the bone and the chain above it
+            if not isinstance(b, str) or b not in bones or _anim.ROT not in bones[b]:
+                _bad(clip, f"ik: {c['bone']!r} and the {n} bones above it must rotate")
+            b = bones[b]["parent"]
+        if "space" in c and c["space"] not in bones:
+            _bad(clip, f"ik space: no bone {c['space']!r}")
+        ks = c["keys"]
+        if not isinstance(ks, list) or not ks:
+            _bad(clip, "ik keys: a list of at least one key")
+        out = []
+        for k in ks:
+            if not isinstance(k, dict) or not {"f", "p"} <= set(k) <= {
+                "f",
+                "p",
+                "swivel",
+                "w",
+                "falloff",
+            }:
+                _bad(clip, "an IK key is {f, p, swivel?, w?, falloff?}")
+            f = _num(clip, "ik f", k["f"], 0, F - 1)
+            if not f.is_integer():
+                _bad(clip, "ik f is a whole number")
+            out.append(
+                {
+                    "f": int(f),
+                    "p": _vec(clip, "ik p", k["p"], 3),
+                    "swivel": _num(clip, "ik swivel", k.get("swivel", 0), -180, 180),
+                    "w": _num(clip, "ik w", k.get("w", 1), 0, 1),
+                    "falloff": _num(clip, "ik falloff", k.get("falloff", 0), 0, F),
+                }
+            )
+        if len({k["f"] for k in out}) != len(out):
+            _bad(clip, f"two IK keys of {c['bone']!r} on one frame")
+        res.append(
+            {
+                "bone": c["bone"],
+                "chain": n,
+                **({"space": c["space"]} if "space" in c else {}),
+                "keys": out,
+            }
+        )
     return res
 
 

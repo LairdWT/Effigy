@@ -384,6 +384,126 @@ def test_foot_validation():
         anim_edit.validate("c", {"feet": [ok]}, chain)
 
 
+def _limb(F=20, seed=3):
+    """Root (moving) > A > B > C > D, each turning a little (a random walk about a bend), 0.3 m apart: for the IK."""
+    r = np.random.default_rng(seed)
+    root = np.tile([0, 1.0, 0], (F, 1)) + np.linspace(0, 0.2, F)[:, None] * [1, 0, 0]
+    bones = [{"name": "Root", "parent": None, "translation": root}]
+    for n, p in zip("ABCD", ["Root", *"ABC"], strict=True):
+        ang = np.cumsum(r.normal(0, 0.03, (F, 3)), 0) + [0, 0, 0.4]
+        q = np.concatenate([np.sin(ang / 2), np.cos(np.linalg.norm(ang, axis=1) / 2)[:, None]], 1)
+        bones.append(
+            {"name": n, "parent": p, "rotation": _anim._unit(q), "offset": np.array([0.3, 0, 0])}
+        )
+    return {"fps": FPS, "frames": F, "bones": bones}
+
+
+def _at(clip, f, name):
+    """A bone's world position and turn by plain FK."""
+    by, path = {b["name"]: b for b in clip["bones"]}, []
+    while name:
+        path.insert(0, name)
+        name = by[name]["parent"]
+    W, p = np.array([0, 0, 0, 1.0]), np.zeros(3)
+    for n in path:
+        b = by[n]
+        p = p + _anim._qrot(W, b["translation"][f] if "translation" in b else b["offset"])
+        W = _anim.qmul(W, b["rotation"][f]) if "rotation" in b else W
+    return p, W
+
+
+def _ctl(chain, keys, **kw):  # evaluate takes a cleaned layer: the keys' defaults filled in
+    keys = [{"swivel": 0, "w": 1, "falloff": 0, **k} for k in keys]
+    return {"ik": [{"bone": "D", "chain": chain, "keys": keys, **kw}]}
+
+
+def test_ik_two_and_three_bones_reach_the_target_and_keep_the_hand():
+    base = _limb()
+    for chain, tol in ((2, 1e-6), (3, 1e-4)):
+        T = _at(base, 5, "B")[0] + [0.2, 0.25, 0.1]  # within reach of both chains
+        res = _anim.evaluate(base, _ctl(chain, [{"f": 5, "p": T.tolist(), "w": 1, "falloff": 0}]))
+        np.testing.assert_allclose(_at(res, 5, "D")[0], T, atol=tol)
+        assert abs(_at(res, 5, "D")[1] @ _at(base, 5, "D")[1]) == pytest.approx(1, abs=1e-9)
+        for f in (4, 6):  # falloff 0: its own frame only
+            np.testing.assert_allclose(_at(res, f, "D")[0], _at(base, f, "D")[0], atol=1e-12)
+        same_a = np.allclose(_bone(res, "A")["rotation"][5], _bone(base, "A")["rotation"][5])
+        assert same_a == (chain == 2)  # two bones: C and B turn; three: A too
+
+
+def test_ik_weight_falloff_and_swivel():
+    base = _limb()
+    b, c = _at(base, 12, "B")[0], _at(base, 12, "D")[0]
+    T = b + 0.85 * (c - b) + [0, 0.05, 0]  # in reach on every frame it weighs on
+    res = _anim.evaluate(base, _ctl(2, [{"f": 10, "p": T.tolist(), "w": 1, "falloff": 4}]))
+    for f, w in ((10, 1.0), (12, 0.5), (14, 0.0)):  # held, its weight s(1 - d/falloff)
+        c = _at(base, f, "D")[0]
+        np.testing.assert_allclose(_at(res, f, "D")[0], c + (T - c) * w, atol=1e-6)
+    b, c = _at(base, 8, "B")[0], _at(base, 8, "D")[0]
+    T = b + 0.7 * (c - b)
+    res = _anim.evaluate(base, _ctl(2, [{"f": 8, "p": T.tolist(), "w": 0.5, "falloff": 0}]))
+    np.testing.assert_allclose(_at(res, 8, "D")[0], c + (T - c) * 0.5, atol=1e-6)
+    # swivel 90 on the bone's own spot: the hand stays, the elbow swings a quarter turn about shoulder-hand
+    c = _at(base, 8, "D")[0]
+    res = _anim.evaluate(base, _ctl(2, [{"f": 8, "p": c.tolist(), "swivel": 90, "w": 1}]))
+    np.testing.assert_allclose(_at(res, 8, "D")[0], c, atol=1e-6)
+    a, ax = _at(base, 8, "B")[0], _anim._unit(c - _at(base, 8, "B")[0])
+    elbow = [_at(x, 8, "C")[0] - a for x in (base, res)]
+    side = [v - (v @ ax) * ax for v in elbow]
+    cos = side[0] @ side[1] / np.linalg.norm(side[0]) / np.linalg.norm(side[1])
+    assert cos == pytest.approx(0, abs=1e-6) and np.cross(side[0], side[1]) @ ax > 0
+
+
+def test_ik_in_a_bone_space_follows_that_bone():
+    base = _limb()
+    p = [0.3, 0.35, 0.1]  # in Root's frame; Root walks 20 cm along X and does not turn
+    res = _anim.evaluate(
+        base, _ctl(2, [{"f": 0, "p": p, "w": 1}, {"f": 19, "p": p, "w": 1}], space="Root")
+    )
+    for f in (0, 10, 19):
+        np.testing.assert_allclose(_at(res, f, "D")[0], _at(base, f, "Root")[0] + p, atol=1e-6)
+
+
+def test_ik_validation():
+    base = _limb(10)
+    ok = {"bone": "D", "chain": 2, "keys": [{"f": 2, "p": [0, 1, 0]}]}
+    assert anim_edit.validate("c", {"ik": [ok]}, base)["ik"] == [
+        {
+            "bone": "D",
+            "chain": 2,
+            "keys": [{"f": 2, "p": [0, 1, 0], "swivel": 0, "w": 1, "falloff": 0}],
+        }
+    ]
+    assert (
+        anim_edit.validate("c", {"ik": [{**ok, "space": "Root", "chain": 3}]}, base)["ik"][0][
+            "space"
+        ]
+        == "Root"
+    )
+    key = ok["keys"][0]
+    for bad in (
+        {**ok, "bone": "Nope"},
+        {**ok, "chain": 4},  # Root does not turn
+        {**ok, "chain": 1},
+        {**ok, "chain": 2.0},
+        {**ok, "space": "Nope"},
+        {**ok, "keys": []},
+        {**ok, "keys": [key, key]},
+        {**ok, "keys": [{**key, "f": 10}]},
+        {**ok, "keys": [{**key, "f": 2.5}]},
+        {**ok, "keys": [{**key, "w": 1.5}]},
+        {**ok, "keys": [{**key, "swivel": 181}]},
+        {**ok, "keys": [{**key, "p": [0, 1]}]},
+        {**ok, "keys": [{**key, "extra": 1}]},
+        {**ok, "extra": 1},
+        {"bone": "D", "keys": ok["keys"]},
+    ):
+        with pytest.raises(StepError) as e:
+            anim_edit.validate("c", {"ik": [bad]}, base)
+        assert e.value.code == "bad_params"
+    with pytest.raises(StepError):
+        anim_edit.validate("c", {"ik": [ok] * 65}, base)
+
+
 def test_sample_clip_gives_the_still_bones_an_offset(tmp_path):
     _, v = _library(tmp_path)
     clip = _read_clip(v / "rigged_anim.glb", "A")
@@ -428,7 +548,32 @@ def _write_fixture():
         "loop": 5,
         "speed": 1.5,
         "feet": [{"bone": "Arm", "from": 8, "to": 16, "blend": 3}],
+        "ik": [  # M63: a FABRIK chain of three, then a two-bone one whose target rides on the hips
+            {
+                "bone": "Tip",
+                "chain": 3,
+                "keys": [
+                    {"f": 4, "p": [0.8, 2.5, 0.6], "swivel": 0, "w": 1, "falloff": 3},
+                    {"f": 12, "p": [0.7, 2.7, 0.7], "swivel": 30, "w": 0.6, "falloff": 4},
+                ],
+            },
+            {
+                "bone": "Hand",
+                "chain": 2,
+                "space": "Hips",
+                "keys": [{"f": 18, "p": [0.3, 0.6, 0.2], "swivel": -20, "w": 1, "falloff": 5}],
+            },
+        ],
     }
+    r = np.random.default_rng(
+        13
+    )  # M63: a hand and a fingertip below the arm, for the chain of three
+    for n, p, o in (("Hand", "Arm", [0.25, 0, 0]), ("Tip", "Hand", [0.15, 0, 0])):
+        ang = np.cumsum(r.normal(0, 0.05, (30, 3)), 0)
+        q = np.concatenate([np.sin(ang / 2), np.cos(np.linalg.norm(ang, axis=1) / 2)[:, None]], 1)
+        base["bones"].append(
+            {"name": n, "parent": p, "rotation": _anim._unit(q), "offset": np.array(o, float)}
+        )
     case = {"base": base, "layer": layer, "expected": _anim.evaluate(base, layer)}
     FIXTURE.parent.mkdir(parents=True, exist_ok=True)
     FIXTURE.write_text(

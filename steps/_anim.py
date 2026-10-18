@@ -104,57 +104,158 @@ def _axis(*cands):  # the first candidate that is not (nearly) zero, normalised;
     return None
 
 
+_EX, _EY, _ID = np.array([1.0, 0, 0]), np.array([0, 1.0, 0]), np.array([0, 0, 0, 1.0])
+
+
+def _path(par, n):
+    """The bones from the root down to n."""
+    out = []
+    while n is not None:
+        out.append(n)
+        n = par.get(n)
+    return out[::-1]
+
+
+def _fk(path, rot, pos, off, f):
+    """World turns and positions along a root-first path at frame f (skeleton space, M38)."""
+    W, p, Ws, ps = _ID, np.zeros(3), [], []
+    for n in path:
+        t = pos[n][f] if n in pos else off.get(n, np.zeros(3))
+        p = p + _qrot(W, t)
+        W = qmul(W, rot[n][f]) if n in rot else W
+        Ws.append(W)
+        ps.append(p)
+    return Ws, ps
+
+
+def _two_bone(pw, WU, WL, WB, a, b, c, P):
+    """U, L and B's new local turns putting B at P, B keeping its world turn (§3.2 3b); None: nothing to solve."""
+    l1, l2 = np.linalg.norm(b - a), np.linalg.norm(c - b)
+    if l1 * l2 < 1e-12 or np.linalg.norm(P - a) < 1e-12:
+        return None  # a zero-length bone or a target on the hip: nothing to solve
+    d = min(max(np.linalg.norm(P - a), abs(l1 - l2) + 1e-6), l1 + l2 - 1e-6)
+    u, v = a - b, c - b
+    k = _axis(np.cross(u, v), np.cross(u, _EX), np.cross(u, _EY))
+    if k is None:
+        return None  # the upper bone (nearly) zero long: no knee to turn
+    th = math.acos(np.clip(u @ v / (l1 * l2), -1, 1))
+    th2 = math.acos(np.clip((l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2), -1, 1))
+    K = _turn(k, th2 - th)
+    e, g = _unit(_qrot(K, v) + b - a), _unit(P - a)
+    if 1 + e @ g < 1e-8:  # opposite: a half turn about any perpendicular
+        H = _turn(_axis(np.cross(e, _EX), np.cross(e, _EY)), math.pi)
+    else:
+        H = _unit(np.append(np.cross(e, g), 1 + e @ g))
+    nU, nL = qmul(H, WU), qmul(H, qmul(K, WL))
+    return [_unit(qmul(_qinv(pw), nU)), _unit(qmul(_qinv(nU), nL)), _unit(qmul(_qinv(nL), WB))]
+
+
 def _lock(rot, pos, off, par, lk, F):
     """One foot lock (§3.2 step 3b): two-bone IK of U > L > B pinning B to its world position at the span's middle."""
-    chain, n = [], lk["bone"]
-    while n is not None:
-        chain.append(n)
-        n = par.get(n)
-    chain.reverse()  # root .. U, L, B
-    ex, ey = np.array([1.0, 0, 0]), np.array([0, 1.0, 0])
-
-    def fk(f):
-        W, p, Ws, ps = np.array([0, 0, 0, 1.0]), np.zeros(3), [], []
-        for n in chain:
-            t = pos[n][f] if n in pos else off.get(n, np.zeros(3))
-            p = p + _qrot(W, t)
-            W = qmul(W, rot[n][f]) if n in rot else W
-            Ws.append(W)
-            ps.append(p)
-        return Ws, ps
-
-    T = fk((lk["from"] + lk["to"]) // 2)[1][-1]
+    chain = _path(par, lk["bone"])  # root .. U, L, B
+    T = _fk(chain, rot, pos, off, (lk["from"] + lk["to"]) // 2)[1][-1]
     for f in range(max(0, lk["from"] - lk["blend"]), min(F - 1, lk["to"] + lk["blend"]) + 1):
         if f < lk["from"]:
             w = float(_s(1 - (lk["from"] - f) / lk["blend"]))
         else:
             w = 1.0 if f <= lk["to"] else float(_s(1 - (f - lk["to"]) / lk["blend"]))
-        Ws, ps = fk(f)
-        a, b, c = ps[-3], ps[-2], ps[-1]
-        P = c + (T - c) * w
-        l1, l2 = np.linalg.norm(b - a), np.linalg.norm(c - b)
-        if l1 * l2 < 1e-12 or np.linalg.norm(P - a) < 1e-12:
-            continue  # a zero-length bone or a target on the hip: nothing to solve
-        d = min(max(np.linalg.norm(P - a), abs(l1 - l2) + 1e-6), l1 + l2 - 1e-6)
-        u, v = a - b, c - b
-        k = _axis(np.cross(u, v), np.cross(u, ex), np.cross(u, ey))
-        if k is None:
-            continue  # the upper bone (nearly) zero long: no knee to turn
-        th = math.acos(np.clip(u @ v / (l1 * l2), -1, 1))
-        th2 = math.acos(np.clip((l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2), -1, 1))
-        K = _turn(k, th2 - th)
-        e, g = _unit(_qrot(K, v) + b - a), _unit(P - a)
-        if 1 + e @ g < 1e-8:  # opposite: a half turn about any perpendicular
-            H = _turn(_axis(np.cross(e, ex), np.cross(e, ey)), math.pi)
-        else:
-            H = _unit(np.append(np.cross(e, g), 1 + e @ g))
-        WU, WL, WB = Ws[-3], Ws[-2], Ws[-1]
-        nU, nL = qmul(H, WU), qmul(H, qmul(K, WL))
-        pw = Ws[-4] if len(Ws) > 3 else np.array([0, 0, 0, 1.0])
-        U, L, B = chain[-3:]
-        rot[U][f] = _unit(qmul(_qinv(pw), nU))
-        rot[L][f] = _unit(qmul(_qinv(nU), nL))
-        rot[B][f] = _unit(qmul(_qinv(nL), WB))
+        Ws, ps = _fk(chain, rot, pos, off, f)
+        c = ps[-1]
+        pw = Ws[-4] if len(Ws) > 3 else _ID
+        r = _two_bone(pw, *Ws[-3:], *ps[-3:], c + (T - c) * w)
+        if r is not None:
+            for n, q in zip(chain[-3:], r, strict=True):
+                rot[n][f] = q
+
+
+def _between(u, v):
+    """The shortest turn taking unit u to unit v (opposite: a half turn about u x X, else u x Y)."""
+    d = u @ v
+    if 1 + d < 1e-8:
+        return _turn(_axis(np.cross(u, _EX), np.cross(u, _EY)), math.pi)
+    return _unit(np.append(np.cross(u, v), 1 + d))
+
+
+def _chain(pw, W, p, P, swivel):
+    """M63: the chain's new local turns putting its last bone at P (ui/src/anim/clip.ts ikChain): first a turn about its
+    root-tip line by `swivel` degrees, then the two-bone solve for two bones, FABRIK (16 rounds) for more; None: nothing
+    to solve. W, p: world turns and positions, the top first; the last bone keeps its world turn."""
+    n = len(W) - 1
+    W, p = list(W), list(p)
+    ax = p[n] - p[0]
+    if swivel != 0 and np.linalg.norm(ax) > 1e-12:
+        R = _turn(_unit(ax), math.radians(swivel))
+        for i in range(n):
+            W[i] = _unit(qmul(R, W[i]))
+            if i > 0:
+                p[i] = p[0] + _qrot(R, p[i] - p[0])
+    if n == 2:
+        return _two_bone(pw, *W, *p, P)
+    L = [np.linalg.norm(p[i + 1] - p[i]) for i in range(n)]
+    if min(L) < 1e-12 or np.linalg.norm(P - p[0]) < 1e-12:
+        return None
+    q = [x.copy() for x in p]
+    for _ in range(16):
+        q[n] = np.asarray(P, float).copy()
+        for i in range(n - 1, -1, -1):
+            q[i] = q[i + 1] + _unit(q[i] - q[i + 1]) * L[i]
+        q[0] = p[0].copy()
+        for i in range(1, n + 1):
+            q[i] = q[i - 1] + _unit(q[i] - q[i - 1]) * L[i - 1]
+    out, up, cur = [], pw, W[0]
+    for i in range(n):
+        t = _qrot(_qinv(W[i]), p[i + 1] - p[i])  # the next joint in bone i's own frame
+        Wn = _unit(qmul(_between(_unit(_qrot(cur, t)), _unit(q[i + 1] - q[i])), cur))
+        out.append(_unit(qmul(_qinv(up), Wn)))
+        cur, up = qmul(Wn, qmul(_qinv(W[i]), W[i + 1])), Wn
+    out.append(_unit(qmul(_qinv(up), W[n])))
+    return out
+
+
+def _ik_at(keys, x):
+    """An IK control's (p, swivel, w) at base frame x (§3.2 step 3c); None: no IK there."""
+    ks = sorted(keys, key=lambda k: k["f"])
+
+    def fade(k, d):
+        w = (
+            k["w"]
+            if d == 0
+            else k["w"] * float(_s(1 - d / k["falloff"]))
+            if d < k["falloff"]
+            else 0.0
+        )
+        return (np.asarray(k["p"], float), k["swivel"], w) if w > 0 else None
+
+    if x <= ks[0]["f"]:
+        return fade(ks[0], ks[0]["f"] - x)
+    if x >= ks[-1]["f"]:
+        return fade(ks[-1], x - ks[-1]["f"])
+    a, b = next((a, b) for a, b in itertools.pairwise(ks) if a["f"] <= x <= b["f"])
+    t = float(_s((x - a["f"]) / (b["f"] - a["f"])))
+    w = a["w"] + (b["w"] - a["w"]) * t
+    if w <= 0:
+        return None
+    p = np.asarray(a["p"], float) + (np.asarray(b["p"], float) - a["p"]) * t
+    return p, a["swivel"] + (b["swivel"] - a["swivel"]) * t, w
+
+
+def _ik(rot, pos, off, par, ctl, F):
+    """One IK control (§3.2 step 3c): its bone reaches the keyed target, the `chain` bones above it turning."""
+    path, n = _path(par, ctl["bone"]), ctl["chain"]
+    space = _path(par, ctl["space"]) if ctl.get("space") else None
+    for f in range(F):
+        if (at := _ik_at(ctl["keys"], f)) is None:
+            continue
+        p, swivel, w = at
+        Ws, ps = _fk(path, rot, pos, off, f)
+        if space:
+            Wsp, psp = _fk(space, rot, pos, off, f)
+            p = psp[-1] + _qrot(Wsp[-1], p)
+        pw = Ws[-n - 2] if len(Ws) > n + 1 else _ID
+        r = _chain(pw, Ws[-n - 1 :], ps[-n - 1 :], ps[-1] + (p - ps[-1]) * w, swivel * w)
+        if r is not None:
+            for name, q in zip(path[-n - 1 :], r, strict=True):
+                rot[name][f] = q
 
 
 # --- evaluate ---------------------------------------------------------------------------------------------
@@ -192,7 +293,7 @@ def _apply_keys(arr, keys, ident, mix):
 
 def evaluate(base: dict, layer: dict) -> dict:
     """`base` clip + correction `layer` -> the edited clip (same shape, "frames" = new length).
-    Order: 1 dense base (given) · 2 smooth · 3 keys, offsets, 3b feet · 4 trim · 5 in_place · 6 ground · 7 loop · 8 speed."""
+    Order: 1 dense base (given) · 2 smooth · 3 keys, offsets, 3b feet, 3c ik · 4 trim · 5 in_place · 6 ground · 7 loop · 8 speed."""
     fps = base["fps"]
     names = [b["name"] for b in base["bones"]]
     par = {b["name"]: b.get("parent") for b in base["bones"]}
@@ -223,6 +324,8 @@ def evaluate(base: dict, layer: dict) -> dict:
             pos[n] = pos[n] + _apply_keys(pos[n], ks, np.zeros(3), _lerp)
     for lk in layer.get("feet") or []:  # 3b
         _lock(rot, pos, off, par, lk, base["frames"])
+    for ctl in layer.get("ik") or []:  # 3c
+        _ik(rot, pos, off, par, ctl, base["frames"])
     if layer.get("trim"):  # 4
         a, b = layer["trim"]
         rot, pos = ({n: v[a : b + 1] for n, v in d.items()} for d in (rot, pos))
