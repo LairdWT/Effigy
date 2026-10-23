@@ -43,7 +43,7 @@ def write(**values) -> None:
         _cache = data
 
 
-PORT = 8000  # the default; Unreal's MCP plugin uses it too, hence the choice in Setup
+PORT = 8370
 
 
 def port() -> int:

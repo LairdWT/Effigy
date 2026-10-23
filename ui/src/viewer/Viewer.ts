@@ -171,6 +171,8 @@ export class Viewer {
   private clips: THREE.AnimationClip[] = [];
   private originals = new WeakMap<THREE.Mesh, THREE.Material | THREE.Material[]>();
   private checker = checkerTexture();
+  private atlasOverlay: THREE.Texture | null = null;
+  private atlasOverlayRequest = 0;
   private mode: ViewMode = "pbr";
   private tint: string[] | null = null; // part names: each such node gets its own flat colour
   private wireframe = false;
@@ -187,7 +189,11 @@ export class Viewer {
     const d = this.downAt;
     this.downAt = null;
     const click = d && Math.hypot(e.clientX - d[0], e.clientY - d[1]) < 5; // a click, not an orbit
-    if ((this.onMarker || this.edit) && click) this.pick(e);
+    if (this.paintFaceCallback && click) {
+      const face = this.paintFaceAt(e);
+      if (face !== null) this.paintFaceCallback(face);
+    }
+    else if ((this.onMarker || this.edit) && click) this.pick(e);
     else if (this.pose && click && !this.poseTc?.axis) this.pickBone(e);
   };
   // the skeleton overlay (M19): bones, joints, and the markers the user places
@@ -196,6 +202,74 @@ export class Viewer {
   private selected: string | null = null;
   private onMarker: ((name: string, p: Vec3 | null) => void) | null = null;
   private raycaster = new THREE.Raycaster();
+  private paintFaceCallback: ((id: number) => void) | null = null;
+  private paintFaceIds: readonly number[] = [];
+  private paintOverlay: THREE.Mesh | null = null;
+  private paintHover: number | null = null;
+  private onPaintHover = (event: PointerEvent) => {
+    if (!this.paintFaceCallback) return;
+    const face = this.paintFaceAt(event);
+    if (face === this.paintHover) return;
+    this.paintHover = face; this.drawPaintFaces();
+  };
+
+  setPaintFaces(ids: readonly number[], callback: ((id: number) => void) | null): string | null {
+    this.paintFaceCallback = callback; this.paintFaceIds = ids; this.paintHover = null;
+    this.drawPaintFaces();
+    if (callback && (this.edit || this.pose || this.onMarker)) {
+      this.paintFaceCallback = null;
+      return "Close rig or pose editing before selecting paint triangles.";
+    }
+    return null;
+  }
+
+  private paintMesh(): THREE.Mesh | null {
+    const meshes: THREE.Mesh[] = [];
+    this.model?.traverse((object) => { if ((object as THREE.Mesh).isMesh) meshes.push(object as THREE.Mesh); });
+    return meshes.length === 1 && !(meshes[0] as THREE.SkinnedMesh).isSkinnedMesh ? meshes[0] : null;
+  }
+
+  private paintFaceAt(event: PointerEvent): number | null {
+    const mesh = this.paintMesh();
+    if (!mesh) return null;
+    const bounds = this.canvas.getBoundingClientRect();
+    this.raycaster.setFromCamera(new THREE.Vector2((event.clientX - bounds.left) / bounds.width * 2 - 1,
+      1 - (event.clientY - bounds.top) / bounds.height * 2), this.camera);
+    const hit = this.raycaster.intersectObject(mesh, false)[0];
+    if (!hit || hit.faceIndex === undefined || hit.faceIndex === null) return null;
+    if (hit.face && hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld)).dot(this.raycaster.ray.direction) >= 0) return null;
+    return hit.faceIndex;
+  }
+
+  private drawPaintFaces(): void {
+    if (this.paintOverlay) {
+      this.scene.remove(this.paintOverlay); this.paintOverlay.geometry.dispose();
+      (this.paintOverlay.material as THREE.Material).dispose(); this.paintOverlay = null;
+    }
+    const mesh = this.paintMesh();
+    if (!mesh || !this.paintFaceCallback) { this.dirty = true; return; }
+    const geometry = mesh.geometry;
+    const vertices: number[] = []; const colors: number[] = [];
+    const position = geometry.getAttribute("position");
+    for (const face of new Set([...this.paintFaceIds, ...(this.paintHover === null ? [] : [this.paintHover])])) {
+      if (face < 0 || face * 3 + 2 >= (geometry.index?.count ?? position.count)) continue;
+      const color = new THREE.Color(face === this.paintHover ? 0xffbd40 : 0x49de9b);
+      for (let corner = 0; corner < 3; corner++) {
+        const index = geometry.index ? geometry.index.getX(face * 3 + corner) : face * 3 + corner;
+        vertices.push(position.getX(index), position.getY(index), position.getZ(index));
+        colors.push(color.r, color.g, color.b);
+      }
+    }
+    const overlay = new THREE.BufferGeometry();
+    overlay.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+    overlay.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    this.paintOverlay = new THREE.Mesh(overlay, new THREE.MeshBasicMaterial({
+      vertexColors: true, transparent: true, opacity: 0.55, depthWrite: false,
+      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+    }));
+    mesh.updateWorldMatrix(true, false); this.paintOverlay.matrix.copy(mesh.matrixWorld);
+    this.paintOverlay.matrixAutoUpdate = false; this.scene.add(this.paintOverlay); this.dirty = true;
+  }
   private edit: SkeletonEdit | null = null;
   private joints: Joint[] = [];
   private tc: TransformControls | null = null; // the gizmo, made on first use; it moves `proxy`, set in the selected bone's frame
@@ -251,12 +325,13 @@ export class Viewer {
     this.helper = new ViewHelper(this.camera, canvas);
     canvas.addEventListener("pointerdown", this.onPointerDown);
     canvas.addEventListener("pointerup", this.onPointerUp);
+    canvas.addEventListener("pointermove", this.onPaintHover);
     this.resizer.observe(canvas);
     this.renderer.setAnimationLoop(() => this.render());
   }
 
   /** null when a later load() or clear() superseded this one. */
-  async load(url: string): Promise<Stats | null> {
+  async load(url: string, preserveCamera = false): Promise<Stats | null> {
     const token = ++this.token;
     this.loaded = false;
     let gltf;
@@ -270,6 +345,7 @@ export class Viewer {
       this.free(gltf.scene);
       return null;
     }
+    const camera = preserveCamera ? this.cameraState() : null;
     this.drop();
     this.model = gltf.scene;
     this.clips = gltf.animations ?? [];
@@ -296,6 +372,7 @@ export class Viewer {
     this.stats.materials = mats.size;
     this.stats.height = new THREE.Box3().setFromObject(this.model).getSize(new THREE.Vector3()).y;
     this.frameModel();
+    if (camera) this.restoreCamera(camera);
     this.setViewMode(this.mode);
     this.playing = false;
     this.stats.clips = this.clips.map((c) => c.name);
@@ -340,6 +417,8 @@ export class Viewer {
     this.resizer.disconnect();
     this.canvas.removeEventListener("pointerdown", this.onPointerDown);
     this.canvas.removeEventListener("pointerup", this.onPointerUp);
+    this.canvas.removeEventListener("pointermove", this.onPaintHover);
+    this.setPaintFaces([], null);
     this.setRig(null, null);
     this.poseTc?.dispose();
     this.tc?.dispose(); // the skeleton gizmo, made on first use (UI-007: it kept its pointer listeners)
@@ -357,7 +436,7 @@ export class Viewer {
     const t = this.controls.target;
     const d = this.camera.position.clone().sub(t);
     const dist = d.length() || 1;
-    const deg = (r: number) => Math.round((r * 180) / Math.PI);
+    const deg = (r: number) => Math.round((r * 180) / Math.PI * 1e5) / 1e5;
     const height = 2 * dist * Math.tan((this.camera.fov * Math.PI) / 360); // what the view shows at the target
     return {
       yaw: deg(Math.atan2(d.x, d.z)),
@@ -365,6 +444,44 @@ export class Viewer {
       center: [t.x, t.y, t.z].map((x) => Math.round(x * 1e4) / 1e4) as [number, number, number],
       extent: Math.round(Math.min(height, height * this.camera.aspect) * 1e4) / 1e4,
     };
+  }
+
+  cameraState(): { position: Vec3; target: Vec3; up: Vec3 } {
+    return {
+      position: this.camera.position.toArray() as Vec3,
+      target: this.controls.target.toArray() as Vec3,
+      up: this.camera.up.toArray() as Vec3,
+    };
+  }
+
+  restoreCamera(state: { position: Vec3; target: Vec3; up: Vec3 }): void {
+    const damping = this.controls.enableDamping;
+    this.controls.enableDamping = false;
+    this.controls.update();
+    this.helper.animating = false;
+    this.camera.position.fromArray(state.position);
+    this.camera.up.fromArray(state.up);
+    this.controls.target.fromArray(state.target);
+    this.helper.center.copy(this.controls.target);
+    this.controls.update();
+    this.controls.enableDamping = damping;
+    this.dirty = true;
+  }
+
+  restoreCapturedView(view: { yaw: number; pitch: number; center: Vec3; extent: number }): void {
+    const yaw = view.yaw * Math.PI / 180;
+    const pitch = -view.pitch * Math.PI / 180;
+    const distance = view.extent / (2 * Math.tan(this.camera.fov * Math.PI / 360) * Math.min(1, this.camera.aspect));
+    const target = new THREE.Vector3(...view.center);
+    const position = target.clone().add(new THREE.Vector3(
+      Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch),
+    ).multiplyScalar(distance));
+    this.restoreCamera({ position: position.toArray() as Vec3, target: view.center, up: [0, 1, 0] });
+  }
+
+  onCameraChange(listener: () => void): () => void {
+    this.controls.addEventListener("change", listener);
+    return () => this.controls.removeEventListener("change", listener);
   }
 
   /** Frame the whole model, or look at it from the front (+Z), the side (+X) or the top (+Y). */
@@ -683,6 +800,9 @@ export class Viewer {
   }
 
   private drop() {
+    this.atlasOverlayRequest++;
+    this.atlasOverlay?.dispose();
+    this.atlasOverlay = null;
     this.setPoseEdit(null);
     this.setMotionPath(null);
     this.setOnion(null);
@@ -727,6 +847,22 @@ export class Viewer {
     skeletons.forEach((s) => s.dispose());
   }
 
+  async setAtlasOverlay(url: string | null): Promise<void> {
+    const request = ++this.atlasOverlayRequest;
+    this.atlasOverlay?.dispose();
+    this.atlasOverlay = null;
+    this.setViewMode(this.mode);
+    if (url === null) return;
+    if (!this.model) throw new Error("Load the combined preview mesh before showing an atlas overlay");
+    const texture = await new THREE.TextureLoader().loadAsync(url);
+    if (request !== this.atlasOverlayRequest || !this.model) { texture.dispose(); return; }
+    texture.flipY = false;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.minFilter = texture.magFilter = THREE.NearestFilter;
+    this.atlasOverlay = texture;
+    this.setViewMode(this.mode);
+  }
+
   setViewMode(mode: ViewMode) {
     this.mode = mode;
     this.dirty = true;
@@ -741,7 +877,9 @@ export class Viewer {
       const named = (o?: THREE.Object3D | null) => (o?.userData?.name as string | undefined) ?? o?.name;
       const part = this.tint ? this.tint.findIndex((n) => n === named(mesh) || n === named(mesh.parent)) : -1;
       mesh.material =
-        part >= 0
+        this.atlasOverlay
+          ? new THREE.MeshBasicMaterial({ map: this.atlasOverlay, side: src.side })
+          : part >= 0
           ? new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL((part * 0.381966) % 1, 0.7, 0.55), roughness: 0.8 })
           : mode === "pbr"
             ? orig

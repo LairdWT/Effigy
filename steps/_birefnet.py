@@ -16,7 +16,7 @@ def load(device: str | None = None):
 
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     model = AutoModelForImageSegmentation.from_pretrained(
-        MODEL, revision=REVISION, trust_remote_code=True
+        MODEL, revision=REVISION, trust_remote_code=True, local_files_only=True
     )
     # fp16 on the GPU (half the VRAM); fp32 on the CPU, where fp16 convs are slow or missing
     return model.to(device, torch.float16 if device == "cuda" else torch.float32).eval()

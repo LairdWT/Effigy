@@ -79,7 +79,9 @@ def _pipeline():
         from diffusers import ZImagePipeline
 
         progress(0.02, "loading Z-Image-Turbo")
-        pipe = ZImagePipeline.from_pretrained(MODEL, revision=REVISION, torch_dtype=torch.bfloat16)
+        pipe = ZImagePipeline.from_pretrained(
+            MODEL, revision=REVISION, torch_dtype=torch.bfloat16, local_files_only=True
+        )
         # bf16 DiT is ~12 GB: with the desktop's VRAM Windows pages it to shared memory (~3 s/step)
         pipe.transformer.enable_layerwise_casting(
             storage_dtype=torch.float8_e4m3fn, compute_dtype=torch.bfloat16

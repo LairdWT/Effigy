@@ -108,10 +108,10 @@ export function Compare(props: { asset: string; versions: Meta[]; shown: Meta; o
         {sides.map((s, i) => (
           <div key={i} className="compare-side">
             <div className="compare-name">
-              {label(s.m)} · {s.m.version.slice(0, 3)}
+              {s.m.label ?? label(s.m)} · {s.m.version.slice(0, 3)}
             </div>
             <div className="preview">
-              <canvas ref={canvases[i]} hidden={!s.glb} aria-label={`3D preview of ${label(s.m)}`} />
+              <canvas ref={canvases[i]} hidden={!s.glb} aria-label={`3D preview of ${s.m.label ?? label(s.m)}`} />
               {s.img && <img className="overlay checker" src={s.img} alt="" />}
               {!s.glb && !s.img && <div className="hint">Nothing to show.</div>}
             </div>

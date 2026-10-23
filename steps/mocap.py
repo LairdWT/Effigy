@@ -24,7 +24,7 @@ from pathlib import Path
 import numpy as np
 
 from steps._blender import BlenderError, run_blender
-from steps._common import StepError, main, progress
+from steps._common import StepError, asset_directory, main, progress
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = ROOT / "engine" / "gemx"
@@ -202,12 +202,12 @@ def track(dets: list[np.ndarray], person: int) -> np.ndarray:
 
 
 def _engine():
-    """GEM-X importable, its relative inputs/ paths resolving in models/GEM-X, every cache there."""
+    """GEM-X inputs resolve in its owned model folder; generated caches stay local."""
     os.chdir(GX)
     os.environ["HF_HUB_OFFLINE"] = "1"  # every file is checked first: never a download mid-job
-    os.environ["TORCH_HOME"] = str(GX / "torch")
-    os.environ.setdefault("WARP_CACHE_PATH", str(GX / "warp"))
-    hub = GX / "torch" / "hub"
+    os.environ.setdefault("TORCH_HOME", str(ROOT / "cache" / "torch"))
+    os.environ.setdefault("WARP_CACHE_PATH", str(ROOT / "cache" / "warp"))
+    hub = Path(os.environ["TORCH_HOME"]) / "hub"
     repo_dir = hub / "facebookresearch_dinov3_main"  # our pinned commit, unpacked once
     if not (repo_dir / "hubconf.py").is_file():
         import zipfile
@@ -600,7 +600,7 @@ def run(op, in_dir, out_dir, params):
     )
     upload = (meta.get("params") or {}).get("name") or video.name  # the user's file name
     name = p["name"] or Path(upload).stem[:48] or "video motion"
-    if name in taken_names(out.parent):
+    if name in taken_names(asset_directory(out)):
         name = f"{name} {out.name[:3]}"
     t0 = time.time()
     work = out / "_work"
@@ -659,23 +659,33 @@ def run(op, in_dir, out_dir, params):
 
 def preview(video: Path, kp2d: np.ndarray, boxes: np.ndarray, dst: Path) -> None:
     """The clip with the person's box and its 2D keypoints (confidence > 0.5), for the Animate panel."""
+    import av
     import cv2
 
     cap = cv2.VideoCapture(str(video))
+    if not cap.isOpened():
+        raise StepError("failed", "Could not open the local video for its motion preview")
     w, h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    writer = cv2.VideoWriter(str(dst), cv2.VideoWriter_fourcc(*"mp4v"), FPS, (w, h))
-    for t in range(len(kp2d)):
-        ok, frame = cap.read()
-        if not ok:
-            break
-        x0, y0, x1, y1 = boxes[t].astype(int)
-        cv2.rectangle(frame, (x0, y0), (x1, y1), (0, 200, 255), 2)
-        for x, y, c in kp2d[t]:
-            if c > 0.5:
-                cv2.circle(frame, (int(x), int(y)), 3, (60, 220, 60), -1)
-        writer.write(frame)
-    cap.release()
-    writer.release()
+    try:
+        with av.open(str(dst), mode="w", options={"movflags": "+faststart"}) as output:
+            stream = output.add_stream("libx264", rate=FPS)
+            stream.width, stream.height, stream.pix_fmt = w, h, "yuv420p"
+            stream.options = {"crf": "20", "preset": "fast"}
+            for t in range(len(kp2d)):
+                ok, frame = cap.read()
+                if not ok:
+                    raise StepError("failed", "Local preview video ended before its keypoint frames")
+                x0, y0, x1, y1 = boxes[t].astype(int)
+                cv2.rectangle(frame, (x0, y0), (x1, y1), (0, 200, 255), 2)
+                for x, y, c in kp2d[t]:
+                    if c > 0.5:
+                        cv2.circle(frame, (int(x), int(y)), 3, (60, 220, 60), -1)
+                for packet in stream.encode(av.VideoFrame.from_ndarray(frame, format="bgr24")):
+                    output.mux(packet)
+            for packet in stream.encode():
+                output.mux(packet)
+    finally:
+        cap.release()
 
 
 if __name__ == "__main__":

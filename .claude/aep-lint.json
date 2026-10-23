@@ -1,0 +1,9 @@
+{
+  "js": "node ui/node_modules/typescript/bin/tsc --noEmit -p ui/tsconfig.json",
+  "jsx": "node ui/node_modules/typescript/bin/tsc --noEmit -p ui/tsconfig.json",
+  "ps1": "pwsh -c Invoke-ScriptAnalyzer -Path <file>",
+  "py": ".venv/Scripts/ruff.exe check <file>",
+  "sh": "shellcheck <file>",
+  "ts": "node ui/node_modules/typescript/bin/tsc --noEmit -p ui/tsconfig.json",
+  "tsx": "node ui/node_modules/typescript/bin/tsc --noEmit -p ui/tsconfig.json"
+}

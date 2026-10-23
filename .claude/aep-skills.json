@@ -1,0 +1,78 @@
+{
+  "js": {
+    "bundle": "web",
+    "reason": "curated web skills for this file type; audit changed code with typescript-audit",
+    "skills": [
+      "typescript-core",
+      "typescript-audit",
+      "react-ts",
+      "typescript-narrowing",
+      "typescript-tsconfig-and-strictness"
+    ]
+  },
+  "jsx": {
+    "bundle": "web",
+    "reason": "curated web skills for this file type; audit changed code with typescript-audit",
+    "skills": [
+      "typescript-core",
+      "typescript-audit",
+      "react-ts",
+      "typescript-narrowing",
+      "typescript-tsconfig-and-strictness"
+    ]
+  },
+  "ps1": {
+    "bundle": "powershell",
+    "reason": "curated powershell skills for this file type; audit changed code with powershell-audit",
+    "skills": [
+      "powershell-core",
+      "powershell-audit",
+      "powershell-error-handling",
+      "powershell-strings-and-quoting"
+    ]
+  },
+  "py": {
+    "bundle": "python",
+    "reason": "curated python skills for this file type; audit changed code with python-audit",
+    "skills": [
+      "python-core",
+      "python-audit",
+      "python-exceptions-and-errors",
+      "python-static-typing-mypy-pyright",
+      "python-ruff-lint-and-format"
+    ]
+  },
+  "sh": {
+    "bundle": "shell",
+    "reason": "curated shell skills for this file type; audit changed code with shell-audit",
+    "skills": [
+      "shell-core",
+      "shell-audit",
+      "shell-error-handling",
+      "shell-quoting-and-expansion",
+      "shell-shellcheck"
+    ]
+  },
+  "ts": {
+    "bundle": "web",
+    "reason": "curated web skills for this file type; audit changed code with typescript-audit",
+    "skills": [
+      "typescript-core",
+      "typescript-audit",
+      "react-ts",
+      "typescript-narrowing",
+      "typescript-tsconfig-and-strictness"
+    ]
+  },
+  "tsx": {
+    "bundle": "web",
+    "reason": "curated web skills for this file type; audit changed code with typescript-audit",
+    "skills": [
+      "typescript-core",
+      "typescript-audit",
+      "react-ts",
+      "typescript-narrowing",
+      "typescript-tsconfig-and-strictness"
+    ]
+  }
+}

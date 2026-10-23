@@ -9,6 +9,9 @@ import { EditorCanvas, EditorPanel, usePixelEditor } from "./pixel/Editor";
 import { PixelView, is2D, isSheet } from "./pixel/View";
 import { DrawForm } from "./pixel/Panels";
 import { Compare } from "./Compare";
+import { ReferenceAvailability, ReferenceModelSelect, ReferenceWorkflowForm } from "./ReferenceModels";
+import { SurfacePaint } from "./SurfacePaint";
+import { MultiViewPaint } from "./MultiViewPaint";
 import { ANIM_TYPES, ImportInfo, ImportPage, OriginalFile } from "./Import";
 import { Transport, useTransportKeys } from "./anim/Transport";
 import { onEvent } from "./events";
@@ -560,7 +563,7 @@ function App() {
           />
         )}
         {route.page === "setup" && <Setup models={models} reload={loadModels} jobs={jobs} track={track} guard={guard} cap={route.cap} />}
-        {route.page === "welcome" && <Welcome models={models} reload={loadModels} jobs={jobs} track={track} guard={guard} />}
+        {route.page === "welcome" && <Setup models={models} reload={loadModels} jobs={jobs} track={track} guard={guard} />}
         {route.page === "asset" && (
           <Workspace
             asset={assets?.find((a) => a.id === sel.asset)}
@@ -730,8 +733,7 @@ function Library(props: {
       {props.fresh && (
         <div className="note get-started">
           <span>
-            <strong>Welcome.</strong> Nothing is installed yet: the guided setup checks your computer, asks where the models go and what you want to make, and
-            installs it.
+            <strong>Welcome.</strong> Run provision.bat for public downloads, then return here for offline use.
           </span>
           <a className="button primary" href="#/welcome">
             Get started
@@ -1153,6 +1155,7 @@ function NewAsset(props: {
   const [name, setName] = useState("");
   const [prompt, setPrompt] = useState("");
   const [category, setCategory] = useState("prop");
+  const [referenceModel, setReferenceModel] = useState("z-image");
   const [file, setFile] = useState<File | null>(null);
   const [sheet, setSheet] = useState(-1); // -1: one view; else the SHEETS row
   const [info, setInfo] = useState<{
@@ -1205,7 +1208,7 @@ function NewAsset(props: {
           props.onCreated(id);
           ok = !!(await props.chain(id, null, [
             ["brief", { prompt, category }],
-            ["concepts", {}],
+            referenceModel === "z-image" ? ["concepts", {}] : ["reference", { model: referenceModel, op: "image", count: 1 }],
           ]));
         } else {
           const up = await api.upload(id, file!);
@@ -1322,9 +1325,12 @@ function NewAsset(props: {
             {dim === "2d" ? (
               <PictureForm kind={kind2} onKind={setKind2} missing={props.missing} ready={!!prompt.trim()} busy={busy} onRun={pictures} />
             ) : (
-              <Category name="new-category" value={category} onChange={setCategory} />
+              <>
+                <Category name="new-category" value={category} onChange={setCategory} />
+                <ReferenceModelSelect value={referenceModel} onChange={setReferenceModel} mode="generate" scope="with-baseline" />
+              </>
             )}
-            {dim === "2d" ? null : props.missing("concepts") ? (
+            {dim === "2d" ? null : referenceModel === "z-image" && props.missing("concepts") ? (
               <>
                 <p className="note warn">Concept-image files weren't found. Your description stays here while you set them up.</p>
                 <a className="button primary" href={setupAt("concepts")}>
@@ -1333,7 +1339,7 @@ function NewAsset(props: {
               </>
             ) : (
               <button className="primary" disabled={busy || !prompt.trim()} onClick={submit}>
-                {busy ? "Starting…" : "Generate 4 concepts"}
+                {busy ? "Starting…" : referenceModel === "z-image" ? "Generate 4 concepts" : "Generate mesh reference"}
               </button>
             )}
           </>
@@ -1539,6 +1545,8 @@ function Workspace(props: {
   const newest = (ok: (x: Meta) => boolean) => versions.filter((x) => ok(x) && onBranch(x)).at(-1);
   const target = (i: number) => newest((x) => taskOf(versions, x, kind) === i);
   const src = source(versions, v);
+  const paintCapture = src?.step === "paint" && src.params.op === "capture" ? src
+    : versions.find((item) => item.version === v.metrics.capture && item.step === "paint" && item.params.op === "capture");
   const glb = src && hasGlb(src) ? fileUrl(id, src.version, mainFile(src)!) : null;
   // the optional tools the shown checkpoint offers (the same rules as Actions' sections)
   const face = (v.step === "bake" || v.step === "project") && generated(versions, v);
@@ -1609,11 +1617,26 @@ function Workspace(props: {
   };
   // History: milestones stay as rows; clean, simplify and unwrap runs fold into one "N steps" row (opened by hand, or when one is the current version)
   const shown = starredOnly ? versions.filter((x) => x.starred) : versions;
-  const rows: { x?: Meta; fold?: Meta[]; open?: boolean }[] = [];
+  const rows: { x?: Meta; fold?: Meta[]; open?: boolean; session?: string; title?: string }[] = [];
   for (const x of shown) {
+    const multiSession = x.params.session_id;
+    if (!starredOnly && typeof multiSession === "string" && ["paint_set", "paint_group", "paint_generate"].includes(x.step)) {
+      const group = rows.find((row) => row.session === multiSession);
+      if (group?.fold) group.fold.push(x);
+      else rows.push({ fold: [x], session: multiSession, title: `Multi-view paint ${multiSession.slice(0, 6)} from ${String(x.params.source)}` });
+      continue;
+    }
+    const capture = x.step === "paint" && x.params.op === "capture" ? x
+      : ["reference", "describe"].includes(x.step) ? versions.find((p) => p.version === x.parent && p.step === "paint" && p.params.op === "capture") : undefined;
+    if (capture && !starredOnly) {
+      const group = rows.find((row) => row.session === capture.version);
+      if (group) group.fold!.push(x);
+      else rows.push({ fold: [x], session: capture.version, title: `Painting view ${capture.version.slice(0, 3)} from ${capture.parent}` });
+      continue;
+    }
     const prev = rows.at(-1);
     if (starredOnly || !FOLDED.has(x.step)) rows.push({ x });
-    else if (prev?.fold) prev.fold.push(x);
+    else if (prev?.fold && !prev.session) prev.fold.push(x);
     else rows.push({ fold: [x] });
   }
   const listed = rows.flatMap((r) => {
@@ -1621,6 +1644,18 @@ function Workspace(props: {
     const open = unfolded.has(r.fold[0].version) || r.fold.some((x) => x.version === v.version);
     return [{ ...r, open }, ...(open ? r.fold.map((x) => ({ x })) : [])];
   });
+  const meshActions = <Actions
+              key={`${id}/${v.version}`}
+              asset={id}
+              version={src?.step === "paint" ? src : v}
+              versions={versions}
+              presets={props.presets}
+              chain={props.chain}
+              missing={props.missing}
+              pick={props.pick}
+              running={active && RECIPE.some(([s]) => s === active.step) ? active.input : undefined}
+              rig={rig}
+            />;
   const HistoryRow = (p: { x: Meta }) => {
     const x = p.x;
     return (
@@ -1686,11 +1721,15 @@ function Workspace(props: {
           aria-label={`Delete ${label(x)} ${x.version.slice(0, 3)} and what was made from it`}
           title="Delete this version and everything made from it"
           onClick={() => {
-            const branch = versions.filter((y) => ancestors(versions, y).includes(x));
-            const rest = branch.length - 1;
-            const what = rest ? `"${label(x)}" and the ${rest} version${rest > 1 ? "s" : ""} made from it` : `"${label(x)}"`;
-            if (window.confirm(`Delete ${what}?\n\nThey move to Recently deleted, at the end of the library, where you can restore them.`))
-              props.guard(api.deleteVersion(id, x.version).then((r) => props.onDeleted(id, r.deleted)));
+            props.guard(api.deletionPreview(id, x.version).then(async (preview) => {
+              if (preview.blockers.length) {
+                window.alert(`Keep this branch: ${preview.blockers.map((b) => `${b.version}: ${b.reason}`).join("\n")}`);
+                return;
+              }
+              if (!window.confirm(`Move these ${preview.versions.length} versions (${(preview.bytes / 2 ** 20).toFixed(2)} MiB) to Recently deleted?\n\n${preview.versions.join(", ")}\n\nRecoverable; this reclaims no disk space.`)) return;
+              const result = await api.deleteVersion(id, x.version);
+              props.onDeleted(id, result.deleted);
+            }));
           }}
         >
           ×
@@ -1852,7 +1891,7 @@ function Workspace(props: {
                       onClick={() => setUnfolded((u) => (u.delete(r.fold![0].version) || u.add(r.fold![0].version), new Set(u)))}
                     >
                       <span className="vlabel">
-                        {r.open ? "▾" : "▸"} {r.fold.length} step{r.fold.length === 1 ? "" : "s"}
+                        {r.open ? "▾" : "▸"} {r.title ?? `${r.fold.length} steps`}{r.session ? ` (${r.fold.length})` : ""}
                       </span>
                     </button>
                   </li>
@@ -1873,6 +1912,8 @@ function Workspace(props: {
           )
         ) : (
         <ViewerPane
+          cameraKey={id}
+          captureView={JSON.stringify(paintCapture?.metrics.view ?? null)}
           glb={glb}
           image={image}
           rig={rigView}
@@ -1902,6 +1943,8 @@ function Workspace(props: {
         <aside className="panel" aria-label="Next step" ref={panel}>
           <h2 className="sr-only">Next step</h2>
           {active && <ActiveJob job={active} onCancel={props.onCancel} />}
+          {kind !== "2d" && <SurfacePaint asset={id} version={v} versions={versions} chain={props.chain} />}
+          {kind !== "2d" && <MultiViewPaint asset={id} version={v} versions={versions} />}
           {(kind === "2d" || is2D(v)) && !sheetOf ? (
             pixelEd.editing ? (
               <EditorPanel ed={pixelEd} onSave={(params) => props.chain(id, pixelEd.target!.version.version, [["pixelize", params]])} />
@@ -1921,18 +1964,7 @@ function Workspace(props: {
             />
             )
           ) : (
-            <Actions
-              key={`${id}/${v.version}`}
-              asset={id}
-              version={v}
-              versions={versions}
-              presets={props.presets}
-              chain={props.chain}
-              missing={props.missing}
-              pick={props.pick}
-              running={active && RECIPE.some(([s]) => s === active.step) ? active.input : undefined}
-              rig={rig}
-            />
+            src?.step === "paint" ? <details><summary>Other mesh operations</summary>{meshActions}</details> : meshActions
           )}
           {/* Blender works on a 3D model: a picture, a brief or a motion clip has none */}
           {hasGlb(v) && (
@@ -1986,11 +2018,13 @@ function FacePanel(props: { asset: string; version: Meta; chain: Chain }) {
   const [busy, run] = useBusy();
   const [region, setRegion] = useState("head");
   const [strength, setStrength] = useState(1);
+  const [matchLighting, setMatchLighting] = useState(!(props.version.step === "trellis2" && props.version.params.op === "texture"));
   const [big, setBig] = useState(false);
   const v = props.version;
   const m = v.metrics ?? {};
   const pct = Math.round(Number(m.changed ?? 0) * 100);
   const iou = Number(m.iou ?? 0).toFixed(2);
+  const image = v.params.image ?? m.image_from;
   return (
     <section id="face">
       <h3>Face from image</h3>
@@ -2041,7 +2075,8 @@ function FacePanel(props: { asset: string; version: Meta; chain: Chain }) {
             onChange={(e) => setStrength(Math.min(1, Math.max(0.1, Number(e.target.value) || 1)))}
           />
         </label>
-        <button disabled={busy} onClick={() => run(() => props.chain(props.asset, v.version, [["project", { region, strength }]]))}>
+        <label><input type="checkbox" checked={matchLighting} onChange={(event) => setMatchLighting(event.target.checked)} /> Match existing texture lighting</label>
+        <button disabled={busy} onClick={() => run(() => props.chain(props.asset, v.version, [["project", { region, strength, match: matchLighting ? "local" : false, ...(typeof image === "string" ? { image } : {}) }]]))}>
           Face from image
         </button>
       </div>
@@ -2050,7 +2085,7 @@ function FacePanel(props: { asset: string; version: Meta; chain: Chain }) {
 }
 
 // M43b: the texture's detail redrawn by the Tile model from zoomed views; a refine version shows each view before | after
-const TEXTURED = new Set(["bake", "project", "refine"]);
+const TEXTURED = new Set(["bake", "project", "refine", "import_model", "paint"]);
 function DetailPanel(props: { asset: string; version: Meta; versions: Meta[]; chain: Chain; missing: boolean }) {
   const [busy, run] = useBusy();
   const brief = ancestors(props.versions, props.version).find((a) => a.step === "brief");
@@ -2068,6 +2103,7 @@ function DetailPanel(props: { asset: string; version: Meta; versions: Meta[]; ch
   return (
     <section id="detail">
       <h3>Texture detail</h3>
+      <p className="muted">Detail refinement writes an 8-bit texture. The previous version stays in History; surface painting retains the source atlas precision.</p>
       {v.step === "refine" && (
         <>
           <p className="muted">
@@ -2292,9 +2328,12 @@ function Actions(props: {
       Check model
     </button>
   );
-  const face = (v.step === "bake" || v.step === "project") && generated(versions, v) && <FacePanel asset={props.asset} version={v} chain={props.chain} />;
+  const face = mesh && (mesh.step === "bake" || mesh.step === "project" || (mesh.step === "trellis2" && mesh.params.op === "texture")) && generated(versions, mesh) && <FacePanel key={`face-${mesh.version}`} asset={props.asset} version={mesh} chain={props.chain} />;
   const detail = TEXTURED.has(v.step) && hasGlb(v) && (
     <DetailPanel key={`detail-${v.version}`} asset={props.asset} version={v} versions={versions} chain={props.chain} missing={props.missing("refine")} />
+  );
+  const referenceTexture = stage === 2 && mesh && hasGlb(mesh) && ["trellis2", "bake", "project", "refine"].includes(mesh.step) && (
+    <ReferenceWorkflowForm key={`reference-texture-${mesh.version}`} mode="texture" asset={props.asset} version={mesh} versions={versions} chain={props.chain} />
   );
   const parts = stage === 2 && hasGlb(v) && v.step !== "export" && <PartsPanel key={v.version} asset={props.asset} version={v} chain={props.chain} missing={props.missing("parts")} />;
   // M52: a character's animations (or a prepared prop) as 2D sprites
@@ -2306,13 +2345,14 @@ function Actions(props: {
   );
   // UX-05: the optional tools and the character work sit below the main action, collapsed (the Tools menu and the
   // Character task open them); a tool's own checkpoint shows its panel open
-  const toolNames = [face && "face", detail && "texture detail", parts && "parts", sprites && "sprites"].filter(Boolean);
+  const toolNames = [face && "face", detail && "texture detail", referenceTexture && "reference texture edit", parts && "parts", sprites && "sprites"].filter(Boolean);
   const tools = toolNames.length > 0 && (
     <details id="tools" open={["project", "refine", "parts"].includes(v.step)}>
       <summary>Tools: {toolNames.join(", ")}</summary>
       <div className="stack">
         {face}
         {detail}
+        {referenceTexture}
         {parts}
         {sprites}
       </div>
@@ -2362,6 +2402,7 @@ function Actions(props: {
           )}
         </section>
         <EditBrief asset={props.asset} version={v} versions={versions} chain={props.chain} missing={missing} />
+        <ReferenceWorkflowForm mode="generate" asset={props.asset} version={v} versions={versions} chain={props.chain} />
       </>
     );
   }
@@ -2376,6 +2417,7 @@ function Actions(props: {
         <button className="primary" disabled={busy} onClick={() => go(v.version, [["prep", {}]])}>
           Remove background
         </button>
+        <ReferenceWorkflowForm key={`reference-edit-${v.version}`} mode="edit" asset={props.asset} version={v} versions={versions} chain={props.chain} />
       </section>
     );
   }
@@ -3609,7 +3651,7 @@ function ClipPicker(props: {
     <div className="stack">
       {!clips.length && !motions.length && (
         <p className="note warn">
-          No ready-made animations found: <a href={setupAt("clips")}>install them on the Setup page</a>.
+          No ready-made animations found. Close Effigy and run provision.bat --groups clips --models-only; <a href={setupAt("clips")}>Setup shows local availability</a>.
         </p>
       )}
       {animal ? (
@@ -4676,7 +4718,25 @@ function TimeBar(props: { viewer: Viewer }) {
   );
 }
 
+type WorkspaceCamera = ReturnType<Viewer["cameraState"]>;
+type CapturedCamera = { yaw: number; pitch: number; center: Vec3; extent: number };
+const workspaceCameras = new Map<string, WorkspaceCamera>();
+
+function capturedCamera(text: string): CapturedCamera | null {
+  const value: unknown = JSON.parse(text);
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row.yaw !== "number" || !Number.isFinite(row.yaw) ||
+    typeof row.pitch !== "number" || !Number.isFinite(row.pitch) ||
+    typeof row.extent !== "number" || !Number.isFinite(row.extent) || row.extent <= 0 ||
+    !Array.isArray(row.center) || row.center.length !== 3 ||
+    !row.center.every((coordinate: unknown) => typeof coordinate === "number" && Number.isFinite(coordinate))) return null;
+  return { yaw: row.yaw, pitch: row.pitch, extent: row.extent, center: row.center as Vec3 };
+}
+
 function ViewerPane(props: {
+  cameraKey: string;
+  captureView: string;
   glb: string | null;
   image: string | null;
   overlay: React.ReactNode;
@@ -4690,6 +4750,8 @@ function ViewerPane(props: {
   const [tint, setTint] = useState(true);
   const canvas = useRef<HTMLCanvasElement>(null);
   const viewer = useRef<Viewer | null>(null);
+  const loadedCameraKey = useRef<string | null>(null);
+  const stopCameraListener = useRef<(() => void) | null>(null);
   const [mode, setMode] = useState<ViewMode>("pbr");
   const [wire, setWire] = useState(false);
   const [weights, setWeights] = useState(""); // a bone's name: the weights view
@@ -4698,26 +4760,57 @@ function ViewerPane(props: {
   const [stats, setStats] = useState<Stats | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const { glb } = props;
+  const { glb, cameraKey, captureView } = props;
 
   useEffect(() => {
     const v = new Viewer(canvas.current!);
     viewer.current = window.__viewer = v;
-    return () => v.dispose();
+    return () => {
+      stopCameraListener.current?.();
+      if (window.__viewer === v) delete window.__viewer;
+      v.dispose();
+    };
   }, []);
   useEffect(() => {
+    let active = true;
+    const currentViewer = viewer.current!;
+    const preserveCamera = loadedCameraKey.current === cameraKey;
+    if (!preserveCamera) {
+      stopCameraListener.current?.();
+      stopCameraListener.current = null;
+    }
     setStats(null);
     setFailed(false);
     setWeights("");
     setSkel(false);
     setClip("");
     if (glb)
-      viewer.current!.load(glb).then(
-        (s) => s && setStats(s),
-        () => setFailed(true),
+      currentViewer.load(glb, preserveCamera).then(
+        (s) => {
+          if (!active || !s) return;
+          if (!preserveCamera) {
+            const saved = workspaceCameras.get(cameraKey);
+            const captured = capturedCamera(captureView);
+            if (saved) currentViewer.restoreCamera(saved);
+            else if (captured) currentViewer.restoreCapturedView(captured);
+          }
+          loadedCameraKey.current = cameraKey;
+          stopCameraListener.current?.();
+          const remember = (): void => { workspaceCameras.set(cameraKey, currentViewer.cameraState()); };
+          stopCameraListener.current = currentViewer.onCameraChange(remember);
+          remember();
+          setStats(s);
+        },
+        () => { if (active) setFailed(true); },
       );
-    else viewer.current!.clear();
-  }, [glb, attempt]);
+    else {
+      stopCameraListener.current?.();
+      stopCameraListener.current = null;
+      loadedCameraKey.current = null;
+      currentViewer.clear();
+    }
+    return () => { active = false; };
+  }, [glb, attempt, cameraKey, captureView]);
   useEffect(() => viewer.current?.setWireframe(wire, !!props.quads), [wire, props.quads]);
 
   const { rig, parts } = props;
@@ -4847,6 +4940,10 @@ function ViewerPane(props: {
             </>
           )}
           <button onClick={() => viewer.current!.frame()}>Frame model</button>
+          {capturedCamera(captureView) && <button onClick={() => {
+            const captured = capturedCamera(captureView);
+            if (captured) viewer.current!.restoreCapturedView(captured);
+          }}>Captured angle</button>}
           <button onClick={() => viewer.current!.frame("front")}>Front</button>
           <button onClick={() => viewer.current!.frame("side")}>Side</button>
           <button onClick={() => viewer.current!.frame("top")}>Top</button>
@@ -4953,15 +5050,16 @@ function BlenderStart() {
     <section aria-label="Start Blender">
       <h2>Start Blender</h2>
       <p className="muted">
-        Edit in Blender needs your Blender open with its MCP add-on's server on. With this on, Open in Blender starts it and the server when none answers,
-        and waits for it.
+        {cfg?.isolated
+          ? "Open in Blender uses a separate offline scene. Your other Blender sessions stay untouched. The executable comes from your configured tools."
+          : "Open in Blender starts Blender and its local add-on when none answers, then waits for the connection."}
       </p>
       <label className="check">
         <input type="checkbox" checked={start} disabled={!cfg} onChange={(e) => setStart(e.target.checked)} /> Start Blender when it is needed
       </label>
       <div className="folder">
         <div className="row">
-          <input aria-label="Your Blender" placeholder="Your blender.exe, the one with the add-on" value={exe} disabled={!cfg} onChange={(e) => setExe(e.target.value)} />
+          <input aria-label="Your Blender" placeholder="Your blender.exe, the one with the add-on" value={exe} disabled={!cfg || cfg.isolated} onChange={(e) => setExe(e.target.value)} />
           <button disabled={busy || !changed} onClick={save}>
             Save
           </button>
@@ -5095,7 +5193,7 @@ const CAPABILITIES: [string, string, string][] = [
   ["pose", "Character skeleton", "Finds a character's joints to fit its skeleton (DWPose, 0.1 GB)."],
   ["skin", "Learned skinning", "Attaches the mesh to the skeleton with learned weights (SkinTokens). Optional: Blender's bone heat works without it."],
   ["clips", "Ready-made animations", "Idle, walk, run and dozens more for people, and each animal's own (Mesh2Motion, CC0)."],
-  ["kimodo", "Text to motion", "Makes an animation from a sentence (NVIDIA Kimodo). Needs a Hugging Face login with access to Meta Llama 3."],
+  ["kimodo", "Text to motion", "Makes an animation from a sentence using NVIDIA Kimodo and its installed local text encoder."],
   ["mocap", "Motion from video", "Turns a video of a person into an animation for your character (NVIDIA GEM-X, 7 GB)."],
   ["styles", "2D styles", "Pixel art, classic painting and children's drawing looks for 2D pictures (three Z-Image LoRAs, 0.5 GB)."],
   ["layers", "Parallax layers", "Splits a background picture into far-to-near layers that scroll at their own speeds (MoGe-3 depth, 5 GB)."],
@@ -5153,7 +5251,7 @@ const CLEANUP: Record<string, [string, (i: StorageItem) => string]> = {
     (i) => {
       const gs = i.action!.split(":")[1].split("+").map((g) => GROUP_TITLE[g] ?? g);
       return gs.length > 1
-        ? `Remove the model files ${gs.join(" and ")} share (${size(i.bytes)})? Both stop working until you install them again here.`
+        ? `Remove the model files ${gs.join(" and ")} share (${size(i.bytes)})? Both stop working until you reinstall them with provision.bat.`
         : `Remove the model files for ${gs[0]} (${size(i.bytes)})? It stops working until you install it again here.`;
     },
   ],
@@ -5244,7 +5342,7 @@ function Space(props: { reload: () => void }) {
   return (
     <section id="space">
       <h2>Space on disk</h2>
-      <p className="muted">What this app keeps on your drives. You can remove model files and environments you do not use and install them again here later.</p>
+      <p className="muted">What this app keeps on your drives. You can remove owned model files and environments you do not use; run provision.bat separately to reinstall them.</p>
       <div className="drives">
         {st.drives.map((d) => {
           const mine = st.items.filter((i) => i.drive === d.drive);
@@ -5424,6 +5522,7 @@ function HfLogin(props: { hf: HfStatus | null; refresh: () => void; guard: (p: P
   const [note, setNote] = useState("");
   const hf = props.hf;
   if (!hf) return <p className="muted">Checking…</p>;
+  if (hf.offline) return <p className="muted">Offline runtime. Account access and public model downloads are handled separately with provision.bat.</p>;
   const repos = Object.entries(hf.gated)
     .filter(([, groups]) => groups.some((g) => props.groups.includes(g)))
     .map(([repo]) => repo);
@@ -5736,14 +5835,15 @@ function Setup(props: {
     <div className="page setup">
       <div className="head">
         <h1>Setup</h1>
+        <p role="status">Offline runtime. Models load from local storage. To install missing components, close Effigy and run provision.bat.</p>
       </div>
       {props.models && (
         <p className="summary">
-          {need === 0
+          {!envs || !presets ? "Checking local components…" : need === 0
             ? `Everything is installed (${gb0(onDisk)} on disk).`
             : !presets
-              ? `${need} of ${feats.length} features are not ready yet: install or repair them below.`
-              : `${ready.length ? `Ready for ${ready.map((p) => p.name.toLowerCase()).join(", ")}.` : "Nothing is ready yet: the guided setup installs a whole set at once."}${
+              ? `${need} of ${feats.length} features need provisioning.`
+              : `${ready.length ? `Ready for ${ready.map((p) => p.name.toLowerCase()).join(", ")}.` : "Nothing is ready yet: run provision.bat to install the baseline."}${
                   absent.length ? ` Not installed, each optional until you want it: ${absent.map((f) => f.title).join(", ")}.` : ""
                 }`}
           {blender}
@@ -5751,15 +5851,11 @@ function Setup(props: {
       )}
       <div className="note get-started">
         <span>
-          <strong>Setting up for the first time, or on another computer?</strong> The guided setup checks your computer, asks where the models go and
-          what you want to make, logs you in to Hugging Face and installs it all in one go.
+          <strong>Provisioning is separate.</strong> This page checks local availability. Run provision.bat explicitly when public downloads are wanted.
         </span>
-        <a className="button primary" href="#/welcome">
-          Open the guided setup
-        </a>
       </div>
       <h2>What this app can do</h2>
-      <p className="muted">Each feature needs some files on this computer. Install the ones you want to use.</p>
+      <p className="muted">Each feature needs local files. Missing files are installed through provision.bat.</p>
       <div className="cards caps">
         {feats.map(({ g, title, what, st }) => {
           const gate = models.find((m) => m.groups.includes(g) && GATED.some(([p]) => m.name.startsWith(p)));
@@ -5777,13 +5873,13 @@ function Setup(props: {
                   <i style={{ width: `${Math.round((st.job.p ?? 0) * 100)}%` }} />
                 </span>
               )}
-              {st.act && (
+              {st.act && hf?.offline === false && (
                 <button onClick={() => install(g, st.act![1])}>
                   {st.act[0]}
                 </button>
               )}
               {st.job?.status === "queued" && <button onClick={() => props.guard(api.cancel(st.job!.job_id))}>Cancel</button>}
-              {st.ok && (
+              {st.ok && hf?.offline === false && (
                 <button className="small" onClick={() => install(g, true)}>
                   Check and repair
                 </button>
@@ -5801,6 +5897,7 @@ function Setup(props: {
       </div>
       {busy && <p className="muted">You can follow the install in the activity bar below. Other installs you start wait their turn.</p>}
       <h2>Where the models are</h2>
+      <ReferenceAvailability />
       <ModelsFolder jobs={props.jobs} track={props.track} guard={props.guard} />
       <Space reload={props.reload} />
       <h2>Tools</h2>
@@ -5815,14 +5912,13 @@ function Setup(props: {
               ? "Checking…"
               : link
                 ? `Connected: ${link === "pro" ? "Blender MCP Pro" : "blender-mcp"}`
-                : "Not connected · open Blender and start its add-on server"}
+                : "Not connected · Open in Blender can start the configured session"}
           </span>
           <button onClick={check}>Check again</button>
         </div>
       </div>
       <BlenderStart />
-      <ConnectAgent />
-      <AppPort />
+      <p className="muted">Local address: http://127.0.0.1:8370. Hosted assistant registration is disabled for this setup.</p>
       <h2>Credits for your game</h2>
       <p className="muted">When you export, these lines are written into CREDITS.txt. Put them in your game's credits.</p>
       <div id="attributions" className="note">
@@ -5843,7 +5939,7 @@ function Setup(props: {
       <details>
         <summary>Model files and licences</summary>
         <div className="stack">
-          <p className="muted">Which file each feature uses, and every licence. Install a feature on its card above; remove files under Space on disk.</p>
+          <p className="muted">Local model files and licences. Borrowed model bindings are read-only; owned files can be managed under Space on disk.</p>
           <table id="model-table">
             <thead>
               <tr>
@@ -5862,7 +5958,7 @@ function Setup(props: {
                     {m.groups.join(", ")}
                     {m.groups.length > 1 && <span className="tag">shared</span>}
                   </td>
-                  <td>models/{m.where}</td>
+                  <td>{m.borrowed ? "Shared read-only binding" : `models/${m.where}`}</td>
                   <td>{m.installed ? gb(m.bytes) : <span className="muted">{m.partial ? `incomplete (${gb(m.bytes)})` : "not found"}</span>}</td>
                   <td>
                     {lic[m.name]?.license}

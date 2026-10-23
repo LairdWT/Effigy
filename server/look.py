@@ -49,7 +49,9 @@ def look(asset_id: str, version: str, clip: str = "", size: int = 768) -> Path:
     d = library.version_dir(asset_id, version)
     meta = json.loads((d / "meta.json").read_text(encoding="utf-8"))
     outputs = meta.get("outputs", {})
-    files = [d / v for v in outputs.values() if isinstance(v, str) and (d / v).is_file()]
+    files = list(dict.fromkeys(library.resolve_output(d, k) for k, v in outputs.items()
+                              if k != "face_ids" and isinstance(v, str)
+                              and ((d / v).is_file() or k in meta.get("output_refs", {}))))
     glb = next((f for f in files if f.suffix.lower() == ".glb"), None)
     pics = [f for f in files if f.suffix.lower() in IMAGES]
     # the candidates as a grid; else a version's own preview (a pixelize sheet) alone; else every picture
@@ -84,7 +86,7 @@ def turntable(asset_id: str, version: str) -> Path:
     while meta.get("step") in ("validate", "export") and meta.get("parent"):
         meta = library._read(library.version_dir(asset_id, meta["parent"]) / "meta.json")
     d = library.version_dir(asset_id, meta["version"])
-    outs = [d / v for v in meta.get("outputs", {}).values() if isinstance(v, str)]
+    outs = [library.resolve_output(d, k) for k, v in meta.get("outputs", {}).items() if str(v).endswith(".glb")]
     glb = next((f for f in outs if f.suffix.lower() == ".glb" and f.is_file()), None)
     if not glb:
         raise ApiError(400, "nothing_to_show", f"{meta['version']} has no model to turn")

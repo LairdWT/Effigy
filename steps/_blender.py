@@ -17,7 +17,7 @@ def run_blender(op: str, inputs: list, out_dir, params: dict, timeout: float = 6
     exe = os.environ.get("EFFIGY_BLENDER")
     if not exe or not Path(exe).is_file():
         raise BlenderError(
-            f"Blender not found at {exe!r}: run `uv run python -m server.blender_install`"
+            f"Configured Blender not found at {exe!r}: check the tools_config path in settings.json"
         )
     out = Path(
         out_dir

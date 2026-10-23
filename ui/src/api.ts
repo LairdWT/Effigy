@@ -2,6 +2,7 @@
 
 /** M40: what to paste into each agent so it reaches this install's MCP server (paths filled in at runtime). */
 export type AgentSetup = { root: string; server: string; uv: string | null; clients: { id: string; name: string; how: string; text: string }[] };
+export type ReferenceModel = Readonly<{ id: string; label: string; mode: "generate" | "edit"; operations?: readonly string[]; available: boolean; detail: string }>;
 export type Meta = {
   version: string;
   step: string;
@@ -9,6 +10,7 @@ export type Meta = {
   created: string;
   params: Record<string, unknown>;
   outputs: Record<string, string>;
+  output_refs?: Record<string, { version: string; key: string }>;
   metrics: Record<string, unknown>;
   provenance: string;
   restricted: boolean;
@@ -19,6 +21,7 @@ export type Meta = {
 /** M42: tags, licenses (union of its versions'), restricted (any version) and imported (any imported model) ride on the listing. */
 export type Asset = {
   id: string;
+  appearance?: Appearance;
   name: string;
   created: string;
   versions?: number;
@@ -30,6 +33,10 @@ export type Asset = {
   imported?: boolean;
   kind?: string; // "2d" for a 2D asset (research 15, the 2D contract); absent = a 3D asset
 };
+export type Appearance = {
+  revision: number; materials: string; style: string; preserve: string;
+  model: string; denoise: number; steps: number;
+};
 export type CopyResult = {
   copied: { asset_id: string; version: string; dir: string; files: string[] }[];
   skipped: { asset_id: string; version: string; reason: string }[];
@@ -37,6 +44,8 @@ export type CopyResult = {
 export type JobStatus = "queued" | "running" | "done" | "failed" | "cancelled";
 export type Presets = Record<string, Record<string, Record<string, unknown>>>;
 export type Model = {
+  borrowed?: boolean;
+  source_revision?: string;
   id: number;
   name: string;
   groups: string[];
@@ -57,7 +66,7 @@ export type TrashEntry = { name: string; deleted: string; asset_id: string; asse
 );
 export type PortInfo = { running: number; next: number; source: "env" | "settings" | "default"; default: number };
 // Setup's Blender card: Open in Blender starts `exe` when none answers; `found`: the connected Blender's path
-export type BlenderSetup = { start: boolean; exe: string | null; found: string | null };
+export type BlenderSetup = { start: boolean; exe: string | null; found: string | null; isolated?: boolean };
 export type Folder = {
   path: string;
   source: "env" | "settings" | "default";
@@ -65,7 +74,7 @@ export type Folder = {
   choices: { path: string; drive: string; free: number; total: number }[];
 };
 export type Preset = { id: string; name: string; what: string; groups: string[]; bytes: number; missing: number };
-export type HfStatus = { token: boolean; user: string | null; access: Record<string, boolean | null>; gated: Record<string, string[]> };
+export type HfStatus = { token: boolean; user: string | null; access: Record<string, boolean | null>; gated: Record<string, string[]>; offline?: boolean };
 export type Env = { name: string; state: "ok" | "missing" | "outdated" | "installing" | "unknown"; groups: string[] };
 export type StorageItem = { id: string; kind: string; name: string; bytes: number; drive: string; action: string | null };
 export type Drive = { drive: string; total: number; free: number; low: boolean };
@@ -109,6 +118,9 @@ export const api = {
   assets: () => call<Asset[]>("GET", "/api/assets"),
   asset: (id: string) => call<{ asset: Asset; versions: Meta[] }>("GET", `/api/assets/${id}`),
   createAsset: (name: string, kind?: "2d") => call<Asset>("POST", "/api/assets", kind ? { name, kind } : { name }),
+  referenceModels: () => call<ReferenceModel[]>("GET", "/api/reference-models"),
+  saveAppearance: (id: string, value: Appearance) => call<Appearance>("PUT", `/api/assets/${id}/appearance`, value),
+  deletionPreview: (id: string, version: string) => call<{ versions: string[]; bytes: number; blockers: { version: string; reason: string }[] }>("GET", `/api/assets/${id}/versions/${version}/deletion-preview`),
   renameAsset: (id: string, name: string) => call<Asset>("PATCH", `/api/assets/${id}`, { name }),
   archiveAsset: (id: string, archived: boolean) => call<Asset>("PATCH", `/api/assets/${id}`, { archived }),
   patchTags: (id: string, tags: string[]) => call<Asset>("PATCH", `/api/assets/${id}`, { tags }),

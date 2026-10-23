@@ -19,7 +19,10 @@ export function ancestors(versions: Meta[], m: Meta | null | undefined): Meta[] 
 
 // what a version shows and what checks/exports act on: a report or an export package has no working mesh
 // of its own (an export GLB may carry collision helpers), so walk up to the version it was made from
-export const source = (versions: Meta[], m: Meta | null) => ancestors(versions, m).find((a) => a.step !== "validate" && a.step !== "export") ?? null;
+export const isPaintPreview = (versions: Meta[], m: Meta) => m.step === "reference" &&
+  versions.some((v) => v.version === m.parent && v.step === "paint" && v.params.op === "capture");
+export const source = (versions: Meta[], m: Meta | null) => ancestors(versions, m).find((a) =>
+  !["validate", "export", "describe"].includes(a.step) && !isPaintPreview(versions, a)) ?? null;
 
 /** M39: the step a version acts as: an import_model with clips as anim, with a skin as rig_skin; any other as itself. */
 export const actsAs = (m: Meta) => (m.step !== "import_model" ? m.step : m.outputs.rigged_anim ? "anim" : m.outputs.rigged ? "rig_skin" : "import_model");
@@ -42,7 +45,7 @@ export const RECIPE: [string, string][] = [
   ["bake", "bake"],
   ["validate", "check"],
 ];
-const PREPARED = new Set(["clean", "remesh", "uv", "bake", "parts"]);
+const PREPARED = new Set(["clean", "remesh", "uv", "bake", "parts", "paint"]);
 
 /** UX Pass 2: the row shows tasks, not steps; a checkpoint's task is `taskOf`, History keeps every step. */
 export type Task = { id: string; label: string; needs: string; optional?: boolean };
@@ -102,12 +105,13 @@ export function phaseOf(versions: Meta[], m: Meta): number {
   if (step === "export") return 5;
   if (step === "anim" || step === "anim_edit" || step === "motion" || step === "import_motion") return 4;
   if (RIG.has(step)) return 3;
-  if (step === "validate") {
+  if (step === "validate" || step === "describe") {
     const up = source(versions, m);
     const of = up ? actsAs(up) : ""; // a check of a rig is Rig, of an animated model Animate
     return of === "anim" || of === "anim_edit" ? 4 : RIG.has(of) ? 3 : 2;
   }
   if (PREPARED.has(m.step)) return 2;
+  if (isPaintPreview(versions, m)) return 2;
   if (!hasGlb(m)) return 0;
   // a mesh: still raw from the generator (or a Blender/Claude edit of it) = Generate; prepared before,
   // retextured, or imported = Prepare
@@ -131,6 +135,7 @@ export const isImported = (versions: Meta[], m: Meta) => ancestors(versions, m).
 const STEPS: Record<string, string> = {
   brief: "Description",
   concepts: "Concept images",
+  reference: "Model reference",
   prep: "Cut-out reference",
   canon: "Re-posed reference",
   transform: "Moved model",
@@ -142,6 +147,8 @@ const STEPS: Record<string, string> = {
   bake: "Textured model",
   project: "Face from image",
   refine: "Refined texture",
+  paint: "Surface paint",
+  describe: "View description",
   rig_fit: "Skeleton",
   rig_skin: "Skinned model",
   anim: "Animated model",
@@ -155,6 +162,7 @@ const STEPS: Record<string, string> = {
 };
 
 export function label(m: Meta): string {
+  if (m.step === "reference") return m.params?.op === "edit" ? "Edited reference" : String(m.metrics.model ?? "Model reference");
   if (m.step === "upload") return hasGlb(m) ? "Imported model" : m.outputs.model ? "Original file" : "Uploaded picture";
   if (m.step === "import_model") return { anim: "Imported animation", rig_skin: "Imported rig" }[actsAs(m)] ?? "Imported model";
   if (m.step === "export") return `Export: ${PROFILE_NAMES[String(m.metrics?.profile)] ?? m.metrics?.profile ?? ""}`;

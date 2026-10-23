@@ -24,7 +24,7 @@ import time
 from pathlib import Path
 
 from steps._blender import BlenderError, run_blender
-from steps._common import StepError, main, offload, progress
+from steps._common import StepError, asset_directory, main, offload, progress
 
 MODEL_ID = "nvidia/Kimodo-SOMA-RP-v1.1"
 ENCODER = "meta-llama/Meta-Llama-3-8B-Instruct"
@@ -173,7 +173,7 @@ def run(op, in_dir, out_dir, params):
     progress(0.8, "the clip as a GLB")
     name = clip_name(prompt)
     taken = set()
-    for d in out.parent.glob("*_motion"):  # the asset's other motions: one name each
+    for d in asset_directory(out).glob("*_motion"):  # the asset's other motions: one name each
         if d != out and (d / "prompt.json").is_file():
             taken.add(json.loads((d / "prompt.json").read_text(encoding="utf-8")).get("name"))
     if name in taken:

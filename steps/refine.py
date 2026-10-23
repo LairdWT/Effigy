@@ -323,7 +323,8 @@ class _Tile:
         cn = cn.to(torch.bfloat16)
         try:
             pipe = ZImageControlNetPipeline.from_pretrained(
-                MODEL, revision=REVISION, controlnet=cn, torch_dtype=torch.bfloat16
+                MODEL, revision=REVISION, controlnet=cn, torch_dtype=torch.bfloat16,
+                local_files_only=True,
             )
         except OSError as e:  # not downloaded: no path in the message (it ends up in meta.json)
             raise StepError(

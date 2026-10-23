@@ -56,7 +56,7 @@ def _load(off: bool):
     from diffusers import Flux2KleinPipeline
 
     pipe = Flux2KleinPipeline.from_pretrained(
-        str(MODELS / "FLUX.2-klein-4B"), torch_dtype=torch.bfloat16
+        str(MODELS / "FLUX.2-klein-4B"), torch_dtype=torch.bfloat16, local_files_only=True
     )
     if off:  # each part on the GPU only while it runs (16 GB cards)
         pipe.enable_model_cpu_offload()

@@ -133,6 +133,19 @@ def views_of(in_dir: Path) -> tuple[Path, dict | None]:
 
 
 def lift(views_dir: Path, view: int, points: list, full: bool, out: Path):
+    import torch
+
+    device: str = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    np.random.seed(3)
+    torch.manual_seed(3)
+    if device == "cuda" and torch.cuda.get_device_properties(0).major >= 8:
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+    with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device == "cuda"):
+        return _lift(views_dir, view, points, full, out, device)
+
+
+def _lift(views_dir: Path, view: int, points: list, full: bool, out: Path, device: str):
     """GeoSAM2: the clicks → a 2D mask on the view (out/click.png) → one label per face (an int array;
     1 = the clicked part, the auto parts above, NONE elsewhere), as its two scripts do it; and the
     peak VRAM in GB."""
@@ -143,7 +156,6 @@ def lift(views_dir: Path, view: int, points: list, full: bool, out: Path):
     from sam2.build_sam import build_sam2, build_sam2_video_predictor_geosam2
 
     inference, single = _geosam2()
-    device = inference.init_env()
     predictor = build_sam2_video_predictor_geosam2(CFG, str(ckpt), device=device)
     root = views_dir.as_posix()
     mask = None

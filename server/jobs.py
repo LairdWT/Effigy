@@ -15,13 +15,13 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from server import blender_install, gltfpack_install, library, presets, settings
+from server import blender_install, gltfpack_install, library, presets, runtime_policy, settings
 from server.library import ApiError
 from server.presets import LOWER
 
 ROOT = Path(__file__).resolve().parents[1]
 STEP = re.compile(r"^_?[a-z][a-z0-9_]*$")
-SERVE = {"trellis2", "concepts", "motion"}  # families that run resident (`--serve`); one at a time
+SERVE = {"trellis2", "concepts", "motion", "reference"}  # families that run resident (`--serve`); one at a time
 # ponytail: anything not listed here evicts the resident worker first; it may use presets.VRAM_GB if it over-evicts
 LIGHT = {
     "_echo",
@@ -37,6 +37,11 @@ LIGHT = {
     "import_motion",
     "pixelize",  # M51: numpy and Pillow
     "sprites",  # M52: Blender on the CPU (Workbench), no model
+    "paint",  # captured-view raster and atlas writeback run on CPU, no model
+    "paint_set",  # multi-view captures and combined bake are CPU operations
+    "paint_finish",
+    "uv_context",
+    "repair_baseline",
     "parts:rename",  # a step, or step:op
     "transform",  # numpy on the CPU: a still model turned, scaled and placed
 }  # rig_skin: SkinTokens on the GPU
@@ -132,21 +137,34 @@ VENV_GROUP = {
 
 def uv() -> str:
     """uv on PATH, else the portable zip's own (run.bat puts it on PATH too)."""
-    return shutil.which("uv") or str(ROOT / ("uv.exe" if os.name == "nt" else "uv"))
+    return os.environ.get("EFFIGY_UV") or shutil.which("uv") or str(ROOT / ("uv.exe" if os.name == "nt" else "uv"))
 
 
 def venv_python(venv: str) -> Path:
     return ROOT / venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
 
 
-def _python(step: str) -> str:
+def _python(step: str, model: str | None = None) -> str:
+    if step in ("paint_generate", "paint_finish_generate"):
+        if model == "syncmvd":
+            root = Path(settings.read().get("environment_root", ROOT))
+            python = root / ".venv-syncmvd/Scripts/python.exe"
+            if not python.is_file():
+                raise RuntimeError("SyncMVD is not provisioned. Run tools/provision_syncmvd.py --online separately")
+            return str(python)
+        from server.reference_models import runtime_for_model
+
+        return str(runtime_for_model(model).python)
+    if step == "reference":
+        from server.reference_models import runtime
+
+        return str(runtime(model).python)
     if step.startswith("_"):  # test steps run in the backend's own venv
         return sys.executable
     venv = STEP_VENV.get(step, ".venv-ml")
     if not (exe := venv_python(venv)).is_file():
         raise RuntimeError(
-            f"{venv} missing: install its feature in Setup (or UV_PROJECT_ENVIRONMENT={venv} uv sync "
-            f"--frozen --group {VENV_GROUP[venv]})"
+            f"{venv} is missing. Close Effigy and run provision.bat to install its frozen environment."
         )
     return str(exe)
 
@@ -175,6 +193,7 @@ def _env(budget: float | None = None) -> dict:
             "EFFIGY_GLTFPACK": str(gltfpack_install.gltfpack_exe()),
         }
         | _pin_gpu()
+        | runtime_policy.OFFLINE
     )
 
 
@@ -187,12 +206,20 @@ def _pin_gpu() -> dict:
     return {"CUDA_DEVICE_ORDER": "PCI_BUS_ID", "CUDA_VISIBLE_DEVICES": str(int(i[0]))}
 
 
-def _spawn(step: str, *args: str, stdin=None, budget: float | None = None) -> subprocess.Popen:
-    cmd = [_python(step), "-m", f"steps.{step}", *args]
+def _spawn(step: str, *args: str, stdin=None, budget: float | None = None, model: str | None = None) -> subprocess.Popen:
+    entry = [str(ROOT / "tools" / "native_reference_entry.py")] if step in ("reference", "paint_generate", "paint_finish_generate") else ["-m", f"steps.{step}"]
+    if step == "paint_generate" and model == "syncmvd":
+        entry = ["-m", "steps.sync_paint"]
+    cmd = [_python(step, model), "-B", *entry, *args]
+    environment = _env(budget)
+    if step in ("paint_generate", "paint_finish_generate"):
+        environment.update(EFFIGY_WORKER_STEP=step, EFFIGY_REFERENCE_MODEL=str(model))
+    elif step == "reference" and model in ("fibo2-turbo", "krea-genesis", "moss-turbo"):
+        environment["EFFIGY_REFERENCE_MODEL"] = model
     return subprocess.Popen(
         cmd,
         cwd=ROOT,
-        env=_env(budget),
+        env=environment,
         stdin=stdin,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -236,7 +263,8 @@ def _run_oneshot(job: Job, in_dir: Path | None, out: Path) -> tuple[str, dict] |
     try:
         args = ["--out", str(out), "--params", params]
         proc = job.proc = _spawn(
-            job.step, *args, *(["--in", str(in_dir)] if in_dir else []), budget=job.budget
+            job.step, *args, *(["--in", str(in_dir)] if in_dir else []), budget=job.budget,
+            model=job.params.get("model")
         )
         if job.status == "cancelled":  # cancel() ran before there was a process to stop
             _kill_tree(proc)
@@ -384,7 +412,7 @@ _submitting = (
 
 
 def submit(
-    asset_id: str, step: str, parent: str | None, params: dict, dedupe: bool = False
+    asset_id: str, step: str, parent: str | None, params: dict, dedupe: bool = False, start: bool = True
 ) -> tuple[Job, bool]:
     """(the job, whether it is new). `dedupe`: the queued or running job with the same asset, step, parent
     and params, if there is one."""
@@ -414,8 +442,14 @@ def submit(
                     return j, False
         job = Job(asset_id, step, parent, params)
         JOBS[job.id] = job
-    threading.Thread(target=_run, args=(job,), daemon=True).start()
+    if start:
+        start_job(job)
     return job, True
+
+
+def start_job(job: Job) -> None:
+    """Start an allocated job after its owning controller persists the reservation."""
+    threading.Thread(target=_run, args=(job,), daemon=True).start()
 
 
 def get(job_id: str) -> Job:
@@ -453,7 +487,16 @@ def _kill_tree(proc: subprocess.Popen) -> None:
 
 
 def _check_outputs(out: Path, payload: dict) -> str | None:
-    rels = payload.get("outputs", {}).values()
+    refs = payload.get("output_refs", {})
+    outputs = payload.get("outputs", {})
+    for key, ref in refs.items():
+        if key not in outputs or not outputs[key].startswith("@"):
+            return "Output reference needs a declared virtual output"
+        if not isinstance(ref, dict) or set(ref) != {"version", "key"}:
+            return "Malformed output reference"
+        source = library.version_dir(out.parent.name, ref["version"])
+        library.resolve_output(source, ref["key"])
+    rels = [value for key, value in outputs.items() if key not in refs]
     if bad := [r for r in rels if not (out / r).resolve().is_relative_to(out.resolve())]:
         return f"outputs outside --out: {bad}"
     # a file, or a folder of them (the 2D track's frames/, research 15): an empty folder counts as missing
@@ -536,6 +579,14 @@ def _preflight(job: Job) -> dict | None:
     """Before a GPU job starts (after the eviction): set its budget, or refuse it (`_refusal`)."""
     from server import machine  # here: machine imports install, which imports this module
 
+    if job.step == "paint_generate" and job.params.get("model") == "syncmvd":
+        from server import sync_models
+
+        try:
+            sync_models.resolve()
+        except (OSError, ValueError, KeyError) as error:
+            return {"code": "missing_input", "message": str(error)}
+
     if job.step in machine.SM_STEPS and (sm := machine.sm()) is not None and sm < machine.MIN_SM:
         return {
             "code": "unsupported",
@@ -546,6 +597,20 @@ def _preflight(job: Job) -> dict | None:
     if need == 0 or not (v := _smi("memory.total", "memory.free")):
         return None  # nothing on the GPU, or no NVIDIA GPU to ask
     total, free = v[0] / 1024, v[1] / 1024
+    admission = None
+    if job.step == "paint_generate" and job.params.get("strategy") in ("whole_sheet", "synchronized"):
+        floor = 28.0
+        if (job.params.get("model") == "moss-turbo" and job.params.get("strategy") == "whole_sheet"
+                and job.params.get("panel_size") in (192, 256, 384)):
+            floor = need
+        approved = settings.read().get("full_sheet_admission", {})
+        if (settings.port() == 8380 and approved.get("remaining") == 1
+                and approved.get("model") == job.params.get("model") and approved.get("floor_gib") == 26.0):
+            floor, admission = 26.0, approved
+        if free < floor:
+            return {"code": "oom", "message": f"Complete-view qualification requires {floor:g} GiB free VRAM; {free:.2f} GiB is available. Release the other workload, then resume this candidate. Resolution, cameras and model were not changed."}
+        job.params["admission_floor_gib"] = floor
+        job.params["admission_free_gib"] = round(free, 3)
     if _resident(job):
         # nvidia-smi can't tell processes apart on Windows: the GPU shows the worker's own models plus other
         # programs'. Against the worker's idle baseline, the change since is other programs' (BE-006); a
@@ -573,6 +638,9 @@ def _preflight(job: Job) -> dict | None:
                     "browser, a game, another AI app) and run it again"
                 ),
             }
+    if admission is not None:
+        settings.write(full_sheet_admission=admission | {"remaining": 0, "job_id": job.id})
+        job.params["admission_decision"] = "D14: one owner-approved attempt above 26 GiB"
     return None
 
 
@@ -601,6 +669,10 @@ def _run_locked(job: Job) -> None:
             else:
                 out = library.new_version(job.asset_id, job.step)
                 in_dir = library.version_dir(job.asset_id, job.parent) if job.parent else None
+                if in_dir and job.step not in ("paint", "reference", "describe", "paint_set", "paint_generate", "paint_finish", "paint_finish_generate", "uv_context", "repair_baseline"):
+                    parent_meta = library._read(in_dir / "meta.json")
+                    if "mesh" in parent_meta.get("output_refs", {}):
+                        in_dir = library.resolve_output(in_dir, "mesh").parent
                 run = _run_resident if job.step in SERVE else _run_oneshot
                 reply = run(job, in_dir, out) or (
                     "ERROR",
@@ -640,3 +712,10 @@ def _run_locked(job: Job) -> None:
                     job.error, job.status = payload, "failed"
         _log(job, f"end {job.status}")
         publish("job", job.public())
+        if job.step in ("paint_set", "paint_generate", "paint_finish", "paint_finish_generate") and job.params.get("session_id"):
+            try:
+                from server import paint_sessions
+
+                paint_sessions.observe_job(job.asset_id, job.params["session_id"])
+            except (OSError, ValueError, ApiError) as error:
+                _log(job, f"Session reconciliation deferred: {error}")

@@ -11,7 +11,7 @@ import shutil
 from fnmatch import fnmatch
 from pathlib import Path
 
-from server import jobs, settings
+from server import jobs, model_bindings, settings
 from server.library import ApiError
 from tools.download_models import FILES, MANIFEST, PINNED, key
 
@@ -57,7 +57,7 @@ def entries() -> list[dict]:
 
 def _files(e: dict) -> list[Path]:
     """The files of one entry (symlinks skipped: HF-cache snapshots point at blobs)."""
-    base = root() / e["where"]
+    base = model_bindings.resolve(e["where"]).path
     if base.is_file():
         return [base]
     allow, ignore = e["filters"].get("allow_patterns"), e["filters"].get("ignore_patterns", [])
@@ -85,7 +85,7 @@ def _size(f: Path) -> int:
 
 def target(e: dict, rel: str) -> Path:
     """Where a manifest file of an entry is on disk (an HF-cache repo: in its pinned snapshot)."""
-    base = root() / e["where"]
+    base = model_bindings.resolve(e["where"]).path
     if e["hub"]:
         return base / "snapshots" / e["revision"] / rel
     return base / rel if rel else base
@@ -122,6 +122,8 @@ def listing() -> list[dict]:
                 "partial": bool(files) and not installed,  # some files there: Repair finishes it
                 "bytes": sum(_size(f) for f in files),
                 "missing_bytes": st["want"] - st["have"],
+                "borrowed": not model_bindings.resolve(e["where"]).owned,
+                "source_revision": model_bindings.resolve(e["where"]).source_revision or e["revision"],
             }
         )
     return out
@@ -142,6 +144,10 @@ def remove(model_id: int, locked: bool = False) -> None:
     if not 0 <= model_id < len(es := entries()):
         raise ApiError(404, "not_found", f"no model {model_id}")
     e = es[model_id]
+    try:
+        model_bindings.require_owned(e["where"])
+    except PermissionError as err:
+        raise ApiError(403, "borrowed", str(err)) from err
     if not locked and _downloading():
         raise ApiError(409, "busy", "a model download is running; remove after it ends")
     if not locked and not jobs.GPU.acquire(blocking=False):
@@ -149,11 +155,12 @@ def remove(model_id: int, locked: bool = False) -> None:
     try:
         if not locked:
             jobs.evict()  # the resident worker may hold these files open (Windows can't delete them)
-        base = root() / e["where"]
+        base = model_bindings.require_owned(e["where"])
         if any(os.path.isjunction(p) for p in (base, *base.parents) if root() in p.parents):
             raise ApiError(409, "linked", f"{e['where']} lies behind a link; remove it by hand")
         if e["filters"]:  # only this entry's files: Pixal3D's folder holds single- and multi-view
             for f in _files(e):
+                model_bindings.require_owned(f.relative_to(root().resolve()).as_posix())
                 f.unlink()
         elif base.is_dir():
             shutil.rmtree(base)

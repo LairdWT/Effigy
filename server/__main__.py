@@ -1,4 +1,4 @@
-"""Start the app (run.bat, run.sh): on its port (EFFIGY_PORT, else Setup's choice, else 8000), the browser
+"""Start the offline app on loopback port 8370, the browser
 opening there once it listens. EFFIGY_NO_BROWSER keeps the browser closed."""
 
 import os
@@ -8,15 +8,16 @@ import webbrowser
 
 import uvicorn
 
-from server import machine, settings
+from server import machine, runtime_policy, settings
 
 
 def main() -> None:
+    runtime_policy.activate()
     port = settings.port()
     if not machine.port_free(port):
         sys.exit(
-            f"Port {port} is in use by another program (Unreal's MCP plugin uses 8000). Start Effigy once on "
-            "another port (set EFFIGY_PORT=8001, then run.bat), then choose one for good in Setup, App address."
+            f"Effigy cannot start: loopback port {port} is occupied. Close the other Effigy instance "
+            "or resolve the port conflict before retrying run.bat."
         )
     url = f"http://127.0.0.1:{port}"
     if not os.environ.get("EFFIGY_NO_BROWSER"):

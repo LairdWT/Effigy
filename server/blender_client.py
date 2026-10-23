@@ -8,6 +8,7 @@ step / backup + export).
 """
 
 import json
+import os
 import shutil
 import socket
 import struct
@@ -19,7 +20,8 @@ from pathlib import Path
 from server import library, settings
 from server.library import ApiError
 
-PRO, FREE = ("127.0.0.1", 9877), ("127.0.0.1", 9876)
+PRO = ("127.0.0.1", 9877)
+FREE = ("127.0.0.1", int(settings.read().get("blender_free_port", 9876)))
 TIMEOUT = 125.0  # Pro gives up on a command after 120 s
 MARK = (
     "\x1eeffigy:"  # run_python prints its result after this (the free add-on returns stdout only)
@@ -51,7 +53,8 @@ _last = [PRO]  # the add-on that answered last: Windows takes ~2 s to refuse a c
 
 
 def _connect() -> tuple[tuple, socket.socket]:
-    for addr in sorted((PRO, FREE), key=lambda a: a != _last[0]):
+    addresses = (FREE,) if settings.read().get("blender_free_port") else (PRO, FREE)
+    for addr in sorted(addresses, key=lambda a: a != _last[0]):
         try:
             sock = socket.create_connection(addr, timeout=5)
         except OSError:
@@ -102,21 +105,25 @@ def ensure() -> str:
         return link()
     except ApiError:
         s = settings.read()
-        exe = Path(s.get("blender_exe") or "")
+        exe = Path(os.environ.get("EFFIGY_BLENDER") or s.get("blender_exe") or "")
         if not s.get("blender_start") or not exe.is_file():
             raise
     with _starting:
         if _started[0] is None or _started[0].poll() is not None:
-            try:  # the user's own Blender as they use it: no --factory-startup, its add-ons are the point
-                _started[0] = subprocess.Popen(
-                    [str(exe), "--python-expr", START],
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    # its own: it stays open when the app's window closes
-                    creationflags=getattr(subprocess, "DETACHED_PROCESS", 0)
-                    | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
-                )
+            try:
+                if s.get("blender_free_port"):
+                    from tools.blender_session import start
+
+                    _started[0] = start()
+                else:
+                    _started[0] = subprocess.Popen(
+                        [str(exe), "--python-expr", START],
+                        stdin=subprocess.DEVNULL,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        creationflags=getattr(subprocess, "DETACHED_PROCESS", 0)
+                        | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0),
+                    )
             except OSError as e:
                 raise ApiError(502, "blender_start_failed", f"could not start {exe}: {e}") from e
         proc = _started[0]
@@ -145,15 +152,22 @@ def setup() -> dict:
     Blender's own path (the one with the add-on)."""
     s = settings.read()
     found = None
-    if not s.get("blender_exe"):
+    if not s.get("blender_exe") and not s.get("blender_free_port"):
         try:
             found = run_python("import bpy\n__result__ = bpy.app.binary_path")
         except ApiError:
             pass
-    return {"start": bool(s.get("blender_start")), "exe": s.get("blender_exe"), "found": found}
+    isolated: bool = bool(s.get("blender_free_port"))
+    return {
+        "start": bool(s.get("blender_start")),
+        "exe": os.environ.get("EFFIGY_BLENDER") if isolated else s.get("blender_exe"),
+        "found": found, "isolated": isolated,
+    }
 
 
 def choose(start: bool, exe: str) -> dict:
+    if settings.read().get("blender_free_port"):
+        exe = os.environ["EFFIGY_BLENDER"]
     path = Path(exe.strip().strip('"')) if exe.strip() else None
     # blender.exe itself (Blender on Linux and macOS): blender-launcher.exe exits at once, and ensure watches the process
     if path and not (path.is_file() and path.name.lower() in ("blender.exe", "blender")):
@@ -192,6 +206,10 @@ def run_python(code: str, **args):
     """Python in Blender with `args` bound as literals; the snippet sets __result__ (JSON-able). Python's literals
     (repr): JSON's `null` for a version left out was a NameError in Blender (the owner's agent, 2026-10-13)."""
     header = "".join(f"{k} = {v!r}\n" for k, v in args.items())
+    if settings.read().get("blender_free_port"):
+        header += ("import bpy\n"
+                   "if not bpy.context.scene.get('effigy_isolated_session', False):\n"
+                   "    raise RuntimeError('This Blender scene is not the isolated Effigy editing session')\n")
     footer = f"\nimport json as _effigy_json\nprint({MARK!r} + _effigy_json.dumps(__result__))\n"
     out = call("execute_python", code=header + code + footer).get("result")
     if isinstance(out, str) and MARK in out:  # the free add-on: the snippet's stdout
@@ -283,9 +301,9 @@ def _model(asset_id: str, version: str) -> tuple[str, Path]:
     """(version, its mesh file): `version`'s mesh, or the nearest one up the chain, as the viewer shows
     it (a validate or export version has none of its own). 404 for a missing version, 400 for none."""
     for meta in library.chain(asset_id, version):
-        mesh = next((f for f in meta["outputs"].values() if str(f).endswith(".glb")), None)
-        if mesh:
-            return meta["version"], library.version_dir(asset_id, meta["version"]) / mesh
+        key = next((k for k, f in meta["outputs"].items() if str(f).endswith(".glb")), None)
+        if key:
+            return meta["version"], library.resolve_output(library.version_dir(asset_id, meta["version"]), key)
     raise ApiError(400, "bad_request", f"{version} and its parents have no 3D model to open")
 
 

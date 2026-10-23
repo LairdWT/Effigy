@@ -30,3 +30,18 @@ playwright-report/
 /uv.exe
 /uv-LICENSE-MIT.txt
 /VERSION
+Temp/
+.venv/
+target/
+node_modules/
+CLAUDE.local.md
+.claude/handoffs/
+.aep/standards.local.json
+
+# Workstation bindings and generated runtime files
+AGENTS.local.md
+settings.local.json
+model-bindings.local.json
+.env.*
+!.env.example
+.aep/usage.local.json

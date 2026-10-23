@@ -138,7 +138,7 @@ def _pipeline(size: tuple[int, int]):
 
     try:
         pipe = ZImageInpaintPipeline.from_pretrained(
-            MODEL, revision=REVISION, torch_dtype=torch.bfloat16
+            MODEL, revision=REVISION, torch_dtype=torch.bfloat16, local_files_only=True
         )
     except OSError:  # the layers group brings MoGe only; Z-Image comes with Concept images
         raise StepError(

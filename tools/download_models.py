@@ -21,6 +21,7 @@ import sys
 import urllib.request
 from pathlib import Path
 
+from server import model_bindings, runtime_policy
 from server.settings import models_root
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -382,40 +383,63 @@ SIZES = sizes()
 
 
 def fetch(url: str, sha256: str, dest: Path) -> None:
-    if dest.is_file() and hashlib.sha256(dest.read_bytes()).hexdigest() == sha256:
+    runtime_policy.require_provisioning()
+    relative = dest.relative_to(MODELS).as_posix()
+    dest = model_bindings.require_owned(relative)
+    expected = json.loads(MANIFEST.read_text(encoding="utf-8"))[f"file:{relative}"][""][0]
+    if dest.is_file() and dest.stat().st_size == expected:
         return
     dest.parent.mkdir(parents=True, exist_ok=True)
     data = urllib.request.urlopen(url, timeout=120).read()
     if hashlib.sha256(data).hexdigest() != sha256:
         raise RuntimeError(f"{url}: SHA-256 mismatch, not saved")
-    dest.write_bytes(data)
+    partial = dest.with_name(dest.name + ".part")
+    partial.write_bytes(data)
+    partial.replace(dest)
 
 
 def main(groups: list[str]) -> int:
+    runtime_policy.require_provisioning()
     from huggingface_hub import snapshot_download
-    from huggingface_hub.errors import GatedRepoError
+    from huggingface_hub.errors import HfHubHTTPError
 
     failed = []
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    from tools.model_sources import fetch_mirror, pin_main
     for group, repo, revision, folder, filters in PINNED:
         if groups and not set(group.split()) & set(groups):
             continue
-        print(f"{repo} @ {revision[:7]} -> {MODELS / folder if folder else 'HF cache'}", flush=True)
+        if folder and model_bindings.validate_borrowed(folder, revision, manifest[key(group, repo, revision, folder)]) is not None:
+            print(f"BORROWED {repo} @ {revision[:7]} (read-only)", flush=True)
+            continue
+        destination = model_bindings.require_owned(folder) if folder else None
+        if destination is None:
+            model_bindings.require_owned("hub")
+        print(f"{repo} @ {revision[:7]} -> {destination if destination else 'HF cache'}", flush=True)
         try:
+            if fetch_mirror(repo, revision):
+                continue
             snapshot_download(
                 repo,
                 revision=revision,
-                local_dir=MODELS / folder if folder else None,
+                local_dir=destination,
+                max_workers=4,
                 **(filters or {}),
             )
-        except GatedRepoError:
-            print(
-                f"  gated: accept the licence at https://huggingface.co/{repo}, run `hf auth login`, retry"
-            )
+            if not folder:
+                pin_main(repo, revision)
+        except (HfHubHTTPError, OSError) as error:
+            print(f"FAILED {repo}: {type(error).__name__}", flush=True)
             failed.append(repo)
     for group, url, sha256, path in FILES:
         if not groups or group in groups:
             print(f"{url} -> {MODELS / path}", flush=True)
-            fetch(url, sha256, MODELS / path)
+            try:
+                fetch(url, sha256, MODELS / path)
+            except (OSError, RuntimeError) as error:
+                print(f"FAILED {path}: {type(error).__name__}", flush=True)
+                failed.append(path)
+    print(f"PROVISIONED failures={len(failed)}: {', '.join(failed)}", flush=True)
     return 1 if failed else 0
 
 

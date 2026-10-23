@@ -99,7 +99,7 @@ def version_thumb(asset_id: str, version: str) -> Path | None:
 
 def _glbs(asset_id: str, meta: dict) -> list[Path]:
     d = library.root() / asset_id / meta["version"]
-    return [d / v for v in meta.get("outputs", {}).values() if str(v).lower().endswith(".glb")]
+    return [library.resolve_output(d, k) for k, v in meta.get("outputs", {}).items() if str(v).lower().endswith(".glb")]
 
 
 def asset_version(asset_id: str) -> str | None:

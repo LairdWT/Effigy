@@ -15,7 +15,7 @@ import threading
 from contextlib import contextmanager
 from pathlib import Path
 
-from server import jobs, models, settings
+from server import jobs, model_bindings, models, runtime_policy, settings
 from server.library import ApiError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -162,6 +162,7 @@ def presets() -> list[dict]:
 
 
 def install(group: str, repair: bool = False) -> jobs.Job:
+    runtime_policy.require_provisioning()
     if group not in models.GROUPS:
         raise ApiError(
             404, "not_found", f"no model group {group!r} (one of {sorted(models.GROUPS)})"
@@ -339,6 +340,8 @@ def _sha256(job: jobs.Job, f: Path) -> str:
 def _inside(e: dict, f: Path) -> bool:
     """A file Repair may delete: in the models folder, not behind a link (a dev junction may point into
     another checkout; models.remove refuses those too)."""
+    if not model_bindings.resolve(e["where"]).owned:
+        return False
     top = models.root().resolve()
     base = models.root() / e["where"]
     if any(os.path.isjunction(p) for p in (base, *base.parents) if models.root() in p.parents):
@@ -419,6 +422,9 @@ def _download(job: jobs.Job, group: str) -> None:
 
 def move_models(old: Path, new: Path) -> jobs.Job:
     """Move the model files to `new` (empty or new) as a job; the setting follows once they are there."""
+    runtime_policy.require_provisioning()
+    if model_bindings.borrowed():
+        raise ApiError(403, "borrowed", "Model relocation is disabled while shared models are bound.")
     with _asking:
         if models._downloading():
             raise ApiError(409, "busy", "an install is running; move the models after it ends")

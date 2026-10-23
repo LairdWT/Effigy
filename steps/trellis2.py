@@ -25,6 +25,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+from server import model_bindings
 from steps._blender import BlenderError, run_blender
 from steps._common import (
     PIXAL3D_TO_GLTF,
@@ -87,13 +88,23 @@ PIPES: dict = {}  # weights → loaded pipeline (one at a time: VRAM)
 
 
 def _local(folder: str, group: str) -> Path:
-    root = MODELS / folder
+    root = model_bindings.resolve(folder).path
     if not (root / "pipeline.json").is_file():
         raise StepError(
             "missing_input",
             f"{root} missing: run `uv run --group ml python -m tools.download_models {group}`",
         )
     return root
+
+
+def _owned_pipeline(root: Path, cfg: dict, name: str) -> Path:
+    for key, value in cfg["args"]["models"].items():
+        path = Path(value)
+        cfg["args"]["models"][key] = str(path if path.is_absolute() else root / path)
+    scratch = Path(os.environ.get("EFFIGY_SCRATCH", ROOT / "scratch")) / "pipelines" / str(os.getpid()) / name
+    scratch.mkdir(parents=True, exist_ok=True)
+    (scratch / "pipeline.json").write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+    return scratch
 
 
 def _load(weights: str):
@@ -112,13 +123,13 @@ def _load(weights: str):
     args = cfg["args"]
     # the sparse-structure decoder lives in TRELLIS-image-large; DINOv3 is gated: both downloaded locally
     args["models"]["sparse_structure_decoder"] = str(
-        MODELS / "TRELLIS-image-large" / "ckpts" / "ss_dec_conv3d_16l8_fp16"
+        model_bindings.resolve("TRELLIS-image-large/ckpts/ss_dec_conv3d_16l8_fp16").path
     )
-    args["image_cond_model"]["args"]["model_name"] = str(MODELS / "dinov3-vitl16")
+    args["image_cond_model"]["args"]["model_name"] = str(model_bindings.resolve("dinov3-vitl16").path)
     # only pipeline_type "512" (the OOM fallback) uses it: ~2.6 GB less RAM; loaded on demand in run()
     args["models"].pop(TEX_512, None)
-    (root / "effigy_pipeline.json").write_text(json.dumps(cfg, indent=2))
-    pipe = Trellis2ImageTo3DPipeline.from_pretrained(str(root), "effigy_pipeline.json")
+    scratch = _owned_pipeline(root, cfg, "fast")
+    pipe = Trellis2ImageTo3DPipeline.from_pretrained(str(scratch))
     pipe.cuda()  # low_vram (default): each model moves to the GPU only for its stage
     return pipe
 
@@ -146,7 +157,7 @@ def _load_pixal3d(mv: bool = False):
     extractor = proj.DinoV3ProjMultiViewFeatureExtractor if mv else proj.DinoV3ProjFeatureExtractor
     # one shared DINOv3 underneath the four extractors (engine/pixal3d/patches.py)
     for stage, cfg in PIXAL3D_COND.items():
-        ext = extractor(str(MODELS / "dinov3-vitl16"), **cfg).eval()
+        ext = extractor(str(model_bindings.resolve("dinov3-vitl16").path), **cfg).eval()
         setattr(pipe, f"image_cond_model_{stage}", ext)
     pipe._device, pipe.low_vram = torch.device("cuda"), True  # each stage moves on and off the GPU
     return pipe
@@ -163,9 +174,9 @@ def _load_texturing():
 
     root = _local("TRELLIS.2-4B", "fast")
     cfg = json.loads((root / "texturing_pipeline.json").read_text())
-    cfg["args"]["image_cond_model"]["args"]["model_name"] = str(MODELS / "dinov3-vitl16")
-    (root / "effigy_texturing_pipeline.json").write_text(json.dumps(cfg, indent=2))
-    pipe = Trellis2TexturingPipeline.from_pretrained(str(root), "effigy_texturing_pipeline.json")
+    cfg["args"]["image_cond_model"]["args"]["model_name"] = str(model_bindings.resolve("dinov3-vitl16").path)
+    scratch = _owned_pipeline(root, cfg, "texture")
+    pipe = Trellis2TexturingPipeline.from_pretrained(str(scratch))
     pipe.cuda()  # low_vram: each model moves to the GPU only for its stage
     return pipe
 

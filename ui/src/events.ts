@@ -12,6 +12,7 @@ source.addEventListener("open", () => emit("connection", { ok: true }));
 source.addEventListener("error", () => emit("connection", { ok: false }));
 
 export const connected = () => source.readyState === EventSource.OPEN;
+export const eventStreamOrigin = (): string => new URL(source.url, window.location.href).origin;
 
 export function onEvent(h: Handler): () => void {
   handlers.add(h);

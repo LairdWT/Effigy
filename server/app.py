@@ -3,6 +3,7 @@
 import asyncio
 import base64
 import json
+import os
 import queue
 import urllib.parse
 import uuid
@@ -29,15 +30,19 @@ from server import (
     look,
     machine,
     models,
+    reference_models,
+    runtime_policy,
     settings,
     storage,
     thumbs,
 )
+from server.authoring_contracts import AuthoringProfile, ReviewDecision
 from server.library import ApiError
 from server.presets import PRESETS
 from tools.download_models import SIZES
 
 ROOT = Path(__file__).resolve().parents[1]
+runtime_policy.activate()
 
 
 @asynccontextmanager
@@ -46,8 +51,49 @@ async def lifespan(app):
     jobs.shutdown()
 
 
-app = FastAPI(title="Effigy", lifespan=lifespan)
+app = FastAPI(title="Effigy", lifespan=lifespan, docs_url=None, redoc_url=None)
 app.add_middleware(agent.LocalOnly)
+
+if os.environ.get("EFFIGY_MULTI_VIEW") == "1":
+    from server.paint_routes import router as paint_router
+
+    app.include_router(paint_router)
+
+
+@app.get("/api/multi-view")
+def multi_view_capability() -> dict[str, bool]:
+    return {"enabled": os.environ.get("EFFIGY_MULTI_VIEW") == "1"}
+
+
+@app.middleware("http")
+async def offline_setup(request: Request, call_next):
+    if request.method == "POST" and request.url.path in {
+        "/api/models/install", "/api/setup/folder",
+        "/api/hf/login", "/api/hf/logout", "/api/agent/test", "/api/setup/port",
+    }:
+        return JSONResponse(
+            {"error": {"code": "offline", "message": "Runtime is offline. Close Effigy and run provision.bat for public downloads."}},
+            status_code=403,
+        )
+    response: Response = await call_next(request)
+    response.headers["Content-Security-Policy"] = runtime_policy.BROWSER_POLICY
+    return response
+
+
+@app.post("/api/runtime/csp-report", status_code=204)
+def browser_policy_report() -> Response:
+    runtime_policy.record_browser_violation()
+    return Response(status_code=204)
+
+
+@app.get("/api/runtime/policy")
+def runtime_status() -> dict[str, bool | int]:
+    return {"offline": True, "browser_violations": runtime_policy.browser_violations()}
+
+
+@app.get("/api/reference-models")
+def local_reference_models() -> list[dict[str, str | bool | list[str]]]:
+    return reference_models.status()
 
 
 @app.exception_handler(ApiError)
@@ -121,6 +167,23 @@ def update_asset(asset_id: str, body: AssetPatch):
     return library.update_asset(asset_id, body.name, body.archived, body.tags)
 
 
+@app.put("/api/assets/{asset_id}/appearance")
+def save_appearance(asset_id: str, body: dict):
+    return library.save_appearance(asset_id, body)
+
+
+@app.get("/api/assets/{asset_id}/versions/{version}/deletion-preview")
+def deletion_preview(asset_id: str, version: str):
+    preview = library.deletion_preview(asset_id, version)
+    selected = set(preview["versions"])
+    preview["blockers"].extend(
+        {"version": j.parent, "reason": "active job", "job": j.id}
+        for j in jobs.JOBS.values() if j.asset_id == asset_id and j.status in ("queued", "running")
+        and (j.parent in selected or any(v in selected for v in library.dependencies({"params": j.params})))
+    )
+    return preview
+
+
 class ExportItem(BaseModel):
     asset_id: str
     version: str
@@ -175,7 +238,10 @@ def delete_asset(asset_id: str):
 @app.delete("/api/assets/{asset_id}/versions/{version}")
 def delete_version(asset_id: str, version: str):
     """The version and every version derived from it (a branch of the history tree)."""
-    _idle(asset_id, set(library.subtree(asset_id, version)))
+    preview = deletion_preview(asset_id, version)
+    if preview["blockers"]:
+        raise ApiError(409, "required_input", f"Deletion blocked: {preview['blockers']}")
+    _idle(asset_id)
     gone = library.delete_versions(asset_id, version)
     jobs.publish("versions_deleted", {"asset_id": asset_id, "versions": gone})
     return {"deleted": gone}
@@ -218,6 +284,53 @@ async def upload(asset_id: str, name: str, request: Request):
 
 class Version(BaseModel):
     version: str
+
+
+class AuthoringUpdate(BaseModel):
+    revision: int
+    profile: AuthoringProfile
+
+
+class AuthoringReview(BaseModel):
+    revision: int
+    review: ReviewDecision
+
+
+class AuthoringAction(BaseModel):
+    revision: int
+    action: str
+
+
+def require_authoring() -> None:
+    if os.environ.get("EFFIGY_MULTI_VIEW") != "1":
+        raise ApiError(404, "trial_only", "Surface authoring is available in the trial lane")
+
+
+@app.put("/api/assets/{asset_id}/paint-sessions/{session_id}/authoring")
+def authoring_update(asset_id: str, session_id: str, body: AuthoringUpdate) -> dict:
+    from server.paint_routes import storage_boundary
+    from server.paint_sessions import set_authoring
+    require_authoring()
+    with storage_boundary():
+        return set_authoring(asset_id, session_id, body.revision, body.profile)
+
+
+@app.post("/api/assets/{asset_id}/paint-sessions/{session_id}/authoring/reviews")
+def authoring_review(asset_id: str, session_id: str, body: AuthoringReview) -> dict:
+    from server.paint_routes import storage_boundary
+    from server.paint_sessions import review_authoring
+    require_authoring()
+    with storage_boundary():
+        return review_authoring(asset_id, session_id, body.revision, body.review)
+
+
+@app.post("/api/assets/{asset_id}/paint-sessions/{session_id}/authoring/actions")
+def run_authoring_action(asset_id: str, session_id: str, body: AuthoringAction) -> dict:
+    from server.paint_routes import storage_boundary
+    from server.paint_sessions import authoring_action
+    require_authoring()
+    with storage_boundary():
+        return authoring_action(asset_id, session_id, body.revision, body.action)
 
 
 class OpenVersion(BaseModel):
@@ -569,6 +682,14 @@ INERT = {"Content-Security-Policy": "sandbox", "X-Content-Type-Options": "nosnif
 def files(asset_id: str, path: str):
     """Anything inside one asset folder, served inert (INERT); FileResponse handles Range, no gzip."""
     base = library.asset_dir(asset_id).resolve()
+    parts = path.split("/")
+    if len(parts) == 2 and parts[1].startswith("@"):
+        folder = library.version_dir(asset_id, parts[0])
+        meta = library._read(folder / "meta.json")
+        key = next((k for k, value in meta["outputs"].items() if value == parts[1]), None)
+        if key is None:
+            raise ApiError(404, "not_found", "Unknown output alias")
+        return FileResponse(library.resolve_output(folder, key), headers=INERT)
     f = (base / path).resolve()
     if not f.is_relative_to(base) or not f.is_file():
         raise ApiError(404, "not_found", f"no file {path!r}")

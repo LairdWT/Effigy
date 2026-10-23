@@ -1,0 +1,23 @@
+{
+  "meta-llama/Meta-Llama-3-8B-Instruct@8afb486c1db24fe5011ec46dfbe5b5dccdb575c2": {
+    "repository": "NousResearch/Meta-Llama-3-8B-Instruct",
+    "revision": "53346005fb0ef11d3b6a83b12c895cca40156b6c",
+    "objects": {
+      "LICENSE": "4c763399690c7fec642231350756e4ee9184b5ce",
+      "USE_POLICY.md": "6f8e5f6e3243c92046a133c92eb62b1ed7975a0b",
+      "config.json": "31553d63b8f18df5d6d440860751533ada3759e4",
+      "generation_config.json": "8675015d20a4b12ee2ee0197a0937beba318122a",
+      "model-00001-of-00004.safetensors": "d8cf9c4d0dd972e1a2131bfe656235ee98221679711a3beef6d46dadf0f20b5c",
+      "model-00002-of-00004.safetensors": "8d4782b4a69ef03845159ce1a15e272aadaaf134dc138d68f616098e8531729c",
+      "model-00003-of-00004.safetensors": "3acdd690e65c24f42a24581b8467af98bd3ca357444580f8012aacd2bd607921",
+      "model-00004-of-00004.safetensors": "67e9ad31c8c32abf3a55ee7fc7217b3ecb35fd3c74d98a5bd233e0e4d6964f46",
+      "model.safetensors.index.json": "0fd8120f1c6acddc268ebc2583058efaf699a771",
+      "special_tokens_map.json": "d8cd5076496dbe4be2320312abc10adc43097b81",
+      "tokenizer.json": "b197f72effb9d5ed16ee0f5663e11e4cfac2ba62",
+      "tokenizer_config.json": "1bfd1146b7bde6168de7bb673bfe0acaea6e684c"
+    },
+    "omitted_nonruntime_files": [
+      "original/params.json"
+    ]
+  }
+}

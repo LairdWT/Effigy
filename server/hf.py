@@ -87,11 +87,13 @@ def status() -> dict:
     """{"token": bool, "user": name or None, "access": {repo: True | False | None (unknown)}, "gated": GATED}.
     Without `.venv-ml` (a dev checkout, CI; run.bat makes it on a real install) the answer is the unknown one,
     not a 503: the pages treat it as "log in first", and an <img>-free poll should not log browser errors."""
-    try:
-        out = _run(_STATUS, *GATED)
-    except ApiError:
-        out = None
-    return (out or {"token": False, "user": None, "access": {}}) | {"gated": GATED}
+    import os
+    from pathlib import Path
+
+    home = Path(os.environ.get("HF_HOME", Path.home() / ".cache" / "huggingface"))
+    token_file = Path(os.environ.get("HF_TOKEN_PATH", home / "token"))
+    present = bool(os.environ.get("HF_TOKEN")) or token_file.is_file()
+    return {"token": present, "user": None, "access": {}, "gated": GATED, "offline": True}
 
 
 def login(token: str) -> dict:

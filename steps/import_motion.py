@@ -16,7 +16,7 @@ import shutil
 from pathlib import Path
 
 from steps._blender import BlenderError, run_blender
-from steps._common import StepError, main, progress
+from steps._common import StepError, asset_directory, main, progress
 from steps.import_model import _check_gltf
 from steps.mocap import taken_names
 
@@ -51,7 +51,7 @@ def run(op, in_dir, out_dir, params):
             {
                 "name": params.get("name"),
                 "clip": params.get("clip"),
-                "taken": sorted(taken_names(out.parent)),
+                "taken": sorted(taken_names(asset_directory(out))),
                 "suffix": out.name[:3],
             },
             timeout=600,

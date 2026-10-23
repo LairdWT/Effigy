@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "agent-code-skills lint-hook",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit|apply_patch"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "agent-code-skills guard",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit|apply_patch"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "agent-code-skills verify-reminder",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}

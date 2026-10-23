@@ -272,6 +272,120 @@ def update_asset(
     return asset
 
 
+def save_appearance(asset_id: str, value: dict) -> dict:
+    """Store literal owner text and model defaults, with optimistic revision checks."""
+    from server.reference_models import get
+
+    fields = {"materials", "style", "preserve", "model", "denoise", "steps", "revision"}
+    if not isinstance(value, dict) or set(value) != fields:
+        raise ApiError(400, "bad_params", "Appearance needs materials, style, preserve, model, denoise, steps and revision")
+    for key in ("materials", "style", "preserve"):
+        if not isinstance(value[key], str) or len(value[key]) > 6000:
+            raise ApiError(400, "bad_params", f"{key} must be text of at most 6000 characters")
+    try:
+        model = get(value["model"])
+    except (ValueError, TypeError) as exc:
+        raise ApiError(400, "bad_params", "Choose an installed editing model") from exc
+    if "edit" not in model.operations:
+        raise ApiError(400, "bad_params", "This model does not support image editing")
+    if type(value["steps"]) is not int or not 1 <= value["steps"] <= 50:
+        raise ApiError(400, "bad_params", "Steps must be 1-50")
+    if type(value["denoise"]) not in (float, int) or not 0 < value["denoise"] <= 1:
+        raise ApiError(400, "bad_params", "Denoise must be greater than zero and at most one")
+    path = asset_dir(asset_id) / "asset.json"
+    with _meta:
+        asset = _read(path)
+        revision = asset.get("appearance", {}).get("revision", 0)
+        if type(value["revision"]) is not int or value["revision"] != revision:
+            raise ApiError(409, "conflict", "Appearance changed elsewhere. Reload it before saving; keep your draft.")
+        asset["appearance"] = value | {"revision": revision + 1}
+        _write(path, asset)
+        return asset["appearance"]
+
+
+def resolve_output(folder: Path, key: str, seen: set[tuple[str, str]] | None = None) -> Path:
+    """Resolve an immutable same-asset alias or a legacy local output."""
+    folder = folder.resolve()
+    asset = folder.parent
+    if not VERSION.fullmatch(folder.name) or not (asset / "asset.json").is_file():
+        raise ApiError(400, "bad_path", "Output must belong to a saved asset version")
+    seen = set() if seen is None else seen
+    identity = (folder.name, key)
+    if identity in seen:
+        raise ApiError(400, "bad_path", "Cyclic output reference")
+    seen.add(identity)
+    meta = _read(folder / "meta.json")
+    ref = meta.get("output_refs", {}).get(key)
+    if ref is not None:
+        if not isinstance(ref, dict) or set(ref) != {"version", "key"}:
+            raise ApiError(400, "bad_path", "Malformed output reference")
+        target = ref["version"]
+        if not isinstance(target, str) or not VERSION.fullmatch(target):
+            raise ApiError(400, "bad_path", "Output reference must name a version in this asset")
+        next_folder = (asset / target).resolve()
+        if next_folder.parent != asset:
+            raise ApiError(400, "bad_path", "Output reference escapes its asset")
+        return resolve_output(next_folder, ref["key"], seen)
+    name = meta.get("outputs", {}).get(key)
+    if not isinstance(name, str) or name.startswith("@"):
+        raise ApiError(404, "not_found", f"No local output {key!r}")
+    path = (folder / name).resolve()
+    if not path.is_relative_to(folder) or not path.is_file():
+        raise ApiError(404, "not_found", f"Missing or unsafe output {key!r}")
+    return path
+
+
+def dependencies(meta: dict) -> set[str]:
+    refs = {ref["version"] for ref in meta.get("output_refs", {}).values()}
+    params = meta.get("params", {})
+    refs.update(params[key] for key in ("image", "style_image", "source", "selection_source", "legacy", "corrected", "retained", "aligned")
+                if isinstance(params.get(key), str) and VERSION.fullmatch(params[key]))
+    refs.update(value for value in params.get("dependencies", [])
+                if isinstance(value, str) and VERSION.fullmatch(value))
+    if meta.get("parent"):
+        refs.add(meta["parent"])
+    return refs
+
+
+def geometry_revision(folder: Path) -> str:
+    """Only surface-paint operations promise unchanged triangle ordering and UVs."""
+    visited: set[str] = set()
+    asset = folder.resolve().parent
+    while folder.name not in visited:
+        visited.add(folder.name)
+        meta = _read(folder / "meta.json")
+        unchanged = meta.get("step") == "paint" and meta.get("params", {}).get("op") in ("capture", "apply")
+        unchanged |= meta.get("step") in ("paint_set", "paint_group", "paint_generate", "paint_finish", "paint_finish_generate", "uv_context", "repair_baseline")
+        if meta.get("step") == "uv_context" and meta.get("params", {}).get("op") == "prepare":
+            unchanged = meta.get("params", {}).get("operation", "inspect") == "inspect"
+        if not unchanged:
+            return folder.name
+        parent = meta.get("parent")
+        if not isinstance(parent, str) or not VERSION.fullmatch(parent):
+            raise ApiError(400, "bad_path", "Missing geometry ancestor")
+        folder = (asset / parent).resolve()
+        if folder.parent != asset:
+            raise ApiError(400, "bad_path", "Geometry ancestor escapes its asset")
+    raise ApiError(400, "bad_path", "Cyclic geometry lineage")
+
+
+def deletion_preview(asset_id: str, version: str) -> dict:
+    gone = subtree(asset_id, version)
+    selected = set(gone)
+    metas = versions(asset_id)
+    blockers = [{"version": m["version"], "reason": "starred"} for m in metas
+                if m["version"] in selected and m.get("starred")]
+    blockers.extend({"version": m["version"], "reason": "required input",
+                     "dependencies": sorted(dependencies(m) & selected)}
+                    for m in metas if m["version"] not in selected and dependencies(m) & selected)
+    from server import paint_sessions
+
+    blockers.extend({"version": v, "reason": "paint session input"}
+                    for v in sorted(paint_sessions.dependencies(asset_id) & selected))
+    size = sum(p.stat().st_size for v in gone for p in version_dir(asset_id, v).rglob("*") if p.is_file())
+    return {"versions": gone, "bytes": size, "blockers": blockers, "reclaimed_bytes": 0}
+
+
 def export_copy(folder: str, items: list[tuple[str, str]]) -> dict:
     """Each export version's files into a new `<folder>/<asset>_<profile>/` (M42); never overwrites,
     restricted versions are not copied out, a failed copy leaves no folder."""
@@ -345,7 +459,10 @@ def subtree(asset_id: str, version: str) -> list[str]:
 
 def delete_versions(asset_id: str, version: str) -> list[str]:
     """Remove a version and its whole branch; returns what was removed."""
-    gone = subtree(asset_id, version)
+    preview = deletion_preview(asset_id, version)
+    if preview["blockers"]:
+        raise ApiError(409, "required_input", f"Retained dependencies or starred versions prevent deletion: {preview['blockers']}")
+    gone = preview["versions"]
     d = asset_dir(asset_id)
     t = root() / "_trash" / f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%S')}_{asset_id}_{version}"
     t.mkdir(parents=True)
@@ -411,6 +528,7 @@ def write_meta(
         "created": _now(),
         "params": params,
         "outputs": result.get("outputs", {}),
+        "output_refs": result.get("output_refs", {}),
         "metrics": result.get("metrics", {}),
         "models": result.get("models", []),
         "licenses": sorted(

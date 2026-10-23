@@ -33,6 +33,62 @@ def write(path: Path, doc: dict, blob: bytearray) -> None:
     )
 
 
+def compact_images(doc: dict, blob: bytearray) -> bytearray:
+    """Remove unused image payloads in a new GLB, preserving accessor bytes exactly."""
+    def check_extensions(value):
+        if isinstance(value, dict):
+            if set(value.get("extensions", {})) - {"KHR_materials_unlit"}:
+                raise ValueError("Atlas compaction requires plain GLB references; unsupported extension")
+            for child in value.values():
+                check_extensions(child)
+        elif isinstance(value, list):
+            for child in value:
+                check_extensions(child)
+
+    check_extensions(doc)
+    bindings = []
+    for material in doc.get("materials", []):
+        pbr = material.get("pbrMetallicRoughness", {})
+        for owner, keys in ((pbr, ("baseColorTexture", "metallicRoughnessTexture")),
+                            (material, ("normalTexture", "occlusionTexture", "emissiveTexture"))):
+            bindings.extend(owner[k] for k in keys if k in owner)
+    used_textures = sorted({b["index"] for b in bindings})
+    texture_map = {old: new for new, old in enumerate(used_textures)}
+    textures = [doc["textures"][i] for i in used_textures]
+    for binding in bindings:
+        binding["index"] = texture_map[binding["index"]]
+    used_images = sorted({t["source"] for t in textures})
+    image_map = {old: new for new, old in enumerate(used_images)}
+    images = [doc["images"][i] for i in used_images]
+    for texture in textures:
+        texture["source"] = image_map[texture["source"]]
+    pointers = images + [a for a in doc.get("accessors", []) if "bufferView" in a]
+    for accessor_value in doc.get("accessors", []):
+        sparse = accessor_value.get("sparse", {})
+        pointers.extend(sparse[k] for k in ("indices", "values") if k in sparse)
+    used_views = sorted({p["bufferView"] for p in pointers})
+    view_map = {old: new for new, old in enumerate(used_views)}
+    result = bytearray()
+    views = []
+    for index in used_views:
+        view = doc["bufferViews"][index].copy()
+        if view.get("buffer", 0) != 0:
+            raise ValueError("Atlas compaction supports one embedded buffer")
+        start = view.get("byteOffset", 0)
+        end = start + view["byteLength"]
+        if start < 0 or end > len(blob):
+            raise ValueError("GLB buffer view lies outside its buffer")
+        result.extend(b"\0" * (-len(result) % 4))
+        view["byteOffset"] = len(result)
+        result.extend(blob[start:end])
+        views.append(view)
+    for pointer in pointers:
+        pointer["bufferView"] = view_map[pointer["bufferView"]]
+    doc.update(textures=textures, images=images, bufferViews=views)
+    doc["buffers"][0]["byteLength"] = len(result)
+    return result
+
+
 def accessor(doc: dict, blob: bytearray, i: int) -> np.ndarray:
     """Accessor i as a writable (count, width) view into blob (no sparse accessors: ours have none)."""
     a = doc["accessors"][i]

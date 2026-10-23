@@ -24,7 +24,7 @@ from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
-from server import jobs, library, models
+from server import jobs, library, model_bindings, models
 from server.library import ApiError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,8 +136,10 @@ def scan() -> dict:
         )
 
     # model groups: each entry's own files; an entry several groups need is listed as shared by them
-    groups, counted = defaultdict(int), set()
+    groups, counted, borrowed_groups = defaultdict(int), set(), set()
     for e in models.entries():
+        if not model_bindings.resolve(e["where"]).owned:
+            borrowed_groups.add(tuple(e["groups"]))
         for f in models._files(e):
             counted.add(os.path.normcase(os.path.abspath(f)))
             groups[tuple(e["groups"])] += s.file(f)
@@ -146,7 +148,9 @@ def scan() -> dict:
             one = len(gs) == 1
             name = f"Model files: {gs[0]}" if one else f"Model files shared by {' and '.join(gs)}"
             # a shared row removes what exactly those features share (the only Remove since Setup's model table)
-            action = f"group:{'+'.join(gs)}"
+            action = None if gs in borrowed_groups else f"group:{'+'.join(gs)}"
+            if gs in borrowed_groups:
+                name += " (includes read-only borrowed models)"
             item(f"models:{'+'.join(gs)}", "models", name, models.root(), size, action)
     other = sum(  # caches and leftovers in the models folder (unpacked code, kernel caches, old revisions)
         s.file(f)

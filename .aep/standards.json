@@ -1,0 +1,124 @@
+{
+  "classifications": [],
+  "contextFiles": [],
+  "policyVersion": 1,
+  "profiles": [
+    {
+      "framework": "none",
+      "language": "python",
+      "native": [],
+      "paths": [
+        "**/*.py",
+        "**/*.pyi"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "typescript",
+      "native": [],
+      "paths": [
+        "**/*.ts",
+        "**/*.mts",
+        "**/*.cts"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "tsx",
+      "native": [],
+      "paths": [
+        "**/*.tsx"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "javascript",
+      "native": [],
+      "paths": [
+        "**/*.js",
+        "**/*.mjs",
+        "**/*.cjs"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "jsx",
+      "native": [],
+      "paths": [
+        "**/*.jsx"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "html",
+      "native": [],
+      "paths": [
+        "**/*.html",
+        "**/*.htm"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "css",
+      "native": [],
+      "paths": [
+        "**/*.css"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "powershell",
+      "native": [],
+      "paths": [
+        "**/*.ps1",
+        "**/*.psm1",
+        "**/*.psd1"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "shell",
+      "native": [],
+      "paths": [
+        "**/*.sh"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "json",
+      "native": [],
+      "paths": [
+        "**/*.json",
+        "**/*.uproject",
+        "**/*.uplugin"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "yaml",
+      "native": [],
+      "paths": [
+        "**/*.yml",
+        "**/*.yaml"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "toml",
+      "native": [],
+      "paths": [
+        "**/*.toml",
+        "**/Cargo.lock"
+      ]
+    },
+    {
+      "framework": "none",
+      "language": "markdown",
+      "native": [],
+      "paths": [
+        "**/*.md"
+      ]
+    }
+  ],
+  "schemaVersion": 1
+}

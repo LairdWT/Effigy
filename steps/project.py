@@ -134,7 +134,7 @@ def run(op, in_dir, out_dir, params):
     from steps._bake import fill_gutters, rasterize_uv
     from steps._views import cos_weight, facing_cos, write_textured, zbuffer
     from steps._views import visible as visible_
-    from steps.bake import find_volume
+    from steps.bake import find_source
     from steps.trellis2 import _image_version
 
     if not in_dir:
@@ -163,8 +163,13 @@ def run(op, in_dir, out_dir, params):
         raise StepError(
             "missing_input", f"{glb} has no UVs or no base colour texture: run uv and bake first"
         )
-    gen_dir, frame = find_volume(src)
-    gen_meta = json.loads((gen_dir / "meta.json").read_text(encoding="utf-8"))
+    _, transform, gen_meta = find_source(
+        src,
+        lambda _, item: "ovoxel" in item["outputs"]
+        and not (item["step"] == "trellis2" and item.get("params", {}).get("op") == "texture"),
+        "no geometry-generation volume up the chain of",
+    )
+    frame = transform @ np.asarray(gen_meta["frame"]["to_library_from_source"], float)
     prep = _image_version(src, params.get("image"))
     img = np.asarray(Image.open(prep / "image.png").convert("RGBA"))
     if img.shape[0] != img.shape[1]:

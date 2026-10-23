@@ -75,6 +75,13 @@ LOWER = {
 # model. The light steps (server/jobs.LIGHT) need none; any other step not listed counts as needing the
 # whole budget until it is measured.
 VRAM_GB = {
+    "paint_finish_generate": ("model", "fibo2-turbo", {"fibo2-turbo": 16.0, "krea-genesis": 12.0}),
+    "paint_generate": ("model", "fibo2-turbo", {"fibo2-turbo": 16.0, "krea-genesis": 12.0, "moss-turbo": 18.0, "syncmvd": 16.0}),
+    "describe": 12.0,
+    "reference": ("model", "krea-anime", {
+        "krea-anime": 12.0, "krea-genesis": 12.0, "krea-turbo": 12.0, "qwen-edit": 12.0,
+        "flux-ghibli": 17.0, "moss-turbo": 18.0,
+    }),  # admission floors; native workers offload within the assigned budget
     # phase0.md: Fast's decode peak 8.1, 9.0 reserved under cudaMallocAsync; m2.md: Faithful 13.31
     "trellis2": ("weights", "fast", {"fast": 9.0, "faithful": 13.3}),
     # m43b.md: the lite Tile 12.2 reserved, the full one 15.57 (it restarted the laptop before the cap; M46c: its own

@@ -9,10 +9,16 @@ import argparse
 import faulthandler
 import json
 import os
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
+
+from server import runtime_policy
+
+runtime_policy.activate()
 
 # Protocol lines go to a private copy of fd 1; fd 1 itself (print, C extensions) goes to stderr.
 # Only inside a step process (`python -m steps.<name>`): tests import step modules and keep their fds.
@@ -52,6 +58,11 @@ def _is_oom(e: BaseException) -> bool:
     return type(e).__name__ == "OutOfMemoryError" or "out of memory" in str(e).lower()
 
 
+def asset_directory(version: Path) -> Path:
+    """The persistent asset directory for a version processed in local scratch."""
+    return Path(os.environ["EFFIGY_LIBRARY"]) / version.parent.name
+
+
 def _call(run, op: str, in_dir, out_dir: str, params: dict) -> tuple[str, dict]:
     """Run one request; returns ("RESULT", payload) or ("ERROR", payload)."""
     if in_dir is not None and not os.path.isdir(in_dir):
@@ -61,7 +72,18 @@ def _call(run, op: str, in_dir, out_dir: str, params: dict) -> tuple[str, dict]:
     # 10 min: a single-view Faithful run once spun > 25 min on one core and couldn't be reproduced
     faulthandler.dump_traceback_later(600, repeat=True)
     try:
-        res = run(op, in_dir, out_dir, params)
+        scratch: Path = (Path(os.environ["EFFIGY_SCRATCH"]) / "jobs").resolve()
+        project: Path = Path(__file__).resolve().parents[1]
+        if not scratch.is_relative_to(project):
+            raise StepError("bad_params", "Job scratch must stay inside the Effigy checkout")
+        scratch.mkdir(parents=True, exist_ok=True)
+        destination: Path = Path(out_dir)
+        with tempfile.TemporaryDirectory(prefix="step-", dir=scratch) as temporary:
+            working: Path = Path(temporary) / destination.parent.name / destination.name
+            working.mkdir(parents=True)
+            res = run(op, in_dir, str(working), params)
+            progress(0.99, "saving the completed version to the library")
+            shutil.copytree(working, destination, dirs_exist_ok=True)
     except StepError as e:
         return "ERROR", {"code": e.code, "message": str(e)}
     except Exception as e:  # noqa: BLE001 - the protocol must report every failure
@@ -70,7 +92,7 @@ def _call(run, op: str, in_dir, out_dir: str, params: dict) -> tuple[str, dict]:
     finally:
         faulthandler.cancel_dump_traceback_later()
     res = res or {}
-    extra = {k: res[k] for k in ("models", "licenses", "note") if k in res}
+    extra = {k: res[k] for k in ("models", "licenses", "note", "output_refs") if k in res}
     return "RESULT", {"outputs": res.get("outputs", {}), "metrics": res.get("metrics", {})} | extra
 
 
